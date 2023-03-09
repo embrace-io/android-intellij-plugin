@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package io.embrace.android.intellij.plugin.services
 
-import org.jetbrains.plugins.template.MyBundle
+import io.embrace.android.intellij.plugin.MyBundle
 
 class MyApplicationService {
 

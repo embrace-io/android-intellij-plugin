@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template
+package io.embrace.android.intellij.plugin
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls
