@@ -4,8 +4,96 @@
     <name>Embrace</name>
     <vendor>Embrace</vendor>
 
+    <!-- Indicate this plugin can be loaded in all IntelliJ Platform-based products. -->
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.android</depends>
+
+    <!-- Text to display as description on Preferences/Settings | Plugin page -->
+    <description>
+        <![CDATA[
+      Embrace IntelliJ Plugin helps Embrace customers with the integration of the Embrace SDK.
+    ]]>
+    </description>
+
+    <!-- Changelog -->
+    <change-notes>
+        <![CDATA[
+      <ul>
+        <li><b>1.0</b> Initial Release.</li>
+      </ul>
+    ]]>
+    </change-notes>
+
+    <!-- Text to display as company information on Preferences/Settings | Plugin page -->
+    <vendor>Embrace</vendor>
+
+    <!-- Declare the default resource location for localizing menu strings -->
+    <resource-bundle>messages.MyBundle</resource-bundle>
+
+    <actions>
+        <!--
+          See https://plugins.jetbrains.com/docs/intellij/basic-action-system.html#registering-actions
+          for information about the elements and attributes used for actions and groups.
+
+          This <action> element adds a static menu item in first position of the Tools menu that shows PopupDialogAction.
+          Note this element has no text or description attributes because translations for them are given
+          by action-id in the resource-bundle.
+          An <override-text> element is also used for demonstration purposes to show alternate text and description strings
+          for this action's entries in the MainMenu. (Which includes the ToolsMenu. Try commenting out the override-text
+          element and see how the menu text changes.) The alternate text and description attributes do not
+          appear here because they are defined by action-id in the resource-bundle.
+        -->
+        <action id="io.embrace.android.intellij.plugin.actions.PopupDialogAction" class="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
+                text="Embrace" description="Embrace SDK Integration"
+                icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <override-text place="MainMenu" text="Embrace"/>
+            <keyboard-shortcut first-keystroke="control alt A" second-keystroke="C" keymap="$default"/>
+            <mouse-shortcut keystroke="control button3 doubleClick" keymap="$default"/>
+        </action>
+        <!--
+          All of the following menu groups add the action PopupDialogAction to menus in different ways.
+          Note that even though these groups reuse the same action class, in each use the action ids are unique.
+
+          GroupedActions demonstrates declaring an action group using the default ActionGroup implementation provided by the
+          IntelliJ Platform framework. (Note the lack of a group "class" attribute.) GroupedActions gets inserted after
+          PopupDialogAction in the Tools menu. Because the group's implementation is default, it cannot impose
+          enable/disable conditions. Instead it must rely on the conditions imposed by the parent menu where it is inserted.
+          It declares one action in the group.
+        -->
+        <group id="io.embrace.android.intellij.plugin.actions.GroupedActions"
+               text="Static Grouped Actions" description="SDK statically grouped action example"
+               popup="true" icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="io.embrace.android.intellij.plugin.actions.PopupDialogAction"/>
+            <action id="io.embrace.android.intellij.plugin.actions.GroupPopDialogAction" class="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
+                    text="Embrace" description="Embrace SDK Integration"
+                    icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon">
+            </action>
+        </group>
+        <!--
+          CustomDefaultActionGroup demonstrates declaring an action group based on a ActionGroup class supplied by this
+          plugin. This group is to be inserted atop the Editor Popup Menu. It declares one action in the group.
+          The group and action implementations are internationalized, so their declarations do not use the text or
+          description attributes. Instead, the information is defined in the BasicActionsBundle.
+        -->
+        <group id="io.embrace.android.intellij.plugin.actions.CustomDefaultActionGroup"
+               class="io.embrace.android.intellij.plugin.actions.CustomDefaultActionGroup"
+               popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <action id="io.embrace.android.intellij.plugin.actions.CustomGroupedAction" class="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
+                    icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon"/>
+        </group>
+        <!--
+          DynamicActionGroup demonstrates declaring an action group without a static action declaration.
+          An action is added to the group programmatically in the DynamicActionGroup implementation.
+        -->
+        <group id="io.embrace.android.intellij.plugin.actions.DynamicActionGroup" class="io.embrace.android.intellij.plugin.actions.DynamicActionGroup"
+               popup="true" text="Dynamically Grouped Actions" description="SDK dynamically grouped action example"
+               icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="io.embrace.android.intellij.plugin.actions.GroupedActions"/>
+        </group>
+    </actions>
+
 
 <!--    <extensions defaultExtensionNs="com.intellij">-->
 <!--        <applicationService serviceImplementation="io.embrace.android.intellij.plugin.services.MyApplicationService"/>-->
