@@ -3,8 +3,13 @@ package io.embrace.android.intellij.plugin.actions
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowManager
+import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import javax.swing.Icon
+
 
 /**
  * Action class to demonstrate how to interact with the IntelliJ Platform.
@@ -41,16 +46,14 @@ class EmbraceIntegrationAction : AnAction {
      * @param event Event received when the associated menu item is chosen.
      */
     override fun actionPerformed(event: AnActionEvent) {
-        // Using the event, create and show a dialog
         val currentProject = event.project
-        val dlgMsg = StringBuilder(event.presentation.text + " Selected!")
-        val dlgTitle = event.presentation.description
-        // If an element is selected in the editor, add info about it.
-        val nav = event.getData(CommonDataKeys.NAVIGATABLE)
-        if (nav != null) {
-            dlgMsg.append(String.format("\nSelected Element: %s", nav.toString()))
+
+
+        currentProject?.let {
+            val toolWindowManager = ToolWindowManager.getInstance(currentProject)
+            val toolWindow: ToolWindow? = toolWindowManager.getToolWindow("EmbracePluginWindow")
+            toolWindow?.show()
         }
-        Messages.showMessageDialog(currentProject, dlgMsg.toString(), dlgTitle, Messages.getInformationIcon())
     }
 
     /**
