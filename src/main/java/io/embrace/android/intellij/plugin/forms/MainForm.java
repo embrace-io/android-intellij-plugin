@@ -1,16 +1,23 @@
 package io.embrace.android.intellij.plugin.forms;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
 
 public class MainForm {
     private final JPanel panel;
     private final JScrollPane scrollPane;
 
 
-    public MainForm(ToolWindow toolWindow) {
+    public MainForm(ToolWindow toolWindow, @NotNull Project project) {
         panel = new JPanel();
 
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -98,7 +105,7 @@ public class MainForm {
         createFileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         createFileButton.addActionListener(e -> {
-
+            createEmbraceFile(project.getBasePath());
         });
         panel.add(createFileButton);
 
@@ -116,7 +123,20 @@ public class MainForm {
 
 
         // Add the panel to a JScrollPane
-         scrollPane = new JScrollPane(panel);
+        scrollPane = new JScrollPane(panel);
+    }
+
+    private void createEmbraceFile(@Nullable String basePath) {
+        try {
+            File file = new File(basePath + "/embrace-config.json");
+            FileWriter writer = new FileWriter(file);
+            writer.write("Hello, world!");
+            writer.close();
+            System.out.println("File created: " + file.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private JLabel getSdkCodeBlock() {

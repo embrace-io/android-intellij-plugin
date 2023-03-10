@@ -17,7 +17,7 @@ public class MainFormFactory implements ToolWindowFactory {
      */
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        MainForm myToolWindow = new MainForm(toolWindow);
+        MainForm myToolWindow = new MainForm(toolWindow, project);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
         toolWindow.getContentManager().addContent(content);
