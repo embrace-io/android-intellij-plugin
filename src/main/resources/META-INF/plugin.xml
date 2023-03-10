@@ -6,10 +6,11 @@
 
     <depends>com.intellij.modules.platform</depends>
 
-<!--    <extensions defaultExtensionNs="com.intellij">-->
-<!--        <applicationService serviceImplementation="io.embrace.android.intellij.plugin.services.MyApplicationService"/>-->
-<!--        <projectService serviceImplementation="io.embrace.android.intellij.plugin.services.MyProjectService"/>-->
-<!--    </extensions>-->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Main View" secondary="true" icon="AllIcons.General.Modified" anchor="left"
+                    factoryClass="io.embrace.android.intellij.plugin.MainForm"/>
+    </extensions>
+
 
 <!--    <applicationListeners>-->
 <!--        <listener class="io.embrace.android.intellij.plugin.listeners.MyProjectManagerListener"-->
