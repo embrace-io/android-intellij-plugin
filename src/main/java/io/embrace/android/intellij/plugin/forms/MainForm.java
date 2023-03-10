@@ -56,7 +56,21 @@ public class MainForm {
 
         panel.add(connectToEmbraceButton);
 
-        label = createLabel("2. Add Embrace SDK and Swazzler plugin to your app", TEXT_LVL.HEADLINE_2);
+        label = createLabel("2. Add the embrace-config file", TEXT_LVL.HEADLINE_2);
+        label.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        panel.add(label);
+
+        JButton createFileButton = new JButton("Create configuration file");
+        createFileButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        createFileButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        createFileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        createFileButton.addActionListener(e -> {
+            createEmbraceFile(project.getBasePath());
+        });
+        panel.add(createFileButton);
+
+        label = createLabel("3. Add Embrace SDK and Swazzler plugin to your app", TEXT_LVL.HEADLINE_2);
         label.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
         panel.add(label);
 
@@ -95,20 +109,6 @@ public class MainForm {
         panel.add(addSDKButton);
 
 
-        label = createLabel("3. Add the embrace-config file", TEXT_LVL.HEADLINE_2);
-        label.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        panel.add(label);
-
-        JButton createFileButton = new JButton("Create embrace-config file");
-        createFileButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        createFileButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        createFileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        createFileButton.addActionListener(e -> {
-            createEmbraceFile(project.getBasePath());
-        });
-        panel.add(createFileButton);
-
         label = createLabel("4. Start Embrace", TEXT_LVL.HEADLINE_2);
         label.setBorder(BorderFactory.createEmptyBorder(20, 0, 16, 0));
         panel.add(label);
@@ -130,7 +130,11 @@ public class MainForm {
         try {
             File file = new File(basePath + "/embrace-config.json");
             FileWriter writer = new FileWriter(file);
-            writer.write("Hello, world!");
+            writer.write("{\n" +
+                    "  \"app_id\": \"hU4P8\",\n" +
+                    "  \"api_token\": \"13f327e891ad45858949004eb755b9f1\",\n" +
+                    "  \"ndk_enabled\": false\n" +
+                    "}");
             writer.close();
             System.out.println("File created: " + file.getName());
         } catch (Exception e) {
