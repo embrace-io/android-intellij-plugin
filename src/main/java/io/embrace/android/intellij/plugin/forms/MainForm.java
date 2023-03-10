@@ -11,6 +11,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class MainForm {
     private final JPanel panel;
@@ -104,7 +106,7 @@ public class MainForm {
         addSDKButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         addSDKButton.addActionListener(e -> {
-
+            modifyGradleFile(project.getBasePath());
         });
         panel.add(addSDKButton);
 
@@ -126,9 +128,24 @@ public class MainForm {
         scrollPane = new JScrollPane(panel);
     }
 
+    private void modifyGradleFile(@Nullable String basePath) {
+        try {
+            File file = new File(basePath + "/build.gradle");
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String data = scanner.nextLine();
+                System.out.println(data);
+            }
+            scanner.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred reading build.gradle file.");
+            e.printStackTrace();
+        }
+    }
+
     private void createEmbraceFile(@Nullable String basePath) {
         try {
-            File file = new File(basePath + "/embrace-config.json");
+            File file = new File(basePath + "/app/src/main/embrace-config.json");
             FileWriter writer = new FileWriter(file);
             writer.write("{\n" +
                     "  \"app_id\": \"hU4P8\",\n" +
@@ -138,6 +155,7 @@ public class MainForm {
             writer.close();
             System.out.println("File created: " + file.getName());
         } catch (Exception e) {
+            System.out.println("An error occurred on embrace-config file creation.");
             e.printStackTrace();
         }
 
