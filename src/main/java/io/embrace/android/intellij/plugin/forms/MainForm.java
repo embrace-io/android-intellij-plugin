@@ -12,6 +12,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class MainForm {
@@ -131,12 +132,32 @@ public class MainForm {
     private void modifyGradleFile(@Nullable String basePath) {
         try {
             File file = new File(basePath + "/build.gradle");
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
-                String data = scanner.nextLine();
-                System.out.println(data);
-            }
-            scanner.close();
+
+
+            String sb = "// Top-level build file where you can add configuration options common to all sub-projects/modules.\n" +
+                    "buildscript {\n" +
+                    "    repositories {\n" +
+                    "        google()\n" +
+                    "        mavenCentral()\n" +
+                    "    }\n" +
+                    "    dependencies {\n" +
+                    "        classpath \"com.android.tools.build:gradle:7.0.0\"\n" +
+                    "        classpath \"org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10\"\n" +
+                    "        classpath \"io.embrace:embrace-swazzler:5.14.0\"\n" +
+                    "\n" +
+                    "        // NOTE: Do not place your application dependencies here; they belong\n" +
+                    "        // in the individual module build.gradle files\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "task clean(type: Delete) {\n" +
+                    "    delete rootProject.buildDir\n" +
+                    "}";
+
+            PrintWriter writer = new PrintWriter(file);
+            writer.write(sb);
+            writer.close();
+
         } catch (IOException e) {
             System.out.println("An error occurred reading build.gradle file.");
             e.printStackTrace();
