@@ -38,22 +38,22 @@ public class EmbraceIntegrationAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(event.getProject());
-        ToolWindow window = toolWindowManager.getToolWindow("EmbracePluginWindow");
+        ToolWindow window = toolWindowManager.getToolWindow("Embrace Integration Assistant");
         if (window != null)
             window.show();
     }
 
 
-    /**
-     * Determines whether this menu item is available for the current context.
-     * Requires a project to be open.
-     *
-     * @param e Event received when the associated group-id menu is chosen.
-     */
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e); //        e.presentation.isEnabledAndVisible = e.project != null
-
-    }
+//    /**
+//     * Determines whether this menu item is available for the current context.
+//     * Requires a project to be open.
+//     *
+//     * @param e Event received when the associated group-id menu is chosen.
+//     */
+//    @Override
+//    public void update(@NotNull AnActionEvent e) {
+//        super.update(e); //        e.presentation.isEnabledAndVisible = e.project != null
+//
+//    }
 
 }
