@@ -1,11 +1,12 @@
 package io.embrace.android.intellij.plugin.forms;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,12 +14,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Scanner;
 
 public class MainForm {
     private final JPanel panel;
     private final JScrollPane scrollPane;
 
+    private static final String FILE_ROOT = "file://";
+    private static final String MAIN_PATH = "/app/src/main";
+    private static final String EMBRACE_CONFIG_FILE = "/embrace-config.json";
 
     public MainForm(ToolWindow toolWindow, @NotNull Project project) {
         panel = new JPanel();
@@ -166,7 +169,7 @@ public class MainForm {
 
     private void createEmbraceFile(@Nullable String basePath) {
         try {
-            File file = new File(basePath + "/app/src/main/embrace-config.json");
+            File file = new File(basePath + MAIN_PATH + EMBRACE_CONFIG_FILE);
             FileWriter writer = new FileWriter(file);
             writer.write("{\n" +
                     "  \"app_id\": \"hU4P8\",\n" +
@@ -174,6 +177,15 @@ public class MainForm {
                     "  \"ndk_enabled\": false\n" +
                     "}");
             writer.close();
+
+            // Refresh the folder containing the new file
+            VirtualFile parentFolder = VirtualFileManager.getInstance().findFileByUrl(FILE_ROOT + basePath + MAIN_PATH);
+            if (parentFolder != null) {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    parentFolder.refresh(false, false);
+                });
+            }
+
             System.out.println("File created: " + file.getName());
         } catch (Exception e) {
             System.out.println("An error occurred on embrace-config file creation.");
