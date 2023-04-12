@@ -5,10 +5,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +14,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Scanner;
 
 public class MainForm {
     private final JPanel panel;
@@ -24,7 +21,8 @@ public class MainForm {
 
     private static final String FILE_ROOT = "file://";
     private static final String MAIN_PATH = "/app/src/main";
-    
+    private static final String EMBRACE_CONFIG_FILE = "/embrace-config.json";
+
     public MainForm(ToolWindow toolWindow, @NotNull Project project) {
         panel = new JPanel();
 
@@ -171,7 +169,7 @@ public class MainForm {
 
     private void createEmbraceFile(@Nullable String basePath) {
         try {
-            File file = new File(basePath + "/app/src/main/embrace-config.json");
+            File file = new File(basePath + MAIN_PATH + EMBRACE_CONFIG_FILE);
             FileWriter writer = new FileWriter(file);
             writer.write("{\n" +
                     "  \"app_id\": \"hU4P8\",\n" +
