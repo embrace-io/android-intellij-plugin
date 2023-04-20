@@ -1,56 +1,38 @@
 package io.embrace.android.intellij.plugin.ui.components
 
 import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
 import java.awt.Font
-import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextPane
 
-internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
+internal class EmbBlockCode(panel : JPanel, block: CodeType) : JTextPane() {
+    private val darkGray = Color.decode("#5c5c5c")
+    private val viewWidth = 500
 
-    enum class CODE_BLOCK {
+    enum class CodeType {
         SWAZZLER,
         SDK,
         START_EMBRACE
     }
 
     init {
+        alignmentX = Component.LEFT_ALIGNMENT
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         isOpaque = true
-        background = Color.decode("#5c5c5c") // dark gray
+        background = darkGray
+        maximumSize = Dimension(viewWidth, panel.preferredSize.height)
+
 
         text = when (block) {
-            CODE_BLOCK.SDK -> """<html><pre><code>buildscript {
-                    repositories {
-                            mavenCentral()
-                            google()
-                    }
-
-                    dependencies {
-                        classpath 'io.embrace:embrace-swazzler:5.14.2'
-                    }
-                    }</code></pre></html>"""
-
-            CODE_BLOCK.SWAZZLER -> """<html><pre><code>buildscript {
-                    repositories {
-                            mavenCentral()
-                            google()
-                    }
-
-                    dependencies {
-                            classpath 'io.embrace:embrace-swazzler:5.14.2'
-                    }
-                    }</code></pre></html>"""
-
-            CODE_BLOCK.START_EMBRACE -> "<html><pre><code>" +
-                    "import io.embrace.android.embracesdk.Embrace\n" +
-                    "\n" +
-                    "class MyApplication : Application() {\n" +
-                    "    override fun onCreate() {\n" +
-                    "        super.onCreate()\n" +
-                    "        Embrace.getInstance().start(this)\n" +
-                    "        EmbraceSamples.verifyIntegration() // temporarily add this to verify the integration\n" +
-                    "    }\n" +
-                    "}" +
-                    "</code></pre></html>"
+            CodeType.SDK -> getResourceAsText("/examplecode/sdk.txt")
+            CodeType.SWAZZLER -> getResourceAsText("/examplecode/swazzler.txt")
+            CodeType.START_EMBRACE -> getResourceAsText("/examplecode/sdk.txt")
         }
     }
+
+
+    private fun getResourceAsText(path: String): String? =
+        object {}.javaClass.getResource(path)?.readText()
 }

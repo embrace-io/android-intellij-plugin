@@ -1,14 +1,12 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
-import io.embrace.android.intellij.plugin.ui.components.TEXT_LVL
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
+import io.embrace.android.intellij.plugin.ui.components.TEXT_LVL
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Desktop
 import java.awt.Dimension
@@ -22,12 +20,12 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 
 
-class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
+class EmbraceIntegrationForm {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
 
-    fun getContent(): JPanel {
-        return panel
+    fun getContent(): JBScrollPane {
+        return scrollPane
     }
 
     init {
@@ -37,7 +35,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
         initConfigFileStep()
         initBuildConfigFileStep()
         initStartEmbraceStep()
-        scrollPane.add(panel)
+        scrollPane.setViewportView(panel)
     }
 
     private fun initMainPanel() {
@@ -75,7 +73,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
     private fun initBuildConfigFileStep() {
         panel.add(EmbLabel("3. Add Embrace SDK and Swazzler plugin to your app", TEXT_LVL.HEADLINE_2))
         panel.add(EmbLabel("In your project-level build.gradle file, add:", TEXT_LVL.BODY))
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SDK))
+        panel.add(EmbBlockCode(panel, EmbBlockCode.CodeType.SDK))
         panel.add(
             EmbLabel(
                 "Add the Swazzler plugin and the dependencies for the Embrace SDK to your module's app-level Gradle file,",
@@ -88,7 +86,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
                 TEXT_LVL.BODY
             )
         )
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SWAZZLER))
+        panel.add(EmbBlockCode(panel, EmbBlockCode.CodeType.SWAZZLER))
 
         panel.add(EmbButton("Change gradle files") {
             modifyGradleFile(project?.basePath)
@@ -98,7 +96,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
     private fun initStartEmbraceStep(){
         panel.add(EmbLabel("4. Start Embrace", TEXT_LVL.HEADLINE_2))
         panel.add(EmbLabel("Start the Embrace SDK object at the top of your Application class:", TEXT_LVL.BODY))
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.START_EMBRACE))
+        panel.add(EmbBlockCode(panel, EmbBlockCode.CodeType.START_EMBRACE))
     }
 
 

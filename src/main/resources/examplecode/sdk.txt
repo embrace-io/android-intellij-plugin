@@ -1,0 +1,10 @@
+buildscript {
+        repositories {
+            mavenCentral()
+            google()
+        }
+
+        dependencies {
+            classpath 'io.embrace:embrace-swazzler:5.14.2'
+        }
+}
