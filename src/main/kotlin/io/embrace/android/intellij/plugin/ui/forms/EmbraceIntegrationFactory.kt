@@ -8,7 +8,7 @@ import com.intellij.ui.content.ContentFactory
 class EmbraceIntegrationFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val myToolWindow = EmbraceIntegrationForm()
+        val myToolWindow = EmbraceIntegrationForm(toolWindow)
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(myToolWindow.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
