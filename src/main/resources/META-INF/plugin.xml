@@ -52,7 +52,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Embrace Integration Assistant" secondary="true" icon="AllIcons.General.Modified" anchor="right"
-                    factoryClass="io.embrace.android.intellij.plugin.ui.forms.EmbraceIntegrationFactory"/>
+                    factoryClass="io.embrace.android.intellij.plugin.forms.MainFormFactory"/>
     </extensions>
 
     <!--    <applicationListeners>-->
