@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.constants.CodeType
+import io.embrace.android.intellij.plugin.network.HttpService
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
@@ -21,10 +22,12 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 
 
-class EmbraceIntegrationForm() {
+class EmbraceIntegrationForm {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
     private val verticalSpace = 20
+    private val httpService = HttpService()
+
 
     fun getContent(): JBScrollPane {
         return scrollPane
@@ -87,7 +90,8 @@ class EmbraceIntegrationForm() {
         panel.add(EmbLabel("3. Add Embrace SDK and Swazzler plugin to your app", TextStyle.HEADLINE_2))
         panel.add(EmbLabel("In your project-level build.gradle file, add:", TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbBlockCode(panel, CodeType.SDK))
+        panel.add(EmbBlockCode(panel, CodeType.SDK, httpService))
+
         panel.add(
             EmbLabel(
                 "Add the Swazzler plugin and the dependencies for the Embrace SDK to your module's app-level Gradle file,",
@@ -101,13 +105,16 @@ class EmbraceIntegrationForm() {
                 TextStyle.BODY
             )
         )
+
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbBlockCode(panel, CodeType.SWAZZLER))
+        panel.add(EmbBlockCode(panel, CodeType.SWAZZLER, httpService))
         panel.add(Box.createVerticalStrut(verticalSpace))
+
         panel.add(EmbButton("Change gradle files") {
             modifyGradleFile(project?.basePath)
         })
     }
+
 
     private fun initStartEmbraceStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
@@ -119,7 +126,7 @@ class EmbraceIntegrationForm() {
             )
         )
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbBlockCode(panel, CodeType.START_EMBRACE))
+        panel.add(EmbBlockCode(panel, CodeType.START_EMBRACE, httpService))
     }
 
 
