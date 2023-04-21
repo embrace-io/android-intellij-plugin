@@ -28,7 +28,7 @@
     <vendor>Embrace</vendor>
 
     <!-- Declare the default resource location for localizing menu strings -->
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.messages</resource-bundle>
 
     <actions>
         <!--
@@ -41,7 +41,7 @@
         <action id="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
                 class="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
                 text="Embrace" description="Embrace SDK Integration"
-                icon="io.embrace.android.intellij.plugin.icons.EmbraceIcons.embrace_default_icon">
+                icon="io.embrace.android.intellij.plugin.ui.icons.EmbraceIcons.embrace_default_icon">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <keyboard-shortcut first-keystroke="control alt A" second-keystroke="C" keymap="$default"/>
             <mouse-shortcut keystroke="control button3 doubleClick" keymap="$default"/>
