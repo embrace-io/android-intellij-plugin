@@ -1,15 +1,14 @@
 package io.embrace.android.intellij.plugin.ui.components
 
-import io.embrace.android.intellij.plugin.manager.EmbraceIntegrationDataProvider
-import io.embrace.android.intellij.plugin.network.HttpClient
+import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.network.HttpService
 import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
-internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
+internal class EmbBlockCode(block: CODE_BLOCK, httpService: HttpService) : JLabel() {
 
-    private val httpClient = HttpClient()
-    private val embraceIntegrationDataProvider = EmbraceIntegrationDataProvider(httpClient)
+    private val embraceIntegrationDataProvider = EmbraceIntegrationDataProvider(httpService)
 
     enum class CODE_BLOCK {
         SWAZZLER,
