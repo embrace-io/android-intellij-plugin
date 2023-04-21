@@ -1,60 +1,50 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+
+import io.embrace.android.intellij.plugin.constants.CodeType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.network.HttpService
+
 import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
 import java.awt.Font
-import javax.swing.JLabel
+import javax.swing.BorderFactory
+import javax.swing.JPanel
+import javax.swing.JTextArea
 
-internal class EmbBlockCode(block: CODE_BLOCK, httpService: HttpService) : JLabel() {
 
+internal class EmbBlockCode(panel: JPanel, block: CodeType, httpService: HttpService) : JTextArea() {
     private val embraceIntegrationDataProvider = EmbraceIntegrationDataProvider(httpService)
 
-    enum class CODE_BLOCK {
-        SWAZZLER,
-        SDK,
-        START_EMBRACE
-    }
+    private val darkGray = Color.decode("#5c5c5c")
+    private val viewWidth = 500
 
     init {
-        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+//        contentType = "text/html"
+        alignmentX = Component.LEFT_ALIGNMENT
+        font = Font("Monospaced", Font.PLAIN, 12)
         isOpaque = true
-        background = Color.decode("#5c5c5c") // dark gray
-        val classpath = "classpath 'io.embrace:embrace-swazzler:" + embraceIntegrationDataProvider.getLastSDKVersion() + "'\n"
-        text = when (block) {
-            CODE_BLOCK.SDK -> """<html><pre><code>buildscript {
-                    repositories {
-                            mavenCentral()
-                            google()
-                    }
+        background = darkGray
+        maximumSize = Dimension(viewWidth, panel.preferredSize.height)
 
-                    dependencies {
-                        $classpath
-                    }
-                    }</code></pre></html>"""
+        border = BorderFactory.createCompoundBorder(
+            border,
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        );
 
-            CODE_BLOCK.SWAZZLER -> """<html><pre><code>buildscript {
-                    repositories {
-                            mavenCentral()
-                            google()
-                    }
 
-                    dependencies {
-                            $classpath
-                    }
-                    }</code></pre></html>"""
-
-            CODE_BLOCK.START_EMBRACE -> "<html><pre><code>" +
-                    "import io.embrace.android.embracesdk.Embrace\n" +
-                    "\n" +
-                    "class MyApplication : Application() {\n" +
-                    "    override fun onCreate() {\n" +
-                    "        super.onCreate()\n" +
-                    "        Embrace.getInstance().start(this)\n" +
-                    "        EmbraceSamples.verifyIntegration() // temporarily add this to verify the integration\n" +
-                    "    }\n" +
-                    "}" +
-                    "</code></pre></html>"
+        val code = when (block) {
+            CodeType.SDK -> getResourceAsText("/examplecode/sdk.txt")
+            CodeType.SWAZZLER -> getResourceAsText("/examplecode/swazzler.txt")
+            CodeType.START_EMBRACE -> getResourceAsText("/examplecode/sdk.txt")
         }
+
+        text = code?.replace("LAST_VERSION", embraceIntegrationDataProvider.getLastSDKVersion())
+
     }
+
+
+    private fun getResourceAsText(path: String): String? =
+        object {}.javaClass.getResource(path)?.readText()
 }
