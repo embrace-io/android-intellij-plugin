@@ -1,13 +1,14 @@
 package io.embrace.android.intellij.plugin.manager
 
-import io.embrace.android.intellij.plugin.network.NetworkManager
+import io.embrace.android.intellij.plugin.network.ApiClient
 import org.json.JSONException
 import org.json.JSONObject
 
 
-class FormManagerImpl(private val networkManager: NetworkManager) : FormManager {
-    override fun getLastSDKVersion(): String {
-        val response = networkManager.sendGetRequest(URL)
+class EmbraceIntegrationDataProvider(private val apiClient: ApiClient) {
+
+    fun getLastSDKVersion(): String {
+        val response = apiClient.sendGetRequest(URL)
         return try {
             val jsonObject = JSONObject(response)
             jsonObject.getString("value")

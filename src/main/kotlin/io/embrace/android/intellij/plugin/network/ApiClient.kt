@@ -1,5 +1,5 @@
 package io.embrace.android.intellij.plugin.network
 
-interface NetworkManager {
+interface ApiClient {
     fun sendGetRequest(url: String): String?
 }

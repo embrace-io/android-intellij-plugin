@@ -7,7 +7,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-class NetworkManagerImpl : NetworkManager {
+class HttpClient : ApiClient {
 
     private val httpClient: HttpClient = HttpClient.newBuilder().build()
 
