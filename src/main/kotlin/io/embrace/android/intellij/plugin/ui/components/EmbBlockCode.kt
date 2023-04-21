@@ -1,10 +1,14 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.network.HttpService
 import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
-internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
+internal class EmbBlockCode(block: CODE_BLOCK, httpService: HttpService) : JLabel() {
+
+    private val embraceIntegrationDataProvider = EmbraceIntegrationDataProvider(httpService)
 
     enum class CODE_BLOCK {
         SWAZZLER,
@@ -16,7 +20,7 @@ internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         isOpaque = true
         background = Color.decode("#5c5c5c") // dark gray
-
+        val classpath = "classpath 'io.embrace:embrace-swazzler:" + embraceIntegrationDataProvider.getLastSDKVersion() + "'\n"
         text = when (block) {
             CODE_BLOCK.SDK -> """<html><pre><code>buildscript {
                     repositories {
@@ -25,7 +29,7 @@ internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
                     }
 
                     dependencies {
-                        classpath 'io.embrace:embrace-swazzler:5.14.2'
+                        $classpath
                     }
                     }</code></pre></html>"""
 
@@ -36,7 +40,7 @@ internal class EmbBlockCode(block: CODE_BLOCK) : JLabel() {
                     }
 
                     dependencies {
-                            classpath 'io.embrace:embrace-swazzler:5.14.2'
+                            $classpath
                     }
                     }</code></pre></html>"""
 

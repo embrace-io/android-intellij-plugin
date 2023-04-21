@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
+import io.embrace.android.intellij.plugin.network.HttpService
 import io.embrace.android.intellij.plugin.ui.components.TEXT_LVL
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
@@ -25,6 +26,7 @@ import javax.swing.JPanel
 class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
+    private val httpService = HttpService()
 
     fun getContent(): JPanel {
         return panel
@@ -75,7 +77,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
     private fun initBuildConfigFileStep() {
         panel.add(EmbLabel("3. Add Embrace SDK and Swazzler plugin to your app", TEXT_LVL.HEADLINE_2))
         panel.add(EmbLabel("In your project-level build.gradle file, add:", TEXT_LVL.BODY))
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SDK))
+        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SDK, httpService))
         panel.add(
             EmbLabel(
                 "Add the Swazzler plugin and the dependencies for the Embrace SDK to your module's app-level Gradle file,",
@@ -88,7 +90,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
                 TEXT_LVL.BODY
             )
         )
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SWAZZLER))
+        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.SWAZZLER, httpService))
 
         panel.add(EmbButton("Change gradle files") {
             modifyGradleFile(project?.basePath)
@@ -98,7 +100,7 @@ class EmbraceIntegrationForm(toolWindow: ToolWindow, project: Project) {
     private fun initStartEmbraceStep(){
         panel.add(EmbLabel("4. Start Embrace", TEXT_LVL.HEADLINE_2))
         panel.add(EmbLabel("Start the Embrace SDK object at the top of your Application class:", TEXT_LVL.BODY))
-        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.START_EMBRACE))
+        panel.add(EmbBlockCode(EmbBlockCode.CODE_BLOCK.START_EMBRACE, httpService))
     }
 
 
