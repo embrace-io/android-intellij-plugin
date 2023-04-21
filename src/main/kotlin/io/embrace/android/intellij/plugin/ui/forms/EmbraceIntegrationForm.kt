@@ -3,7 +3,9 @@ package io.embrace.android.intellij.plugin.ui.forms
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBScrollPane
+import io.embrace.android.intellij.plugin.EmbraceStringResources
 import io.embrace.android.intellij.plugin.constants.CodeType
+import io.embrace.android.intellij.plugin.extensions.text
 import io.embrace.android.intellij.plugin.network.HttpService
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
@@ -51,21 +53,15 @@ class EmbraceIntegrationForm {
     }
 
     private fun initGetStartedLayout() {
-        panel.add(EmbLabel("Get started with Embrace", TextStyle.HEADLINE_1))
-        panel.add(
-            EmbLabel(
-                "Add Embrace to your app to help you track, prioritize, and fix stability issues that erode your app quality.",
-                TextStyle.BODY
-            )
-        )
-//        panel.add(EmbLabel("", TextStyle.BODY))
+        panel.add(EmbLabel("getStartedTitle".text(), TextStyle.HEADLINE_1))
+        panel.add(EmbLabel("getStartedDescription".text(), TextStyle.BODY))
     }
 
     private fun initCreateAppStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbLabel("1. Connect your app to Embrace", TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("step1Title".text(), TextStyle.HEADLINE_2))
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbButton("Connect to Embrace") {
+        panel.add(EmbButton("btnConnect".text()) {
             val url = "https://dash.embrace.io/onboard/project"
             try {
                 Desktop.getDesktop().browse(URI(url))
@@ -77,40 +73,30 @@ class EmbraceIntegrationForm {
 
     private fun initConfigFileStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbLabel("2. Add the embrace-config file", TextStyle.HEADLINE_2))
-        panel.add(EmbLabel("In your project-level build.gradle file, add:", TextStyle.BODY))
+        panel.add(EmbLabel("step2Title".text(), TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("modifyGradleFile".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbButton("Create configuration file") {
+        panel.add(EmbButton("btnConfigFile".text()) {
             createEmbraceFile(project?.basePath)
         })
     }
 
     private fun initBuildConfigFileStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbLabel("3. Add Embrace SDK and Swazzler plugin to your app", TextStyle.HEADLINE_2))
-        panel.add(EmbLabel("In your project-level build.gradle file, add:", TextStyle.BODY))
+        panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("step3Description".text(), TextStyle.BODY))
+
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbBlockCode(panel, CodeType.SDK, httpService))
 
-        panel.add(
-            EmbLabel(
-                "Add the Swazzler plugin and the dependencies for the Embrace SDK to your module's app-level Gradle file,",
-                TextStyle.BODY
-            )
-        )
+        panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
+        panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(
-            EmbLabel(
-                "normally `app/build.gradle`. Make sure that compileOptions for Java 8 are also added to the file.\"",
-                TextStyle.BODY
-            )
-        )
 
-        panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbBlockCode(panel, CodeType.SWAZZLER, httpService))
         panel.add(Box.createVerticalStrut(verticalSpace))
 
-        panel.add(EmbButton("Change gradle files") {
+        panel.add(EmbButton("btnModifyGradleFiles".text()) {
             modifyGradleFile(project?.basePath)
         })
     }
@@ -118,13 +104,8 @@ class EmbraceIntegrationForm {
 
     private fun initStartEmbraceStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbLabel("4. Start Embrace", TextStyle.HEADLINE_2))
-        panel.add(
-            EmbLabel(
-                "Start the Embrace SDK object at the top of your Application class:",
-                TextStyle.BODY
-            )
-        )
+        panel.add(EmbLabel("step4Title".text(), TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("step4Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbBlockCode(panel, CodeType.START_EMBRACE, httpService))
     }
