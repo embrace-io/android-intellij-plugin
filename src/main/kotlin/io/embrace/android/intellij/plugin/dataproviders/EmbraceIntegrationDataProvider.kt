@@ -6,8 +6,7 @@ import java.io.IOException
 import java.io.PrintWriter
 
 
-internal class EmbraceIntegrationDataProvider {
-    private val repo = EmbracePluginRepository()
+internal class EmbraceIntegrationDataProvider(private val repo : EmbracePluginRepository) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
 
     fun getSdkExampleCode(): String {

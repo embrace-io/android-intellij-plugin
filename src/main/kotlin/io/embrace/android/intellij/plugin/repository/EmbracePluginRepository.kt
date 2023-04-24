@@ -6,8 +6,7 @@ import io.embrace.android.intellij.plugin.repository.network.ApiService
 import java.io.File
 import java.io.FileWriter
 
-internal class EmbracePluginRepository {
-    private val apiService = ApiService()
+internal class EmbracePluginRepository(private val apiService: ApiService) {
 
     companion object {
         private const val FILE_ROOT = "file://"

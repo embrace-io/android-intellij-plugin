@@ -2,11 +2,11 @@ package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
-import io.embrace.android.intellij.plugin.utils.extensions.text
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
+import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Desktop
 import java.net.URI
@@ -15,8 +15,7 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 
-class EmbraceIntegrationForm {
-    private val dataProvider = EmbraceIntegrationDataProvider()
+internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
     private val verticalSpace = 20
