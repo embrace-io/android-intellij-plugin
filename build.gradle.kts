@@ -7,6 +7,8 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.0"
     // Gradle IntelliJ Plugin
     id("org.jetbrains.intellij") version "1.12.0"
+    // Gradle Changelog Plugin
+    id("org.jetbrains.changelog") version "2.0.0"
 }
 
 group = properties("pluginGroup")
@@ -17,6 +19,11 @@ repositories {
     mavenCentral()
 }
 
+// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
+changelog {
+    groups.set(emptyList())
+    repositoryUrl.set(properties("pluginRepositoryUrl"))
+}
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
 kotlin {
     jvmToolchain(11)
