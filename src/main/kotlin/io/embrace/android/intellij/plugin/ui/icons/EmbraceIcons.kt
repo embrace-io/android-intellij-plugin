@@ -1,4 +1,4 @@
-package io.embrace.android.intellij.plugin.icons
+package io.embrace.android.intellij.plugin.ui.icons
 
 import com.intellij.openapi.util.IconLoader
 

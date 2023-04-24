@@ -1,0 +1,5 @@
+{
+  "app_id": "MY_APP_ID",
+  "api_token": "MY_TOKEN",
+  "ndk_enabled": false
+}

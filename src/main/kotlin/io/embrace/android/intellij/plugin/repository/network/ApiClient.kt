@@ -1,4 +1,4 @@
-package io.embrace.android.intellij.plugin.network
+package io.embrace.android.intellij.plugin.repository.network
 
 import java.io.IOException
 import java.net.URI
@@ -7,11 +7,10 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-class HttpService : ApiClient {
-
+class ApiClient {
     private val httpClient: HttpClient = HttpClient.newBuilder().build()
 
-    override fun sendGetRequest(url: String): String? {
+    fun executeGetRequest(url: String): String? {
         var response: String? = null
 
         val httpRequest: HttpRequest

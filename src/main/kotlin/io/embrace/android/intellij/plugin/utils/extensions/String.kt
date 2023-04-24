@@ -1,4 +1,4 @@
-package io.embrace.android.intellij.plugin.extensions
+package io.embrace.android.intellij.plugin.utils.extensions
 
 import io.embrace.android.intellij.plugin.EmbraceStringResources
 
