@@ -1,6 +1,10 @@
-# Embrace Intellij Plugin
+<!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-<!-- Plugin description -->
-**Embrace IntelliJ Plugin** helps Embrace customers with the integration of the Embrace SDK.
+# IntelliJ Platform Plugin Template Changelog
 
-<!-- Plugin description end -->
+[//]: # (## [Unreleased])
+### Changed
+- Created plugin
+
+[//]: # ([Unreleased]: https://github.com/JetBrains/intellij-platform-plugin-template/compare/v1.0.0...HEAD)
+[0.0.1]: https://github.com/JetBrains/intellij-platform-plugin-template/commits
