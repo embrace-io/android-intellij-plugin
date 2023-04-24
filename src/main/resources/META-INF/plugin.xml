@@ -28,7 +28,7 @@
     <vendor>Embrace</vendor>
 
     <!-- Declare the default resource location for localizing menu strings -->
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.messages</resource-bundle>
 
     <actions>
         <!--

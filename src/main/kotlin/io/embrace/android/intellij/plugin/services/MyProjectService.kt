@@ -1,12 +1,12 @@
 package io.embrace.android.intellij.plugin.services
 
 import com.intellij.openapi.project.Project
-import io.embrace.android.intellij.plugin.MyBundle
+import io.embrace.android.intellij.plugin.EmbraceStringResources
 
 class MyProjectService(project: Project) {
 
     init {
-        println(MyBundle.message("projectService", project.name))
+        println(EmbraceStringResources.message("projectService", project.name))
 
         System.getenv("CI")
             ?: TODO("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
