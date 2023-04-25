@@ -11,14 +11,11 @@ import io.embrace.android.intellij.plugin.repository.network.ApiService
 class EmbraceIntegrationFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-<<<<<<< HEAD
-        val myToolWindow = EmbraceIntegrationForm(project, dataProvider)
-=======
         val apiService = ApiService()
         val repo = EmbracePluginRepository(apiService)
         val dataProvider = EmbraceIntegrationDataProvider(repo, project.basePath)
         val myToolWindow = EmbraceIntegrationForm(dataProvider)
->>>>>>> main
+
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(myToolWindow.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
