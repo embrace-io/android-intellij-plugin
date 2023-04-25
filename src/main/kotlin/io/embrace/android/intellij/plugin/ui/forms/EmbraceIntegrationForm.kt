@@ -7,7 +7,6 @@ import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.BorderFactory
@@ -18,7 +17,6 @@ import javax.swing.JPanel
 internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
-    private val verticalSpace = 20
 
     init {
         initMainPanel()
@@ -37,7 +35,7 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
 
     private fun initMainPanel() {
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.border = BorderFactory.createEmptyBorder(0, 20, 20, 20)
+        panel.border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
         //        val frame = JFrame("popup");
     }
 
@@ -47,9 +45,9 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
     }
 
     private fun initCreateAppStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step1Title".text(), TextStyle.HEADLINE_2))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
             val url = "https://dash.embrace.io/onboard/project"
             try {
@@ -61,41 +59,47 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
     }
 
     private fun initConfigFileStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step2Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("modifyGradleFile".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConfigFile".text()) {
-            dataProvider.createEmbraceFile(project?.basePath, "appId", "token")
+            dataProvider.createEmbraceFile("appId", "token")
         })
     }
 
     private fun initBuildConfigFileStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step3Description".text(), TextStyle.BODY))
 
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
 
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
         panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode()))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            dataProvider.modifyGradleFile(project?.basePath)
+            dataProvider.modifyGradleFile()
         })
     }
 
 
     private fun initStartEmbraceStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step4Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step4Description".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
     }
 }
+
+private const val VERTICAL_SPACE = 20
+private const val BORDER_TOP = 0
+private const val BORDER_BOTTOM = 20
+private const val BORDER_LEFT = 20
+private const val BORDER_RIGHT = 20
