@@ -3,11 +3,12 @@ package io.embrace.android.intellij.plugin.repository.network
 import org.json.JSONException
 import org.json.JSONObject
 
-class ApiService {
+internal class ApiService {
     private val apiClient = ApiClient()
 
     companion object {
         const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
+        const val EMBRACE_DASHBOARD_URL: String = "https://dash.embrace.io/onboard/project"
     }
 
     fun getLastSDKVersion(): String {

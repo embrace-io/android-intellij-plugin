@@ -1,13 +1,24 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
+import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import java.awt.Desktop
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
+import java.net.URI
 
 
-internal class EmbraceIntegrationDataProvider(private val repo : EmbracePluginRepository) {
+internal class EmbraceIntegrationDataProvider(private val repo: EmbracePluginRepository) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
+
+    fun openDashboard() {
+        try {
+            Desktop.getDesktop().browse(URI(repo.embraceDashboardUrl))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
 
     fun getSdkExampleCode(): String {
         val code = getResourceAsText("/examplecode/sdk.txt") ?: ""
@@ -36,16 +47,43 @@ internal class EmbraceIntegrationDataProvider(private val repo : EmbracePluginRe
         }
     }
 
-    internal fun createEmbraceFile(basePath: String?, appId: String, token: String) {
+    internal fun createEmbraceFile(
+        basePath: String?,
+        appId: String,
+        token: String,
+        callback: ConfigFileCreationCallback,
+        shouldOverrideFile: Boolean? = false
+    ) {
         basePath?.let {
-            val configFile = getResourceAsText("/examplecode/config_template.txt") ?: ""
-                .replace("MY_APP_ID", appId)
-                .replace("MY_TOKEN", token)
+            val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(basePath)
 
-            repo.createEmbraceConfigFile(configFile, basePath)
-        }
+            if (isFileAlreadyCreated && shouldOverrideFile == false) {
+                callback.onConfigAlreadyExists()
+                return
+            }
+
+            var configFile = getResourceAsText("/examplecode/config_template.txt") ?: ""
+            configFile = configFile.replace("MY_APP_ID", appId)
+            configFile = configFile.replace("MY_TOKEN", token)
+
+            if (repo.createEmbraceConfigFile(configFile, basePath))
+                callback.onConfigSuccess()
+            else
+                callback.onConfigError("cannot create config file")
+
+        } ?: callback.onConfigError("cannot get the path")
     }
 
     private fun getResourceAsText(path: String): String? =
         object {}.javaClass.getResource(path)?.readText()
+
+    fun validateConfigFields(appId: String, token: String) =
+        appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
+
+    companion object {
+        private const val APP_ID_LENGTH = 5
+        private const val TOKEN_LENGTH = 32
+    }
+
+
 }

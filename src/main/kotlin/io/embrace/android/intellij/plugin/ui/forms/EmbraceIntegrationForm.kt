@@ -1,24 +1,38 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
+import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
+import java.awt.Color
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 
-internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) {
+
+internal class EmbraceIntegrationForm(
+    private val project: Project,
+    private val dataProvider: EmbraceIntegrationDataProvider
+) : ConfigFileCreationCallback {
+
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
     private val verticalSpace = 20
+    private val errorColor = Color.decode("#d42320")
+    private val successColor = Color.decode("#16c74e")
+    private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
+    private val etAppId = EmbEditableText("sawWz")
+    private val etToken = EmbEditableText("123k1jn123998asd")
 
     init {
         initMainPanel()
@@ -28,7 +42,9 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         initConfigFileStep()
         initBuildConfigFileStep()
         initStartEmbraceStep()
+
         scrollPane.setViewportView(panel)
+        scrollPane.verticalScrollBar.value = 0
     }
 
     fun getContent(): JBScrollPane {
@@ -38,7 +54,7 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
     private fun initMainPanel() {
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
         panel.border = BorderFactory.createEmptyBorder(0, 20, 20, 20)
-        //        val frame = JFrame("popup");
+
     }
 
     private fun initGetStartedLayout() {
@@ -50,43 +66,59 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbLabel("step1Title".text(), TextStyle.HEADLINE_2))
         panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
+        panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbButton("btnConnect".text()) {
-            val url = "https://dash.embrace.io/onboard/project"
-            try {
-                Desktop.getDesktop().browse(URI(url))
-            } catch (ex: java.lang.Exception) {
-                ex.printStackTrace()
-            }
+            dataProvider.openDashboard()
         })
     }
 
     private fun initConfigFileStep() {
+
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbLabel("step2Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("modifyGradleFile".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
+
+        panel.add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3))
+        panel.add(Box.createVerticalStrut(5))
+        panel.add(etAppId)
+        panel.add(Box.createVerticalStrut(5))
+        panel.add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3))
+        panel.add(Box.createVerticalStrut(5))
+        panel.add(etToken)
+        panel.add(Box.createVerticalStrut(verticalSpace))
+
         panel.add(EmbButton("btnConfigFile".text()) {
-            dataProvider.createEmbraceFile(project?.basePath, "appId", "token")
+            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
+                configFileErrorLabel.isVisible = false
+                dataProvider.createEmbraceFile(project.basePath, etAppId.text, etToken.text, this)
+            } else {
+                configFileErrorLabel.text = "noIdOrTokenError".text()
+                configFileErrorLabel.isVisible = true
+            }
         })
+
+        panel.add(configFileErrorLabel)
     }
 
     private fun initBuildConfigFileStep() {
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
-        panel.add(EmbLabel("step3Description".text(), TextStyle.BODY))
-
-        panel.add(Box.createVerticalStrut(verticalSpace))
-        panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
 
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
         panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
 
+        panel.add(EmbLabel("addSdk".text(), TextStyle.BODY))
+        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
+
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode()))
         panel.add(Box.createVerticalStrut(verticalSpace))
 
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            dataProvider.modifyGradleFile(project?.basePath)
+            dataProvider.modifyGradleFile(project.basePath)
         })
     }
 
@@ -97,5 +129,35 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         panel.add(EmbLabel("step4Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(verticalSpace))
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
+    }
+
+    override fun onConfigSuccess() {
+        configFileErrorLabel.foreground = successColor
+        configFileErrorLabel.text = "configFileCreated".text()
+        configFileErrorLabel.isVisible = true
+    }
+
+    override fun onConfigAlreadyExists() {
+        val options = arrayOf<Any>("Replace", "Cancel")
+
+        val choice = JOptionPane.showOptionDialog(
+            null,
+            "replaceConfig".text(),
+            "Replace Configuration",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]
+        )
+
+        if (choice == JOptionPane.YES_OPTION) {
+            dataProvider.createEmbraceFile(project.basePath, etAppId.text, etToken.text, this, true)
+        }
+    }
+
+    override fun onConfigError(error: String) {
+        configFileErrorLabel.text = error
+        configFileErrorLabel.isVisible = true
     }
 }

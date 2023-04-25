@@ -9,7 +9,7 @@ import javax.swing.JPanel
 import javax.swing.JTextArea
 
 
-internal class EmbBlockCode(panel: JPanel, codeExample : String) : JTextArea() {
+internal class EmbBlockCode(panel: JPanel, codeExample : String) : JTextArea(codeExample) {
     private val darkGray = Color.decode("#5c5c5c")
     private val viewWidth = 500
 
@@ -24,7 +24,5 @@ internal class EmbBlockCode(panel: JPanel, codeExample : String) : JTextArea() {
             border,
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         )
-
-        text = codeExample
     }
 }
