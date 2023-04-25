@@ -11,8 +11,6 @@ import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
-import java.awt.Desktop
-import java.net.URI
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -20,14 +18,10 @@ import javax.swing.JOptionPane
 import javax.swing.JPanel
 
 
-internal class EmbraceIntegrationForm(
-    private val project: Project,
-    private val dataProvider: EmbraceIntegrationDataProvider
-) : ConfigFileCreationCallback {
-
+internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) :
+    ConfigFileCreationCallback {
     private val panel = JPanel()
     private val scrollPane = JBScrollPane()
-    private val verticalSpace = 20
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#16c74e")
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
@@ -53,8 +47,7 @@ internal class EmbraceIntegrationForm(
 
     private fun initMainPanel() {
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.border = BorderFactory.createEmptyBorder(0, 20, 20, 20)
-
+        panel.border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
     }
 
     private fun initGetStartedLayout() {
@@ -63,22 +56,21 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initCreateAppStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step1Title".text(), TextStyle.HEADLINE_2))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
             dataProvider.openDashboard()
         })
     }
 
     private fun initConfigFileStep() {
-
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step2Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("modifyGradleFile".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3))
         panel.add(Box.createVerticalStrut(5))
@@ -87,12 +79,12 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3))
         panel.add(Box.createVerticalStrut(5))
         panel.add(etToken)
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnConfigFile".text()) {
             if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
                 configFileErrorLabel.isVisible = false
-                dataProvider.createEmbraceFile(project.basePath, etAppId.text, etToken.text, this)
+                dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
             } else {
                 configFileErrorLabel.text = "noIdOrTokenError".text()
                 configFileErrorLabel.isVisible = true
@@ -103,31 +95,30 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initBuildConfigFileStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
-
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
         panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbLabel("addSdk".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
 
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode()))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            dataProvider.modifyGradleFile(project.basePath)
+            dataProvider.modifyGradleFile()
         })
     }
 
 
     private fun initStartEmbraceStep() {
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step4Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step4Description".text(), TextStyle.BODY))
-        panel.add(Box.createVerticalStrut(verticalSpace))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
     }
 
@@ -152,7 +143,7 @@ internal class EmbraceIntegrationForm(
         )
 
         if (choice == JOptionPane.YES_OPTION) {
-            dataProvider.createEmbraceFile(project.basePath, etAppId.text, etToken.text, this, true)
+            dataProvider.createEmbraceFile(etAppId.text, etToken.text, this, true)
         }
     }
 
@@ -161,3 +152,9 @@ internal class EmbraceIntegrationForm(
         configFileErrorLabel.isVisible = true
     }
 }
+
+private const val VERTICAL_SPACE = 20
+private const val BORDER_TOP = 0
+private const val BORDER_BOTTOM = 20
+private const val BORDER_LEFT = 20
+private const val BORDER_RIGHT = 20

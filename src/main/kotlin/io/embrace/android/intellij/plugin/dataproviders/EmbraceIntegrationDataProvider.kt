@@ -9,7 +9,10 @@ import java.io.PrintWriter
 import java.net.URI
 
 
-internal class EmbraceIntegrationDataProvider(private val repo: EmbracePluginRepository) {
+internal class EmbraceIntegrationDataProvider(
+    private val repo: EmbracePluginRepository,
+    private val basePath: String?
+) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
 
     fun openDashboard() {
@@ -34,7 +37,7 @@ internal class EmbraceIntegrationDataProvider(private val repo: EmbracePluginRep
         return getResourceAsText("/examplecode/embrace_start.txt") ?: ""
     }
 
-    fun modifyGradleFile(basePath: String?) {
+    fun modifyGradleFile() {
         try {
             val file = File("$basePath/build.gradle")
             val sb = "classpath \"io.embrace:embrace-swazzler:5.14.0\""
@@ -47,8 +50,8 @@ internal class EmbraceIntegrationDataProvider(private val repo: EmbracePluginRep
         }
     }
 
+
     internal fun createEmbraceFile(
-        basePath: String?,
         appId: String,
         token: String,
         callback: ConfigFileCreationCallback,
