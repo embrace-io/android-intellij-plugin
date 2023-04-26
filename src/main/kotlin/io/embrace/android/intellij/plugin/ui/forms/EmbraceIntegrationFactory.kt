@@ -11,6 +11,7 @@ import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import javax.swing.JPanel
 import javax.swing.JTextArea
 
 
@@ -39,9 +40,9 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
         toolWindow.component.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
                 val maxWidth = toolWindow.component.width // get the available width
-                val components = integrationView.getContent().components
+                val scrollView = integrationView.panel.components
 
-                for (component in components) {
+                for (component in scrollView) {
                     if (component is JTextArea) {
                         component.maximumSize = Dimension(maxWidth, component.preferredSize.height)
                     }

@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
+import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
@@ -21,8 +22,8 @@ import javax.swing.JScrollPane
 
 internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) :
     ConfigFileCreationCallback {
-    private val panel = JPanel()
-    private val scrollPane = JScrollPane(panel)
+    internal val panel = JPanel()
+    private val scrollPane = JBScrollPane(panel)
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#16c74e")
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
@@ -39,10 +40,9 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         initStartEmbraceStep()
     }
 
-    fun getContent(): JPanel {
-        return panel
+    fun getContent(): JBScrollPane {
+        return scrollPane
     }
-
 
     private fun initMainPanel() {
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
