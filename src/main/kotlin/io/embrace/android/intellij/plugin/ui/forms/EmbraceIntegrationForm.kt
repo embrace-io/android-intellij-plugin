@@ -10,14 +10,11 @@ import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
-import java.awt.Dimension
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JScrollBar
-import javax.swing.JScrollPane
 
 
 internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) :
@@ -97,7 +94,6 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
-        panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbLabel("addSdk".text(), TextStyle.BODY))
