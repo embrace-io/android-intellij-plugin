@@ -7,6 +7,13 @@ import com.intellij.ui.content.ContentFactory
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.network.ApiService
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
+import javax.swing.JPanel
+import javax.swing.JTextArea
+
 
 class EmbraceIntegrationFactory : ToolWindowFactory {
 
@@ -14,11 +21,34 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
         val apiService = ApiService()
         val repo = EmbracePluginRepository(apiService)
         val dataProvider = EmbraceIntegrationDataProvider(repo, project.basePath)
-        val myToolWindow = EmbraceIntegrationForm(dataProvider)
 
+        val integrationView = EmbraceIntegrationForm(dataProvider)
         val contentFactory = ContentFactory.SERVICE.getInstance()
-        val content = contentFactory.createContent(myToolWindow.getContent(), "", false)
+        val content = contentFactory.createContent(integrationView.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
+
+        addResizeEventsListener(toolWindow, integrationView)
+    }
+
+    /**
+     * This method adds a component listener to adjust the width of the JTextArea components
+     * inside a tool window based on the width of the tool window itself.
+     * This ensures that the text inside the JTextArea is displayed correctly without any
+     * overflow or truncation.
+     */
+    private fun addResizeEventsListener(toolWindow: ToolWindow, integrationView: EmbraceIntegrationForm) {
+        toolWindow.component.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) {
+                val maxWidth = toolWindow.component.width // get the available width
+                val scrollView = integrationView.panel.components
+
+                for (component in scrollView) {
+                    if (component is JTextArea) {
+                        component.maximumSize = Dimension(maxWidth, component.preferredSize.height)
+                    }
+                }
+            }
+        })
     }
 
 }

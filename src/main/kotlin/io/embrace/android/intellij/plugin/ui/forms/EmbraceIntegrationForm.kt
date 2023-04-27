@@ -1,6 +1,5 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
-import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
@@ -20,8 +19,8 @@ import javax.swing.JPanel
 
 internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrationDataProvider) :
     ConfigFileCreationCallback {
-    private val panel = JPanel()
-    private val scrollPane = JBScrollPane()
+    internal val panel = JPanel()
+    private val scrollPane = JBScrollPane(panel)
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#16c74e")
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
@@ -36,9 +35,6 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         initConfigFileStep()
         initBuildConfigFileStep()
         initStartEmbraceStep()
-
-        scrollPane.setViewportView(panel)
-        scrollPane.verticalScrollBar.value = 0
     }
 
     fun getContent(): JBScrollPane {
@@ -98,7 +94,6 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
-        panel.add(EmbLabel("addSwazzlerLine2".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbLabel("addSdk".text(), TextStyle.BODY))

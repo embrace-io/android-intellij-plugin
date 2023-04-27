@@ -4,12 +4,15 @@ import java.awt.Color
 import java.awt.Component
 import java.awt.Font
 import javax.swing.BorderFactory
-import javax.swing.JLabel
+import javax.swing.JTextArea
 
-internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null) : JLabel(text) {
+internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null) : JTextArea(text) {
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
+        lineWrap = true
+        wrapStyleWord = true
+        isOpaque = false
         border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
 
         font = when (textLevel) {
