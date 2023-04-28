@@ -7,11 +7,9 @@ import com.intellij.ui.content.ContentFactory
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.network.ApiService
-import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import javax.swing.JPanel
 import javax.swing.JTextArea
 
 
@@ -20,7 +18,7 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val apiService = ApiService()
         val repo = EmbracePluginRepository(apiService)
-        val dataProvider = EmbraceIntegrationDataProvider(repo, project.basePath)
+        val dataProvider = EmbraceIntegrationDataProvider(repo, project)
 
         val integrationView = EmbraceIntegrationForm(dataProvider)
         val contentFactory = ContentFactory.SERVICE.getInstance()

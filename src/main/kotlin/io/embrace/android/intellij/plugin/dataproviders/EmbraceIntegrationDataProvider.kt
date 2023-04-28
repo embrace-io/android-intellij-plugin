@@ -1,17 +1,18 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
+import com.intellij.openapi.project.Project
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
+import io.embrace.android.intellij.plugin.gradle.GradleToolingApiWrapper
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import java.awt.Desktop
-import java.io.File
 import java.io.IOException
-import java.io.PrintWriter
 import java.net.URI
 
 
 internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository,
-    private val basePath: String?
+    private val project: Project
 ) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
 
@@ -39,11 +40,11 @@ internal class EmbraceIntegrationDataProvider(
 
     fun modifyGradleFile() {
         try {
-            val file = File("$basePath/build.gradle")
-            val sb = "classpath \"io.embrace:embrace-swazzler:5.14.0\""
-            val writer = PrintWriter(file)
-            writer.write(sb)
-            writer.close()
+            project.basePath?.let { path ->
+                val gradleToolingApiWrapper = GradleToolingApiWrapper(path)
+                val buildGradleFilesModifier = BuildGradleFilesModifier(project, gradleToolingApiWrapper, lastEmbraceVersion)
+                buildGradleFilesModifier.updateAllBuildGradleFiles()
+            }
         } catch (e: IOException) {
             println("An error occurred reading build.gradle file.")
             e.printStackTrace()
@@ -57,8 +58,8 @@ internal class EmbraceIntegrationDataProvider(
         callback: ConfigFileCreationCallback,
         shouldOverrideFile: Boolean? = false
     ) {
-        basePath?.let {
-            val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(basePath)
+        project.basePath?.let { path ->
+            val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(path)
 
             if (isFileAlreadyCreated && shouldOverrideFile == false) {
                 callback.onConfigAlreadyExists()
@@ -69,7 +70,7 @@ internal class EmbraceIntegrationDataProvider(
             configFile = configFile.replace("MY_APP_ID", appId)
             configFile = configFile.replace("MY_TOKEN", token)
 
-            if (repo.createEmbraceConfigFile(configFile, basePath))
+            if (repo.createEmbraceConfigFile(configFile, path))
                 callback.onConfigSuccess()
             else
                 callback.onConfigError("cannot create config file")
