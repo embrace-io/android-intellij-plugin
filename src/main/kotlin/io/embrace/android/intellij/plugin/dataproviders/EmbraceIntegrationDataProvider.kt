@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.gradle.GradleToolingApiWrapper
@@ -12,7 +13,8 @@ import java.net.URI
 
 internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository,
-    private val project: Project
+    private val project: Project,
+    private val basePath: String?
 ) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
 
@@ -42,7 +44,8 @@ internal class EmbraceIntegrationDataProvider(
         try {
             project.basePath?.let { path ->
                 val gradleToolingApiWrapper = GradleToolingApiWrapper(path)
-                val buildGradleFilesModifier = BuildGradleFilesModifier(project, gradleToolingApiWrapper, lastEmbraceVersion)
+                val buildGradleFilesModifier =
+                    BuildGradleFilesModifier(project, gradleToolingApiWrapper, lastEmbraceVersion)
                 buildGradleFilesModifier.updateAllBuildGradleFiles()
             }
         } catch (e: IOException) {
@@ -51,6 +54,26 @@ internal class EmbraceIntegrationDataProvider(
         }
     }
 
+    fun addEmbraceStartMethod() {
+
+        val applicationClass = repo.getApplicationClass(project, basePath)
+
+        applicationClass?.let {
+            val result = Messages.showYesNoDialog(
+                project,
+                "Application Class detected. Would you like to proceed to add Embrace.Start sentence?",
+                "Confirmation",
+                Messages.getQuestionIcon()
+            )
+
+            if (result == Messages.YES) {
+                repo.addEmbraceStartToApplicationClass(applicationClass, project)
+            }
+        } ?: Messages.showInfoMessage(
+            "There is no application class in your project, please add Embrace.Start manually",
+            "Info"
+        )
+    }
 
     internal fun createEmbraceFile(
         appId: String,
@@ -88,6 +111,5 @@ internal class EmbraceIntegrationDataProvider(
         private const val APP_ID_LENGTH = 5
         private const val TOKEN_LENGTH = 32
     }
-
 
 }
