@@ -18,8 +18,7 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val apiService = ApiService()
         val repo = EmbracePluginRepository(apiService)
-        val dataProvider = EmbraceIntegrationDataProvider(repo, project)
-
+        val dataProvider = EmbraceIntegrationDataProvider(repo, project, project.basePath)
         val integrationView = EmbraceIntegrationForm(dataProvider)
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(integrationView.getContent(), "", false)

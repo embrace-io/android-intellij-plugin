@@ -115,6 +115,10 @@ internal class EmbraceIntegrationForm(private val dataProvider: EmbraceIntegrati
         panel.add(EmbLabel("step4Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbButton("btnAddEmbraceStart".text()) {
+            dataProvider.addEmbraceStartMethod()
+        })
     }
 
     override fun onConfigSuccess() {
