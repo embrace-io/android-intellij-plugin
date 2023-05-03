@@ -3,9 +3,11 @@ package io.embrace.android.intellij.plugin.dataproviders
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
-import io.embrace.android.intellij.plugin.gradle.GradleToolingApiWrapper
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
@@ -13,10 +15,14 @@ import java.net.URI
 
 internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository,
-    private val project: Project,
-    private val basePath: String?
+    private val project: Project
 ) {
     private val lastEmbraceVersion = repo.getLastSDKVersion()
+    private val buildGradleFilesModifier = lazy {
+        project.basePath?.let {
+            BuildGradleFilesModifier(project, lastEmbraceVersion)
+        }
+    }
 
     fun openDashboard() {
         try {
@@ -36,27 +42,35 @@ internal class EmbraceIntegrationDataProvider(
         return code.replace("LAST_VERSION", lastEmbraceVersion)
     }
 
+    fun getSwazzlerPluginExampleCode(): String {
+        val code = getResourceAsText("/examplecode/plugin.txt") ?: ""
+        return code.replace("LAST_VERSION", lastEmbraceVersion)
+    }
+
+
     fun getStartExampleCode(): String {
         return getResourceAsText("/examplecode/embrace_start.txt") ?: ""
     }
 
-    fun modifyGradleFile() {
+    fun getGradleContentToModify(callback: ProjectGradleFileModificationCallback) {
+        buildGradleFilesModifier.value?.getBuildGradleFileContent(callback)
+    }
+
+    fun modifyGradleFile(content: String, callback: ProjectGradleFileModificationCallback) {
         try {
-            project.basePath?.let { path ->
-                val gradleToolingApiWrapper = GradleToolingApiWrapper(path)
-                val buildGradleFilesModifier =
-                    BuildGradleFilesModifier(project, gradleToolingApiWrapper, lastEmbraceVersion)
-                buildGradleFilesModifier.updateAllBuildGradleFiles()
-            }
+            buildGradleFilesModifier.value?.updateBuildGradleFileForProject(content)
+            callback.onGradleContentModified()
         } catch (e: IOException) {
-            println("An error occurred reading build.gradle file.")
-            e.printStackTrace()
+            callback.onGradleFileError("cannotModifyGradle".text())
         }
     }
 
-    fun addEmbraceStartMethod() {
+    fun addSwazzlerPlugin(callback: SwazzlerPluginAddedCallback) {
+        buildGradleFilesModifier.value?.addSwazzlerPlugin(callback)
+    }
 
-        val applicationClass = repo.getApplicationClass(project, basePath)
+    fun addEmbraceStartMethod() {
+        val applicationClass = repo.getApplicationClass(project)
 
         applicationClass?.let {
             val result = Messages.showYesNoDialog(

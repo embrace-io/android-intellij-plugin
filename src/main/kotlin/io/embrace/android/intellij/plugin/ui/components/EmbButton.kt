@@ -16,6 +16,9 @@ class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
         border = BorderFactory.createEmptyBorder(5, 15, 5, 15)
         font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
 
-        addActionListener { onClick.invoke() }
+        addActionListener {
+            isEnabled = false
+            onClick.invoke()
+        }
     }
 }

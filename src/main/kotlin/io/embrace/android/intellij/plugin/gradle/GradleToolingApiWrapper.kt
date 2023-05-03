@@ -6,7 +6,6 @@ import org.gradle.tooling.model.GradleProject
 import java.io.File
 
 class GradleToolingApiWrapper(basePath: String) {
-
     private val connector: GradleConnector = GradleConnector.newConnector()
 
     init {

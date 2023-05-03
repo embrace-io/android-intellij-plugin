@@ -65,13 +65,13 @@ internal class EmbracePluginRepository(private val apiService: ApiService) {
         }
     }
 
-    fun getApplicationClass(project: Project?, basePath: String?): String? {
+    fun getApplicationClass(project: Project?): String? {
         val file = VirtualFileManager.getInstance()
-            .findFileByUrl(FILE_ROOT + basePath + MAIN_PATH)
+            .findFileByUrl(FILE_ROOT + project?.basePath + MAIN_PATH)
 
-        file?.let { file ->
+        file?.let {
             project?.let { project ->
-                val module = ModuleUtil.findModuleForFile(file, project) ?: return null
+                val module = ModuleUtil.findModuleForFile(it, project) ?: return null
                 try {
                     val facet = AndroidFacet.getInstance(module)
                     val appInfo = facet?.getManifestFiles()?.get(0)
