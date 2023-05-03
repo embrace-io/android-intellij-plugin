@@ -13,18 +13,21 @@ import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import org.jetbrains.android.facet.AndroidFacet
 import java.io.File
 import java.io.FileWriter
+import javax.swing.SwingWorker
+
 
 internal class EmbracePluginRepository(private val apiService: ApiService) {
     val embraceDashboardUrl = ApiService.EMBRACE_DASHBOARD_URL
 
     companion object {
-        private const val FILE_ROOT = "file://"
-        private const val MAIN_PATH = "/app/src/main"
-        private const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
+        internal const val FILE_ROOT = "file://"
+        internal const val MAIN_PATH = "/app/src/main"
+        internal const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
     }
 
     fun getLastSDKVersion() =
@@ -89,47 +92,58 @@ internal class EmbracePluginRepository(private val apiService: ApiService) {
         } ?: return null
     }
 
-    fun addEmbraceStartToApplicationClass(applicationClass: String, project: Project?) {
-        var psiClass: PsiClass? = null
 
-        project?.let {
-            // Get the JavaPsiFacade instance for the project
-            val psiFacade = JavaPsiFacade.getInstance(it)
+    internal class ManifestManager(
+        private val applicationClass: String,
+        private val project: Project?,
+        private val psiClass: PsiClass?,
+        private val callback: StartMethodCallback
+    ) : SwingWorker<Void, Void>() {
 
-            // Get the PsiClass for the given fully qualified name
-            psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(it))
 
-        } ?: return
+        override fun doInBackground(): Void? {
 
-        val myClass: PsiClass = psiClass ?: return
+            if (project != null) {
 
-        val runnable = object : Runnable {
-            override fun run() {
-                // Find the onCreate() method in the class
-                val onCreateMethod = myClass.findMethodsByName("onCreate", false).firstOrNull()
-                    ?: return // return if onCreate() method not found
 
-                // Get the body of the onCreate() method
-                val onCreateBody = onCreateMethod.body ?: return // return if onCreate() method has no body
+                psiClass?.let {
 
-                // Find the super.onCreate() statement in the method body
-                val superOnCreateStatement =
-                    PsiTreeUtil.findChildrenOfType(onCreateBody, PsiMethodCallExpression::class.java)
-                        .find { it.text == "super.onCreate()" }
-                        ?: return // return if super.onCreate() statement not found
+                    val runnable = object : Runnable {
+                        override fun run() {
+                            // Find the onCreate() method in the class
+                            val onCreateMethod = psiClass.findMethodsByName("onCreate", false).firstOrNull()
+                                ?: return // return if onCreate() method not found
 
-                // Find the next statement after super.onCreate() statement TODO check its functionality
-                val nextStatement = superOnCreateStatement.nextSibling
+                            // Get the body of the onCreate() method
+                            val onCreateBody = onCreateMethod.body ?: return // return if onCreate() method has no body
 
-                // Create a new statement to be added
-                val statementText = "Embrace.getInstance().start(this, false)"
-                val newStatement = PsiElementFactory.getInstance(project)
-                    .createStatementFromText(statementText, null)
+                            // Find the super.onCreate() statement in the method body
+                            val superOnCreateStatement =
+                                PsiTreeUtil.findChildrenOfType(onCreateBody, PsiMethodCallExpression::class.java)
+                                    .find { it.text == "super.onCreate()" }
+                                    ?: return // return if super.onCreate() statement not found
 
-                onCreateMethod.addAfter(newStatement, superOnCreateStatement)
+                            // Find the next statement after super.onCreate() statement TODO check its functionality
+                            val nextStatement = superOnCreateStatement.nextSibling
+
+                            // Create a new statement to be added
+                            val statementText = "Embrace.getInstance().start(this, false)"
+                            val newStatement = PsiElementFactory.getInstance(project)
+                                .createStatementFromText(statementText, null)
+
+                            onCreateMethod.addAfter(newStatement, superOnCreateStatement)
+                        }
+                    }
+                    WriteCommandAction.runWriteCommandAction(project, runnable)
+                }
             }
+            return null
+
         }
-        WriteCommandAction.runWriteCommandAction(project, runnable)
+
+        override fun done() {
+            callback.onStartAdded()
+        }
     }
 
 }

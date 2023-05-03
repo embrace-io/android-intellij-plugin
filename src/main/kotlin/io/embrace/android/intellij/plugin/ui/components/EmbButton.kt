@@ -17,7 +17,7 @@ class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
         font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
 
         addActionListener {
-            isEnabled = false
+//            isEnabled = false
             onClick.invoke()
         }
     }

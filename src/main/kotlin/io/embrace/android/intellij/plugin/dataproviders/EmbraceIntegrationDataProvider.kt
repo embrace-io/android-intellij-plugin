@@ -2,12 +2,17 @@ package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiElementFactory
+import com.intellij.psi.search.GlobalSearchScope
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
-import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
+import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
@@ -69,7 +74,7 @@ internal class EmbraceIntegrationDataProvider(
         buildGradleFilesModifier.value?.addSwazzlerPlugin(callback)
     }
 
-    fun addEmbraceStartMethod() {
+    fun addEmbraceStartMethod(callback: StartMethodCallback) {
         val applicationClass = repo.getApplicationClass(project)
 
         applicationClass?.let {
@@ -81,7 +86,17 @@ internal class EmbraceIntegrationDataProvider(
             )
 
             if (result == Messages.YES) {
-                repo.addEmbraceStartToApplicationClass(applicationClass, project)
+                val psiFacade = JavaPsiFacade.getInstance(project)
+                val psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
+                psiClass?.let {
+                    val statement =
+                        PsiElementFactory.getInstance(project).createStatementFromText("newLineOfCode();", null)
+                    psiClass.add(statement)
+                    psiClass.containingFile.virtualFile.refresh(false, false)
+                }
+
+
+//                EmbracePluginRepository.ManifestManager(applicationClass, project, psiClass, callback).execute()
             }
         } ?: Messages.showInfoMessage(
             "There is no application class in your project, please add Embrace.Start manually",

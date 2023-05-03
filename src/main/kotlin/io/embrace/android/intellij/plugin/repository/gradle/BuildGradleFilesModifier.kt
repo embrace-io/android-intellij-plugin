@@ -1,4 +1,4 @@
-package io.embrace.android.intellij.plugin.gradle
+package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
 import com.android.tools.idea.gradle.project.build.output.indexOfFirstNonWhitespace

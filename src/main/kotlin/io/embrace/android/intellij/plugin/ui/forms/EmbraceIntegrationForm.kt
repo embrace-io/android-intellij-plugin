@@ -5,6 +5,7 @@ import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
@@ -32,7 +33,8 @@ internal class EmbraceIntegrationForm(
     private val dataProvider: EmbraceIntegrationDataProvider
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
-    SwazzlerPluginAddedCallback {
+    SwazzlerPluginAddedCallback,
+    StartMethodCallback {
 
     internal val panel = JPanel()
     private val scrollPane = JBScrollPane()
@@ -53,6 +55,7 @@ internal class EmbraceIntegrationForm(
         initConfigFileStep()
         initBuildConfigFileStep()
         initStartEmbraceStep()
+        initEmbraceVerificationStep()
 
         scrollPane.viewport.view = panel
         scrollPane.scrollRectToVisible(Rectangle(0, 0, 1, 1))
@@ -138,8 +141,24 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnAddEmbraceStart".text()) {
-            dataProvider.addEmbraceStartMethod()
+            dataProvider.addEmbraceStartMethod(this)
         })
+    }
+
+    private fun initEmbraceVerificationStep() {
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbLabel("step5Title".text(), TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbButton("btnOpenDashboard".text()) {
+            dataProvider.openDashboard()
+        })
+
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbLabel("contactInfo".text(), TextStyle.BODY))
     }
 
     override fun onConfigSuccess() {
@@ -182,7 +201,7 @@ internal class EmbraceIntegrationForm(
 
 
     override fun onGradleContentFound(newLine: String, contentToModify: String) {
-        val options = arrayOf<Any>("Replace", "Cancel")
+        val options = arrayOf<Any>("Add", "Cancel")
 
         val message = contentToModify.replace(newLine, "*** $newLine *** ")
         val completeMessage = "Confirm the following changes to your build.gradle file:\n\n $message"
@@ -211,7 +230,7 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun showAddSwazzlerPluginDialog(projectFileWasModified: Boolean) {
-        val options = arrayOf<Any>("Replace", "Cancel")
+        val options = arrayOf<Any>("Add", "Cancel")
 
         val message = if (projectFileWasModified) {
             "swazzlerFileSuccessfullyModified".text() + "\n"
@@ -247,7 +266,21 @@ internal class EmbraceIntegrationForm(
 
     override fun onSwazzlerPluginError(error: String) {
         btnGradleFiles.isEnabled = true
+        Messages.showErrorDialog(
+            error,
+            "Error"
+        )
+    }
+
+    override fun onStartAdded() {
         Messages.showInfoMessage(
+           "start added",
+            "Info"
+        )
+    }
+
+    override fun onStartError(error: String) {
+        Messages.showErrorDialog(
             error,
             "Error"
         )
