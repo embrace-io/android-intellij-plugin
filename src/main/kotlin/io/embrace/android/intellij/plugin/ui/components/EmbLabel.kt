@@ -24,5 +24,4 @@ internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = 
 
         textColor?.let { foreground = textColor }
     }
-
 }

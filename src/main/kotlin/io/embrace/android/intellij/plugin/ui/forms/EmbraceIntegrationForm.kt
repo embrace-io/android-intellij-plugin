@@ -150,8 +150,6 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step5Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnOpenDashboard".text()) {
             dataProvider.openDashboard()
         })
