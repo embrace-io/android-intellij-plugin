@@ -81,7 +81,9 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
+            dataProvider.startServer()
             dataProvider.openDashboard()
+            dataProvider.openBrowserAtCallback()
         })
     }
 

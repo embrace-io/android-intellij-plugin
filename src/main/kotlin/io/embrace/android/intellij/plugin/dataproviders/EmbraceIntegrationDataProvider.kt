@@ -2,14 +2,17 @@ package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import io.embrace.android.intellij.plugin.repository.network.CallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.net.URI
 
 
@@ -21,6 +24,23 @@ internal class EmbraceIntegrationDataProvider(
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
             BuildGradleFilesModifier(project, lastEmbraceVersion)
+        }
+    }
+
+    fun startServer() {
+        val server: HttpServer = HttpServer.create(InetSocketAddress(8000), 0)
+        server.createContext("/callback", CallbackHandler())
+        server.executor = null
+        server.start()
+    }
+
+    // Not Needed: The Onboard Dashboard will open this URL once it generates the APP_ID and TOKEN.
+    // It's here just for demo purposes.
+    fun openBrowserAtCallback() {
+        try {
+            Desktop.getDesktop().browse(URI("http://localhost:8000/callback"))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 
