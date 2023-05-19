@@ -6,6 +6,7 @@
 
     <!-- Indicate this plugin can be loaded in all IntelliJ Platform-based products. -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.android</depends>
 
     <!-- Text to display as description on Preferences/Settings | Plugin page -->
