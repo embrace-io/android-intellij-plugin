@@ -37,12 +37,11 @@ internal class CallbackHandler(
     }
 
     private fun writeResponseBody(exchange: HttpExchange) {
-        val htmlContent = "<html><body><h1>Hello, World!</h1></body></html>"
-        val htmlBytes = htmlContent.toByteArray(charset("UTF-8"))
+        val htmlBytes = this.javaClass.getResource(CALLBACK_RESPONSE_HTML_PATH)?.readBytes() ?: ByteArray(0)
         exchange.sendResponseHeaders(HttpStatus.SC_OK , htmlBytes.size.toLong())
         exchange.responseHeaders.set("Content-Type", "text/html")
         val os: OutputStream = exchange.responseBody
-        os.write(htmlContent.toByteArray())
+        os.write(htmlBytes)
         os.close()
     }
 }
@@ -53,3 +52,5 @@ internal data class EmbraceCallbackRequestBody(
     @SerializedName("token")
     val token: String
 )
+
+private const val CALLBACK_RESPONSE_HTML_PATH = "/html/callback_response.html"
