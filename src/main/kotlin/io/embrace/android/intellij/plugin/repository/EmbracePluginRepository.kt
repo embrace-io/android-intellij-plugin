@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -132,4 +133,8 @@ internal class EmbracePluginRepository(private val apiService: ApiService) {
         WriteCommandAction.runWriteCommandAction(project, runnable)
     }
 
+    fun getProjectName(): String {
+        val currentProject = ProjectManager.getInstance().openProjects[0]
+        return currentProject.name
+    }
 }
