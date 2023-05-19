@@ -29,22 +29,9 @@ internal class EmbraceIntegrationDataProvider(
         }
     }
 
-    fun startServer(etAppId: EmbEditableText, etToken: EmbEditableText) {
-        val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
-        server.createContext("/", CallbackHandler(etAppId, etToken))
-        server.executor = null
-        server.start()
-        callbackPort = server.address.port
-        println("Server started on port $callbackPort")
-    }
-
-    fun openDashboard() {
-        try {
-            val url = buildOnboardDashURL()
-            Desktop.getDesktop().browse(URI(url))
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
+    fun connectToEmbrace(etAppId: EmbEditableText, etToken: EmbEditableText) {
+        startServer(etAppId, etToken)
+        openDashboard()
     }
 
     fun getSdkExampleCode(): String {
@@ -132,6 +119,24 @@ internal class EmbraceIntegrationDataProvider(
 
     fun validateConfigFields(appId: String, token: String) =
         appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
+
+    private fun startServer(etAppId: EmbEditableText, etToken: EmbEditableText) {
+        val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
+        server.createContext("/", CallbackHandler(etAppId, etToken))
+        server.executor = null
+        server.start()
+        callbackPort = server.address.port
+        println("Server started on port $callbackPort")
+    }
+
+    private fun openDashboard() {
+        try {
+            val url = buildOnboardDashURL()
+            Desktop.getDesktop().browse(URI(url))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
 
     private fun getResourceAsText(path: String): String? =
         object {}.javaClass.getResource(path)?.readText()
