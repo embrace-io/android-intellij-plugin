@@ -281,6 +281,7 @@ internal class EmbraceIntegrationForm(
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> "StartAddedSuccessfully".text()
             StartMethodStatus.START_ALREADY_ADDED -> "StartAlreadyAdded".text()
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> "ApplicationClassNotFound".text()
+            StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> "ApplicationClassNotOnCreate".text()
         }
 
         Messages.showMessageDialog(project, message, "Embrace", Messages.getInformationIcon())

@@ -12,7 +12,6 @@ import com.intellij.psi.search.GlobalSearchScope
 import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import org.jetbrains.android.facet.AndroidFacet
-import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.swing.SwingWorker
@@ -93,13 +92,13 @@ internal class StartMethodModifier(private val project: Project) {
 
                 var isEmbraceAdded = false
                 var onCreateIndex = -1
-                lines.forEachIndexed { index, s ->
-                    if (s.contains(embraceLine)) {
+                lines.forEachIndexed { index, line ->
+                    if (line.contains(embraceLine)) {
                         isEmbraceAdded = true
                         return@forEachIndexed
                     }
 
-                    if (s.contains("super.onCreate")) {
+                    if (line.contains("super.onCreate")) {
                         onCreateIndex = index
                         return@forEachIndexed
                     }
@@ -110,13 +109,12 @@ internal class StartMethodModifier(private val project: Project) {
                     if (onCreateIndex > 0) {
                         val blankSpaces = lines[onCreateIndex].substringBefore("super.")
                         lines.add(onCreateIndex + 1, "$blankSpaces$embraceLine")
+                        Files.write(kotlinClassFile, lines)
+                        psiClass!!.containingFile.virtualFile.refresh(false, true)
+                        return StartMethodStatus.START_ADDED_SUCCESSFULLY
                     } else {
-                        // addOnCreate
+                        return StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE
                     }
-
-                    Files.write(kotlinClassFile, lines)
-                    psiClass!!.containingFile.virtualFile.refresh(false, true)
-                    return StartMethodStatus.START_ADDED_SUCCESSFULLY
                 } else {
                     return StartMethodStatus.START_ALREADY_ADDED
                 }
@@ -138,6 +136,24 @@ internal class StartMethodModifier(private val project: Project) {
                 "Embrace.getInstance().start(this);"
             } else {
                 "Embrace.getInstance().start(this)"
+            }
+        }
+
+
+        private fun getCompleteOnCreateMethod(psiClass: PsiClass): String {
+            val extension = psiClass.containingFile?.virtualFile?.extension
+
+            return if (extension == "java") {
+                "    @Override\n" +
+                        "    public void onCreate() {\n" +
+                        "        super.onCreate();\n" +
+                        "        Embrace.getInstance().start(this);\n" +
+                        "    }"
+            } else {
+                "    override fun onCreate() {\n" +
+                        "        super.onCreate()\n" +
+                        "        Embrace.getInstance().start(this)\n" +
+                        "    }"
             }
         }
     }
