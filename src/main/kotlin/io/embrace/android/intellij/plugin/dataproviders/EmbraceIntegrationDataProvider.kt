@@ -1,37 +1,56 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiElementFactory
-import com.intellij.psi.search.GlobalSearchScope
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
-import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
 
 
 internal class EmbraceIntegrationDataProvider(
-    private val repo: EmbracePluginRepository,
-    private val project: Project
+    private val project: Project,
+    private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
+
     private val lastEmbraceVersion = repo.getLastSDKVersion()
+
+    private lateinit var appId: String
+
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
             BuildGradleFilesModifier(project, lastEmbraceVersion)
         }
     }
 
+    companion object {
+        private const val APP_ID_LENGTH = 5
+        private const val TOKEN_LENGTH = 32
+    }
+
     fun openDashboard() {
         try {
-            Desktop.getDesktop().browse(URI(repo.embraceDashboardUrl))
+            Desktop.getDesktop().browse(URI(EmbracePluginRepository.embraceDashboardUrl))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
+    fun openFinishIntegrationDashboard() {
+        try {
+
+            val url = if (::appId.isInitialized) {
+                EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", appId)
+            } else {
+                EmbracePluginRepository.embraceDashboardUrl
+            }
+
+            Desktop.getDesktop().browse(URI(url))
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
@@ -75,33 +94,7 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun addEmbraceStartMethod(callback: StartMethodCallback) {
-        val applicationClass = repo.getApplicationClass(project)
-
-        applicationClass?.let {
-            val result = Messages.showYesNoDialog(
-                project,
-                "Application Class detected. Would you like to proceed to add Embrace.Start sentence?",
-                "Confirmation",
-                Messages.getQuestionIcon()
-            )
-
-            if (result == Messages.YES) {
-                val psiFacade = JavaPsiFacade.getInstance(project)
-                val psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
-                psiClass?.let {
-                    val statement =
-                        PsiElementFactory.getInstance(project).createStatementFromText("newLineOfCode();", null)
-                    psiClass.add(statement)
-                    psiClass.containingFile.virtualFile.refresh(false, false)
-                }
-
-
-//                EmbracePluginRepository.ManifestManager(applicationClass, project, psiClass, callback).execute()
-            }
-        } ?: Messages.showInfoMessage(
-            "There is no application class in your project, please add Embrace.Start manually",
-            "Info"
-        )
+        repo.addStartToApplicationClass(callback)
     }
 
     internal fun createEmbraceFile(
@@ -110,6 +103,8 @@ internal class EmbraceIntegrationDataProvider(
         callback: ConfigFileCreationCallback,
         shouldOverrideFile: Boolean? = false
     ) {
+        this.appId = appId
+
         project.basePath?.let { path ->
             val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(path)
 
@@ -136,9 +131,5 @@ internal class EmbraceIntegrationDataProvider(
     fun validateConfigFields(appId: String, token: String) =
         appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
 
-    companion object {
-        private const val APP_ID_LENGTH = 5
-        private const val TOKEN_LENGTH = 32
-    }
 
 }

@@ -3,6 +3,7 @@ package io.embrace.android.intellij.plugin.ui.forms
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
@@ -46,6 +47,7 @@ internal class EmbraceIntegrationForm(
     private val btnGradleFiles = EmbButton("btnModifyGradleFiles".text()) {
         dataProvider.getGradleContentToModify(this)
     }
+
 
     init {
         initMainPanel()
@@ -151,7 +153,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnOpenDashboard".text()) {
-            dataProvider.openDashboard()
+            dataProvider.openFinishIntegrationDashboard()
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
@@ -270,18 +272,35 @@ internal class EmbraceIntegrationForm(
         )
     }
 
-    override fun onStartAdded() {
-        Messages.showInfoMessage(
-           "start added",
-            "Info"
-        )
+    override fun onStartStatusUpdated(status: StartMethodStatus) {
+        when (status) {
+            StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
+                Messages.showInfoMessage(
+                    "StartAddedSuccessfully".text(),
+                    "Info"
+                )
+            }
+
+            StartMethodStatus.START_ALREADY_ADDED -> {
+                Messages.showWarningDialog(
+                    "StartAlreadyAdded".text(),
+                    ""
+                )
+            }
+            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
+                Messages.showErrorDialog(
+                    "ApplicationClassNotFound".text(),
+                    ""
+                )
+            }
+            StartMethodStatus.ERROR -> {
+                Messages.showErrorDialog(
+                    "StartMethodError".text(),
+                    ""
+                )
+            }
+        }
     }
 
-    override fun onStartError(error: String) {
-        Messages.showErrorDialog(
-            error,
-            "Error"
-        )
-    }
 
 }

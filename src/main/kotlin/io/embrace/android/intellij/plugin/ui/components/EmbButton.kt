@@ -5,7 +5,7 @@ import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.SwingConstants
 
-class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
+public class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
 
 
     init {

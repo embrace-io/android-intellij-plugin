@@ -1,23 +1,33 @@
 package io.embrace.android.intellij.plugin.repository
 
-import com.android.tools.build.jetifier.core.utils.Log
 import com.android.tools.idea.projectsystem.getManifestFiles
 import com.android.utils.XmlUtils
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiClass
+import com.intellij.psi.search.GlobalSearchScope
+import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import org.jetbrains.android.facet.AndroidFacet
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import javax.swing.SwingWorker
 
-class StartMethodModifier(private val project: Project) {
+internal class StartMethodModifier(private val project: Project) {
 
+    fun addStartToApplicationClass(callback: StartMethodCallback) {
+        val applicationClass = getApplicationClass()
 
+        if (applicationClass != null) {
+            ManifestManager(applicationClass, project, callback).execute()
+        } else {
+            callback.onStartStatusUpdated(StartMethodStatus.APPLICATION_CLASS_NOT_FOUND)
+        }
+    }
 
-
-    fun getApplicationClass(): String? {
+    private fun getApplicationClass(): String? {
         val file = VirtualFileManager.getInstance()
             .findFileByUrl(EmbracePluginRepository.FILE_ROOT + project.basePath + EmbracePluginRepository.MAIN_PATH)
 
@@ -29,10 +39,10 @@ class StartMethodModifier(private val project: Project) {
 
                 val manifestXml = XmlUtils.parseDocument(appInfo?.inputStream?.reader(), true)
                 val applicationNode = manifestXml.documentElement.getElementsByTagName("application").item(0)
+                val packageName = manifestXml.documentElement.getAttribute("package")
 
-                return applicationNode?.attributes?.getNamedItem("android:name")?.nodeValue
+                return packageName + applicationNode?.attributes?.getNamedItem("android:name")?.nodeValue
             } catch (e: Exception) {
-                println("An error occurred reading build.gradle file.")
                 e.printStackTrace()
             }
         }
@@ -40,4 +50,100 @@ class StartMethodModifier(private val project: Project) {
         return null
     }
 
+    /**
+     * TODO :
+     * Si no encuentra la application, mostrar popup de que no
+     * Si la encuentra, que se fije si tiene el onCreate. Sino que agregue todo el metodo. Hay otros onCreate?
+     * Verificar si ya tiene el import de embrace
+     * Si por algo no puede modificar, que abra la clase y muestre error.
+     */
+    internal class ManifestManager(
+        private val applicationClass: String,
+        private val project: Project?,
+        private val callback: StartMethodCallback
+    ) : SwingWorker<StartMethodStatus, Void>() {
+
+
+        override fun doInBackground(): StartMethodStatus {
+
+            if (project == null) {
+                return StartMethodStatus.ERROR
+            }
+            val psiFacade = JavaPsiFacade.getInstance(project)
+            val psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
+                ?: return StartMethodStatus.ERROR
+
+
+            val kotlinClassPath = psiClass.containingFile.virtualFile.path
+            val kotlinClassFile = Paths.get(kotlinClassPath)
+
+            if (Files.exists(kotlinClassFile)) {
+                val lines = Files.readAllLines(kotlinClassFile)
+                val embraceLine = getStartMethodLine(psiClass)
+
+                var isEmbraceAdded = false
+                var onCreateIndex = -1
+                lines.forEachIndexed { index, s ->
+                    if (s.contains(embraceLine)) {
+                        isEmbraceAdded = true
+                        return@forEachIndexed
+                    }
+
+                    if (s.contains("super.onCreate")) {
+                        onCreateIndex = index
+                        return@forEachIndexed
+                    }
+                }
+
+
+                if (!isEmbraceAdded) {
+
+                    if (onCreateIndex > 0) {
+                        val blankSpaces = lines[onCreateIndex].substringBefore("super.")
+                        lines.add(onCreateIndex + 1, "$blankSpaces$embraceLine")
+                    } else {
+                        // addOnCreate
+                    }
+
+                    Files.write(kotlinClassFile, lines)
+
+                    return StartMethodStatus.START_ADDED_SUCCESSFULLY
+                } else {
+                    return StartMethodStatus.START_ALREADY_ADDED
+                }
+
+
+            } else {
+                println("Kotlin class file not found: $kotlinClassPath")
+                return StartMethodStatus.ERROR
+            }
+
+//            WriteCommandAction.runWriteCommandAction(project) {
+//                val virtualFile = psiClass.containingFile.virtualFile
+//                if (virtualFile != null && virtualFile.isWritable) {
+//                    val fileContent = virtualFile.contentsToByteArray().toString(Charsets.UTF_8)
+//                    val modifiedContent = fileContent.replace("super.onCreate()", getStartMethodLine(psiClass))
+//                    virtualFile.setBinaryContent(modifiedContent.toByteArray(Charsets.UTF_8))
+//                    virtualFile.refresh(false, true)
+//
+//                }
+//            }
+
+        }
+
+        override fun done() {
+            val result = get() as StartMethodStatus
+            callback.onStartStatusUpdated(result)
+        }
+
+        private fun getStartMethodLine(psiClass: PsiClass): String {
+            val extension = psiClass.containingFile?.virtualFile?.extension
+
+            return if (extension == "java") {
+                "Embrace.getInstance().start(this);"
+            } else {
+                "Embrace.getInstance().start(this)"
+            }
+        }
+    }
 }
