@@ -138,23 +138,5 @@ internal class StartMethodModifier(private val project: Project) {
                 "Embrace.getInstance().start(this)"
             }
         }
-
-
-        private fun getCompleteOnCreateMethod(psiClass: PsiClass): String {
-            val extension = psiClass.containingFile?.virtualFile?.extension
-
-            return if (extension == "java") {
-                "    @Override\n" +
-                        "    public void onCreate() {\n" +
-                        "        super.onCreate();\n" +
-                        "        Embrace.getInstance().start(this);\n" +
-                        "    }"
-            } else {
-                "    override fun onCreate() {\n" +
-                        "        super.onCreate()\n" +
-                        "        Embrace.getInstance().start(this)\n" +
-                        "    }"
-            }
-        }
     }
 }

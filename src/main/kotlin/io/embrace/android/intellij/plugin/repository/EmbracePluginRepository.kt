@@ -3,6 +3,7 @@ package io.embrace.android.intellij.plugin.repository
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
@@ -64,4 +65,10 @@ internal class EmbracePluginRepository(
 
     fun addStartToApplicationClass(callback: StartMethodCallback) =
         startMethodModifier.addStartToApplicationClass(callback)
+
+
+    fun getProjectName(): String {
+        val currentProject = ProjectManager.getInstance().openProjects[0]
+        return currentProject.name
+    }
 }

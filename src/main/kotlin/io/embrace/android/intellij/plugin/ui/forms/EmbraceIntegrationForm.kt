@@ -5,6 +5,7 @@ import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
@@ -36,7 +37,8 @@ internal class EmbraceIntegrationForm(
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
     SwazzlerPluginAddedCallback,
-    StartMethodCallback {
+    StartMethodCallback,
+    OnboardConnectionCallback {
 
     internal val panel = JPanel()
     private val scrollPane = JBScrollPane()
@@ -87,9 +89,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
-            dataProvider.startServer()
-            dataProvider.openDashboard()
-            dataProvider.openBrowserAtCallback()
+            dataProvider.connectToEmbrace(this)
         })
     }
 
@@ -287,4 +287,16 @@ internal class EmbraceIntegrationForm(
         Messages.showMessageDialog(project, message, "Embrace", Messages.getInformationIcon())
     }
 
+
+    override fun onOnboardConnected(appId: String, token: String) {
+        etAppId.text = appId
+        etToken.text = token
+    }
+
+    override fun onOnboardConnectedError(error: String) {
+        Messages.showInfoMessage(
+            error,
+            "Error"
+        )
+    }
 }
