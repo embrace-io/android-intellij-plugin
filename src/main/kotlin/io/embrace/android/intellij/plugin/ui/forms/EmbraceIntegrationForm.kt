@@ -14,6 +14,7 @@ import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
 import java.awt.Rectangle
 import javax.swing.BorderFactory
@@ -275,34 +276,14 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onStartStatusUpdated(status: StartMethodStatus) {
-        when (status) {
-            StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
-                Messages.showInfoMessage(
-                    "StartAddedSuccessfully".text(),
-                    "Info"
-                )
-            }
-
-            StartMethodStatus.START_ALREADY_ADDED -> {
-                Messages.showWarningDialog(
-                    "StartAlreadyAdded".text(),
-                    ""
-                )
-            }
-            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
-                Messages.showErrorDialog(
-                    "ApplicationClassNotFound".text(),
-                    ""
-                )
-            }
-            StartMethodStatus.ERROR -> {
-                Messages.showErrorDialog(
-                    "StartMethodError".text(),
-                    ""
-                )
-            }
+        val message = when (status) {
+            StartMethodStatus.ERROR -> "StartMethodError".text()
+            StartMethodStatus.START_ADDED_SUCCESSFULLY -> "StartAddedSuccessfully".text()
+            StartMethodStatus.START_ALREADY_ADDED -> "StartAlreadyAdded".text()
+            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> "ApplicationClassNotFound".text()
         }
-    }
 
+        Messages.showMessageDialog(project, message, "Embrace", Messages.getInformationIcon())
+    }
 
 }
