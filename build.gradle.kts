@@ -45,18 +45,6 @@ changelog {
     repositoryUrl.set(properties("pluginRepositoryUrl"))
 }
 
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
-    implementation("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.8.0")
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.8.0")
-
-
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("compiler-embeddable", "1.3.61"))
-    implementation(kotlin("gradle-plugin", "1.3.61"))
-}
-
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion")
