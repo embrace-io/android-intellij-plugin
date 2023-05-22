@@ -2,6 +2,7 @@ package io.embrace.android.intellij.plugin.repository
 
 import com.android.tools.idea.projectsystem.getManifestFiles
 import com.android.utils.XmlUtils
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -11,6 +12,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import org.jetbrains.android.facet.AndroidFacet
+import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.swing.SwingWorker
@@ -69,17 +71,25 @@ internal class StartMethodModifier(private val project: Project) {
             if (project == null) {
                 return StartMethodStatus.ERROR
             }
-            val psiFacade = JavaPsiFacade.getInstance(project)
-            val psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
-                ?: return StartMethodStatus.ERROR
 
+            var psiClass: PsiClass? = null
 
-            val kotlinClassPath = psiClass.containingFile.virtualFile.path
+            ApplicationManager.getApplication().runReadAction {
+                val psiFacade = JavaPsiFacade.getInstance(project)
+                psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
+            }
+
+            if (psiClass == null) {
+                println("Kotlin class not found: $applicationClass")
+                return StartMethodStatus.ERROR
+            }
+
+            val kotlinClassPath = psiClass!!.containingFile.virtualFile.path
             val kotlinClassFile = Paths.get(kotlinClassPath)
 
             if (Files.exists(kotlinClassFile)) {
                 val lines = Files.readAllLines(kotlinClassFile)
-                val embraceLine = getStartMethodLine(psiClass)
+                val embraceLine = getStartMethodLine(psiClass!!)
 
                 var isEmbraceAdded = false
                 var onCreateIndex = -1
@@ -97,7 +107,6 @@ internal class StartMethodModifier(private val project: Project) {
 
 
                 if (!isEmbraceAdded) {
-
                     if (onCreateIndex > 0) {
                         val blankSpaces = lines[onCreateIndex].substringBefore("super.")
                         lines.add(onCreateIndex + 1, "$blankSpaces$embraceLine")
@@ -106,29 +115,15 @@ internal class StartMethodModifier(private val project: Project) {
                     }
 
                     Files.write(kotlinClassFile, lines)
-
+                    psiClass!!.containingFile.virtualFile.refresh(false, true)
                     return StartMethodStatus.START_ADDED_SUCCESSFULLY
                 } else {
                     return StartMethodStatus.START_ALREADY_ADDED
                 }
-
-
             } else {
                 println("Kotlin class file not found: $kotlinClassPath")
                 return StartMethodStatus.ERROR
             }
-
-//            WriteCommandAction.runWriteCommandAction(project) {
-//                val virtualFile = psiClass.containingFile.virtualFile
-//                if (virtualFile != null && virtualFile.isWritable) {
-//                    val fileContent = virtualFile.contentsToByteArray().toString(Charsets.UTF_8)
-//                    val modifiedContent = fileContent.replace("super.onCreate()", getStartMethodLine(psiClass))
-//                    virtualFile.setBinaryContent(modifiedContent.toByteArray(Charsets.UTF_8))
-//                    virtualFile.refresh(false, true)
-//
-//                }
-//            }
-
         }
 
         override fun done() {
