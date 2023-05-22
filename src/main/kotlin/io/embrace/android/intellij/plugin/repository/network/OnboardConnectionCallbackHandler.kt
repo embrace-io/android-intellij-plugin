@@ -4,17 +4,14 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
-import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
+import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import org.apache.http.HttpStatus
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
 
-internal class CallbackHandler(
-    private val etAppId: EmbEditableText,
-    private val etToken: EmbEditableText
-    ) : HttpHandler {
+internal class OnboardConnectionCallbackHandler(private val callback: OnboardConnectionCallback) : HttpHandler {
     private val gson by lazy { Gson() }
 
     @Throws(IOException::class)
@@ -32,8 +29,14 @@ internal class CallbackHandler(
     }
 
     private fun updateUIElements(requestBody: EmbraceCallbackRequestBody) {
-        etAppId.text = requestBody.appId
-        etToken.text = requestBody.token
+        if (requestBody.appId == null || requestBody.appId.length != APP_ID_LENGTH) {
+            callback.onOnboardConnectedError("Wrong AppId format.")
+        }
+        else if (requestBody.token == null || requestBody.token.length != TOKEN_LENGTH) {
+            callback.onOnboardConnectedError("Wrong Token format.")
+        } else {
+            callback.onOnboardConnected(requestBody.appId, requestBody.token)
+        }
     }
 
     private fun writeResponseBody(exchange: HttpExchange) {
@@ -48,9 +51,11 @@ internal class CallbackHandler(
 
 internal data class EmbraceCallbackRequestBody(
     @SerializedName("app_id")
-    val appId: String,
+    val appId: String?,
     @SerializedName("token")
-    val token: String
+    val token: String?
 )
 
 private const val CALLBACK_RESPONSE_HTML_PATH = "/html/callback_response.html"
+private const val APP_ID_LENGTH = 5
+private const val TOKEN_LENGTH = 32

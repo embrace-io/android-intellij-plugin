@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
@@ -32,7 +33,8 @@ internal class EmbraceIntegrationForm(
     private val dataProvider: EmbraceIntegrationDataProvider
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
-    SwazzlerPluginAddedCallback {
+    SwazzlerPluginAddedCallback,
+    OnboardConnectionCallback {
 
     internal val panel = JPanel()
     private val scrollPane = JBScrollPane()
@@ -81,7 +83,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
-            dataProvider.connectToEmbrace(etAppId, etToken)
+            dataProvider.connectToEmbrace(this)
         })
     }
 
@@ -253,4 +255,15 @@ internal class EmbraceIntegrationForm(
         )
     }
 
+    override fun onOnboardConnected(appId: String, token: String) {
+        etAppId.text = appId
+        etToken.text = token
+    }
+
+    override fun onOnboardConnectedError(error: String) {
+        Messages.showInfoMessage(
+            error,
+            "Error"
+        )
+    }
 }

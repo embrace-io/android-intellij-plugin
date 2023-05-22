@@ -4,12 +4,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
-import io.embrace.android.intellij.plugin.repository.network.CallbackHandler
-import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
+import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
 import java.io.IOException
@@ -29,8 +29,8 @@ internal class EmbraceIntegrationDataProvider(
         }
     }
 
-    fun connectToEmbrace(etAppId: EmbEditableText, etToken: EmbEditableText) {
-        startServer(etAppId, etToken)
+    fun connectToEmbrace(callback: OnboardConnectionCallback) {
+        startServer(callback)
         openDashboard()
     }
 
@@ -120,9 +120,9 @@ internal class EmbraceIntegrationDataProvider(
     fun validateConfigFields(appId: String, token: String) =
         appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
 
-    private fun startServer(etAppId: EmbEditableText, etToken: EmbEditableText) {
+    private fun startServer(callback: OnboardConnectionCallback) {
         val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
-        server.createContext("/", CallbackHandler(etAppId, etToken))
+        server.createContext("/", OnboardConnectionCallbackHandler(callback))
         server.executor = null
         server.start()
         callbackPort = server.address.port
