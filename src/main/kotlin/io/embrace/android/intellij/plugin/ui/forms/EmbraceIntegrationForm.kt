@@ -3,9 +3,11 @@ package io.embrace.android.intellij.plugin.ui.forms
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
@@ -13,6 +15,7 @@ import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
 import java.awt.Rectangle
 import javax.swing.BorderFactory
@@ -34,6 +37,7 @@ internal class EmbraceIntegrationForm(
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
     SwazzlerPluginAddedCallback,
+    StartMethodCallback,
     OnboardConnectionCallback {
 
     internal val panel = JPanel()
@@ -47,6 +51,7 @@ internal class EmbraceIntegrationForm(
         dataProvider.getGradleContentToModify(this)
     }
 
+
     init {
         initMainPanel()
 
@@ -55,6 +60,7 @@ internal class EmbraceIntegrationForm(
         initConfigFileStep()
         initBuildConfigFileStep()
         initStartEmbraceStep()
+        initEmbraceVerificationStep()
 
         scrollPane.viewport.view = panel
         scrollPane.scrollRectToVisible(Rectangle(0, 0, 1, 1))
@@ -140,8 +146,22 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnAddEmbraceStart".text()) {
-            dataProvider.addEmbraceStartMethod()
+            dataProvider.addEmbraceStartMethod(this)
         })
+    }
+
+    private fun initEmbraceVerificationStep() {
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbLabel("step5Title".text(), TextStyle.HEADLINE_2))
+        panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbButton("btnOpenDashboard".text()) {
+            dataProvider.openFinishIntegrationDashboard()
+        })
+
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(EmbLabel("contactInfo".text(), TextStyle.BODY))
     }
 
     override fun onConfigSuccess() {
@@ -184,7 +204,7 @@ internal class EmbraceIntegrationForm(
 
 
     override fun onGradleContentFound(newLine: String, contentToModify: String) {
-        val options = arrayOf<Any>("Replace", "Cancel")
+        val options = arrayOf<Any>("Add", "Cancel")
 
         val message = contentToModify.replace(newLine, "*** $newLine *** ")
         val completeMessage = "Confirm the following changes to your build.gradle file:\n\n $message"
@@ -213,7 +233,7 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun showAddSwazzlerPluginDialog(projectFileWasModified: Boolean) {
-        val options = arrayOf<Any>("Replace", "Cancel")
+        val options = arrayOf<Any>("Add", "Cancel")
 
         val message = if (projectFileWasModified) {
             "swazzlerFileSuccessfullyModified".text() + "\n"
@@ -249,11 +269,24 @@ internal class EmbraceIntegrationForm(
 
     override fun onSwazzlerPluginError(error: String) {
         btnGradleFiles.isEnabled = true
-        Messages.showInfoMessage(
+        Messages.showErrorDialog(
             error,
             "Error"
         )
     }
+
+    override fun onStartStatusUpdated(status: StartMethodStatus) {
+        val message = when (status) {
+            StartMethodStatus.ERROR -> "StartMethodError".text()
+            StartMethodStatus.START_ADDED_SUCCESSFULLY -> "StartAddedSuccessfully".text()
+            StartMethodStatus.START_ALREADY_ADDED -> "StartAlreadyAdded".text()
+            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> "ApplicationClassNotFound".text()
+            StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> "ApplicationClassNotOnCreate".text()
+        }
+
+        Messages.showMessageDialog(project, message, "Embrace", Messages.getInformationIcon())
+    }
+
 
     override fun onOnboardConnected(appId: String, token: String) {
         etAppId.text = appId

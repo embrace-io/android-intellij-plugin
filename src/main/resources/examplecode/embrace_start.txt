@@ -4,6 +4,5 @@ class MyApplication : Application() {
         override fun onCreate() {
             super.onCreate()
             Embrace.getInstance().start(this)
-            EmbraceSamples.verifyIntegration()
         }
 }

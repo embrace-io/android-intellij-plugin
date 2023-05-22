@@ -1,14 +1,14 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
-import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
@@ -18,14 +18,36 @@ import java.net.URI
 
 
 internal class EmbraceIntegrationDataProvider(
-    private val repo: EmbracePluginRepository,
-    private val project: Project
+    private val project: Project,
+    private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
+
+    private lateinit var appId: String
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
             BuildGradleFilesModifier(project, lastEmbraceVersion)
+        }
+    }
+
+    companion object {
+        private const val APP_ID_LENGTH = 5
+        private const val TOKEN_LENGTH = 32
+    }
+
+    fun openFinishIntegrationDashboard() {
+        try {
+
+            val url = if (::appId.isInitialized) {
+                EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", appId)
+            } else {
+                EmbracePluginRepository.embraceDashboardUrl
+            }
+
+            Desktop.getDesktop().browse(URI(url))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 
@@ -71,24 +93,8 @@ internal class EmbraceIntegrationDataProvider(
         buildGradleFilesModifier.value?.addSwazzlerPlugin(callback)
     }
 
-    fun addEmbraceStartMethod() {
-        val applicationClass = repo.getApplicationClass(project)
-
-        applicationClass?.let {
-            val result = Messages.showYesNoDialog(
-                project,
-                "Application Class detected. Would you like to proceed to add Embrace.Start sentence?",
-                "Confirmation",
-                Messages.getQuestionIcon()
-            )
-
-            if (result == Messages.YES) {
-                repo.addEmbraceStartToApplicationClass(applicationClass, project)
-            }
-        } ?: Messages.showInfoMessage(
-            "There is no application class in your project, please add Embrace.Start manually",
-            "Info"
-        )
+    fun addEmbraceStartMethod(callback: StartMethodCallback) {
+        repo.addStartToApplicationClass(callback)
     }
 
     internal fun createEmbraceFile(
@@ -97,6 +103,8 @@ internal class EmbraceIntegrationDataProvider(
         callback: ConfigFileCreationCallback,
         shouldOverrideFile: Boolean? = false
     ) {
+        this.appId = appId
+
         project.basePath?.let { path ->
             val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(path)
 
@@ -143,12 +151,9 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun buildOnboardDashURL(): String {
         val projectName = repo.getProjectName()
-        return repo.embraceDashboardUrl + "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+        return EmbracePluginRepository.embraceDashboardUrl +
+                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
     }
 
-    companion object {
-        private const val APP_ID_LENGTH = 5
-        private const val TOKEN_LENGTH = 32
-    }
 
 }

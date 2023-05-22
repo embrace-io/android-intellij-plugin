@@ -1,3 +1,6 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
+import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
+import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 
