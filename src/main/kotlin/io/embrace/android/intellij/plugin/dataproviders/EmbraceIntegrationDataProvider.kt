@@ -4,11 +4,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
-import io.embrace.android.intellij.plugin.repository.network.CallbackHandler
+import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
 import java.io.IOException
@@ -20,6 +21,7 @@ internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository,
     private val project: Project
 ) {
+    private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
@@ -27,29 +29,9 @@ internal class EmbraceIntegrationDataProvider(
         }
     }
 
-    fun startServer() {
-        val server: HttpServer = HttpServer.create(InetSocketAddress(8000), 0)
-        server.createContext("/callback", CallbackHandler())
-        server.executor = null
-        server.start()
-    }
-
-    // Not Needed: The Onboard Dashboard will open this URL once it generates the APP_ID and TOKEN.
-    // It's here just for demo purposes.
-    fun openBrowserAtCallback() {
-        try {
-            Desktop.getDesktop().browse(URI("http://localhost:8000/callback"))
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-    }
-
-    fun openDashboard() {
-        try {
-            Desktop.getDesktop().browse(URI(repo.embraceDashboardUrl))
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
+    fun connectToEmbrace(callback: OnboardConnectionCallback) {
+        startServer(callback)
+        openDashboard()
     }
 
     fun getSdkExampleCode(): String {
@@ -135,11 +117,34 @@ internal class EmbraceIntegrationDataProvider(
         } ?: callback.onConfigError("cannot get the path")
     }
 
+    fun validateConfigFields(appId: String, token: String) =
+        appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
+
+    private fun startServer(callback: OnboardConnectionCallback) {
+        val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
+        server.createContext("/", OnboardConnectionCallbackHandler(callback))
+        server.executor = null
+        server.start()
+        callbackPort = server.address.port
+        println("Server started on port $callbackPort")
+    }
+
+    private fun openDashboard() {
+        try {
+            val url = buildOnboardDashURL()
+            Desktop.getDesktop().browse(URI(url))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
     private fun getResourceAsText(path: String): String? =
         object {}.javaClass.getResource(path)?.readText()
 
-    fun validateConfigFields(appId: String, token: String) =
-        appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
+    private fun buildOnboardDashURL(): String {
+        val projectName = repo.getProjectName()
+        return repo.embraceDashboardUrl + "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+    }
 
     companion object {
         private const val APP_ID_LENGTH = 5

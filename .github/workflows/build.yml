@@ -19,7 +19,7 @@ on:
   pull_request:
   # Trigger the workflow manually
   workflow_dispatch:
-
+  
 jobs:
 
   # Run Gradle Wrapper Validation Action to verify the wrapper's checksum
