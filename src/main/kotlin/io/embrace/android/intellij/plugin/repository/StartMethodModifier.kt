@@ -50,14 +50,7 @@ internal class StartMethodModifier(private val project: Project) {
 
         return null
     }
-
-    /**
-     * TODO :
-     * Si no encuentra la application, mostrar popup de que no
-     * Si la encuentra, que se fije si tiene el onCreate. Sino que agregue todo el metodo. Hay otros onCreate?
-     * Verificar si ya tiene el import de embrace
-     * Si por algo no puede modificar, que abra la clase y muestre error.
-     */
+    
     internal class ManifestManager(
         private val applicationClass: String,
         private val project: Project?,
