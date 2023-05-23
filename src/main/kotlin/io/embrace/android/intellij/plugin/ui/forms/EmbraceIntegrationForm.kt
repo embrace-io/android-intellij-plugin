@@ -44,6 +44,7 @@ internal class EmbraceIntegrationForm(
     private val scrollPane = JBScrollPane()
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#16c74e")
+    private val connectToEmbraceResultLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
@@ -91,6 +92,8 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbButton("btnConnect".text()) {
             dataProvider.connectToEmbrace(this)
         })
+        connectToEmbraceResultLabel.isVisible = false
+        panel.add(connectToEmbraceResultLabel)
     }
 
     private fun initConfigFileStep() {
@@ -291,12 +294,14 @@ internal class EmbraceIntegrationForm(
     override fun onOnboardConnected(appId: String, token: String) {
         etAppId.text = appId
         etToken.text = token
+        connectToEmbraceResultLabel.text = "connectedToEmbraceSuccessfully".text()
+        connectToEmbraceResultLabel.foreground = successColor
+        connectToEmbraceResultLabel.isVisible = true
     }
 
     override fun onOnboardConnectedError(error: String) {
-        Messages.showInfoMessage(
-            error,
-            "Error"
-        )
+        connectToEmbraceResultLabel.text = "connectedToEmbraceError".text()
+        connectToEmbraceResultLabel.foreground = errorColor
+        connectToEmbraceResultLabel.isVisible = true
     }
 }
