@@ -81,27 +81,45 @@ internal class StartMethodModifier(private val project: Project) {
 
             if (Files.exists(kotlinClassFile)) {
                 val lines = Files.readAllLines(kotlinClassFile)
-                val embraceLine = getStartMethodLine(psiClass!!)
+                val embraceImportLine = getEmbraceImportLine(psiClass!!)
+                val embraceStartLine = getStartMethodLine(psiClass!!)
 
-                var isEmbraceAdded = false
-                var onCreateIndex = -1
+                var isEmbraceImportAdded = false
+                var isEmbraceStartAdded = false
+                var embraceImportLineIndex = -1
+                var embraceStartLineIndex = -1
                 lines.forEachIndexed { index, line ->
-                    if (line.contains(embraceLine)) {
-                        isEmbraceAdded = true
+                    if (line.contains(embraceImportLine)) {
+                        isEmbraceImportAdded = true
+                        return@forEachIndexed
+                    }
+
+                    if (line.contains(embraceStartLine)) {
+                        isEmbraceStartAdded = true
+                        return@forEachIndexed
+                    }
+
+                    if (line.startsWith("import")
+                        && index < lines.size - 1
+                        && !lines[index + 1].startsWith("import")) {
+                        embraceImportLineIndex = index + 1
                         return@forEachIndexed
                     }
 
                     if (line.contains("super.onCreate")) {
-                        onCreateIndex = index
+                        embraceStartLineIndex = index + 1
                         return@forEachIndexed
                     }
                 }
 
-
-                if (!isEmbraceAdded) {
-                    if (onCreateIndex > 0) {
-                        val blankSpaces = lines[onCreateIndex].substringBefore("super.")
-                        lines.add(onCreateIndex + 1, "$blankSpaces$embraceLine")
+                if (!isEmbraceStartAdded) {
+                    if (embraceStartLineIndex > 0) {
+                        if (!isEmbraceImportAdded && embraceImportLineIndex > 0) {
+                            lines.add(embraceImportLineIndex, embraceImportLine)
+                            embraceStartLineIndex++
+                        }
+                        val blankSpaces = lines[embraceStartLineIndex-1].substringBefore("super.")
+                        lines.add(embraceStartLineIndex, "$blankSpaces$embraceStartLine")
                         Files.write(kotlinClassFile, lines)
                         psiClass!!.containingFile.virtualFile.refresh(false, true)
                         return StartMethodStatus.START_ADDED_SUCCESSFULLY
@@ -122,14 +140,27 @@ internal class StartMethodModifier(private val project: Project) {
             callback.onStartStatusUpdated(result)
         }
 
+        private fun getEmbraceImportLine(psiClass: PsiClass): String {
+            val extension = psiClass.containingFile?.virtualFile?.extension
+
+            return if (extension == "java") {
+                "$EMBRACE_IMPORT_LINE;"
+            } else {
+                EMBRACE_IMPORT_LINE
+            }
+        }
+
         private fun getStartMethodLine(psiClass: PsiClass): String {
             val extension = psiClass.containingFile?.virtualFile?.extension
 
             return if (extension == "java") {
-                "Embrace.getInstance().start(this);"
+                "$EMBRACE_START_LINE;"
             } else {
-                "Embrace.getInstance().start(this)"
+                EMBRACE_START_LINE
             }
         }
     }
 }
+
+private const val EMBRACE_IMPORT_LINE = "import io.embrace.android.embracesdk.Embrace"
+private const val EMBRACE_START_LINE = "Embrace.getInstance().start(this)"
