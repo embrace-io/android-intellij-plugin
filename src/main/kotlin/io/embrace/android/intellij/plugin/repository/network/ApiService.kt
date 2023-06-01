@@ -8,7 +8,7 @@ internal class ApiService {
 
     companion object {
         const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
-        const val EMBRACE_DASHBOARD_URL: String = "https://dash.stg.emb-eng.com/onboard/project"//"https://dash.embrace.io/onboard/project"
+        const val EMBRACE_DASHBOARD_URL: String = "https://dash.stg.emb-eng.com/onboard/project"
         const val EMBRACE_DASHBOARD_COMPLETE_INTEGRATION: String = "https://dash.stg.emb-eng.com/onboard/build-and-run/{appId}"
     }
 
