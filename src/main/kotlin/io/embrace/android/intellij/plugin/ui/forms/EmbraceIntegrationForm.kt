@@ -14,6 +14,8 @@ import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.pr
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Rectangle
+import java.awt.event.HierarchyEvent
+import java.awt.event.HierarchyListener
 import javax.swing.*
 
 
@@ -50,20 +52,19 @@ internal class EmbraceIntegrationForm(
         initStartEmbraceStep()
         initEmbraceVerificationStep()
 
-        // Set the scroll pane to always scroll to the top
-        val verticalScrollBar = scrollPane.verticalScrollBar
-        verticalScrollBar.addAdjustmentListener {
-            verticalScrollBar.value = verticalScrollBar.minimum
-        }
 
-        val horizontalScrollBar = scrollPane.horizontalScrollBar
-        horizontalScrollBar.addAdjustmentListener {
-            horizontalScrollBar.value = horizontalScrollBar.minimum
-        }
-
-        scrollPane.scrollRectToVisible(Rectangle(0, 0, 1, 1))
-//        scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
-
+        // Add HierarchyListener to detect when the view is added to the scroll pane, scroll top and remove it. 
+        scrollPane.addHierarchyListener(object : HierarchyListener {
+            override fun hierarchyChanged(e: HierarchyEvent) {
+                if ((e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L && scrollPane.isShowing) {
+                    // Scroll to the top
+                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
+                    scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
+                    // Remove the HierarchyListener
+                    scrollPane.removeHierarchyListener(this)
+                }
+            }
+        })
     }
 
     fun getContent(): JBScrollPane {
