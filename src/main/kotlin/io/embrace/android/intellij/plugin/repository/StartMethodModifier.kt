@@ -39,10 +39,12 @@ internal class StartMethodModifier(private val project: Project) {
                 val appInfo = facet?.getManifestFiles()?.get(0)
 
                 val manifestXml = XmlUtils.parseDocument(appInfo?.inputStream?.reader(), true)
-                val applicationNode = manifestXml.documentElement.getElementsByTagName("application").item(0)
-                val packageName = manifestXml.documentElement.getAttribute("package")
-
-                return packageName + applicationNode?.attributes?.getNamedItem("android:name")?.nodeValue
+                val applicationNode = manifestXml.documentElement.getElementsByTagName("application")
+                    .item(0).attributes?.getNamedItem("android:name")
+                if (applicationNode != null) {
+                    val packageName = manifestXml.documentElement.getAttribute("package")
+                    return packageName + applicationNode.nodeValue
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -50,7 +52,7 @@ internal class StartMethodModifier(private val project: Project) {
 
         return null
     }
-    
+
     internal class ManifestManager(
         private val applicationClass: String,
         private val project: Project?,
