@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
@@ -8,15 +9,24 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreat
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
-import io.embrace.android.intellij.plugin.ui.components.*
+import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
+import io.embrace.android.intellij.plugin.ui.components.EmbButton
+import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
+import io.embrace.android.intellij.plugin.ui.components.EmbLabel
+import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
 import java.awt.Dimension
-import java.awt.Rectangle
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JSeparator
 
 
 private const val VERTICAL_SPACE = 20
@@ -130,7 +140,12 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerPluginExampleCode()))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            showModifyGradleFilesConfirmation()
+            val applicationModules = dataProvider.getApplicationModules()
+            if (!applicationModules.isNullOrEmpty()) {
+                showModifyGradleFilesConfirmation(applicationModules)
+            } else {
+                Messages.showErrorDialog("NoApplicationModule".text(), "Error")
+            }
         })
 
         panel.add(EmbLabel("applyDependencyDescription".text(), TextStyle.BODY))
@@ -195,21 +210,26 @@ internal class EmbraceIntegrationForm(
         configFileErrorLabel.isVisible = true
     }
 
-    private fun showModifyGradleFilesConfirmation() {
+    private fun showModifyGradleFilesConfirmation(applicationModules: List<String>) {
 
         val popupPanel = JPanel()
         popupPanel.layout = BoxLayout(popupPanel, BoxLayout.Y_AXIS)
         popupPanel.border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
 
-        popupPanel.add(EmbLabel( "Confirm the following changes to your build.gradle file:", TextStyle.BODY))
+        val dropdown = ComboBox(applicationModules.toTypedArray())
+//        dropdown.renderer = ComboBoxRenderer()
+        dropdown.selectedIndex = 0
+        popupPanel.add(dropdown)
+
+        popupPanel.add(EmbLabel("Confirm the following changes to your build.gradle file:", TextStyle.BODY))
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        popupPanel.add(EmbLabel( "Project level build.gradle file:", TextStyle.BODY))
-        popupPanel.add(EmbLabel( dataProvider.getSwazzlerClasspathLine(), TextStyle.HEADLINE_3, successColor))
+        popupPanel.add(EmbLabel("Project level build.gradle file:", TextStyle.BODY))
+        popupPanel.add(EmbLabel(dataProvider.getSwazzlerClasspathLine(), TextStyle.HEADLINE_3, successColor))
         panel.add(JSeparator())
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        popupPanel.add(EmbLabel( "app/build.gradle file:", TextStyle.BODY))
-        popupPanel.add(EmbLabel( dataProvider.getSwazzlerPluginLine(), TextStyle.HEADLINE_3, successColor))
+        popupPanel.add(EmbLabel("app/build.gradle file:", TextStyle.BODY))
+        popupPanel.add(EmbLabel(dataProvider.getSwazzlerPluginLine(), TextStyle.HEADLINE_3, successColor))
 
         val scrollPane = JScrollPane(popupPanel)
         scrollPane.preferredSize = Dimension(800, 200)

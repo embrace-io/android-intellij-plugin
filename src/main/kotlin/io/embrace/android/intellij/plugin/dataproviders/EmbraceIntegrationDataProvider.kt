@@ -11,6 +11,7 @@ import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModi
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
+import java.io.File
 import java.net.InetSocketAddress
 import java.net.URI
 
@@ -58,7 +59,7 @@ internal class EmbraceIntegrationDataProvider(
     fun getSwazzlerClasspathLine() =
         EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace("LAST_VERSION", lastEmbraceVersion)
 
-     fun getSwazzlerPluginLine() =
+    fun getSwazzlerPluginLine() =
         EmbracePluginRepository.EMBRACE_SWAZZLER_PLUGIN
 
 
@@ -79,6 +80,11 @@ internal class EmbraceIntegrationDataProvider(
 
     fun getStartExampleCode(): String {
         return getResourceAsText("/examplecode/embrace_start.txt") ?: ""
+    }
+
+
+    fun getApplicationModules(): List<String>? {
+        return buildGradleFilesModifier.value?.getApplicationModules()?.map { it.name }
     }
 
     fun modifyGradleFile(callback: ProjectGradleFileModificationCallback) {

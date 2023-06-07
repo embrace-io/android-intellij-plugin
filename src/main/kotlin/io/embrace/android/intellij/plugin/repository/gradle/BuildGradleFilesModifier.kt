@@ -77,8 +77,42 @@ internal class BuildGradleFilesModifier(
         return GradleFileStatus.ERROR
     }
 
+    internal fun getApplicationModules(): List<File> {
+        val buildGradleFiles = gradleAPI?.getBuildGradleFilesForModules()
 
-    internal fun addSwazzlerPlugin() : GradleFileStatus {
+        if (buildGradleFiles.isNullOrEmpty()) {
+            Log.e(TAG, "root build.gradle file not found.")
+            return emptyList()
+        }
+
+        val applicationModules = mutableListOf<File>()
+        buildGradleFiles.forEach filesLoop@{ file ->
+            if (file == null) {
+                Log.e(TAG, "build.gradle file not found.")
+                return@filesLoop
+            }
+
+            val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+            if (virtualBuildGradleFile == null) {
+                Log.e(TAG, "build.gradle virtual file not found.")
+                return@filesLoop
+            }
+
+            val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
+            if (document == null) {
+                Log.e(TAG, "build.gradle document not found.")
+                return@filesLoop
+            }
+
+            if (document.text.contains("com.android.application")) {
+                applicationModules.add(file)
+            }
+        }
+
+        return applicationModules
+    }
+
+    internal fun addSwazzlerPlugin(): GradleFileStatus {
         val buildGradleFiles = gradleAPI?.getBuildGradleFilesForModules()
 
         if (buildGradleFiles.isNullOrEmpty()) {
@@ -86,6 +120,7 @@ internal class BuildGradleFilesModifier(
             return GradleFileStatus.FILE_NOT_FOUND
         }
 
+        var added = false
         buildGradleFiles.forEach filesLoop@{ file ->
             if (file == null) {
                 Log.e(TAG, "build.gradle file not found.")
@@ -119,6 +154,7 @@ internal class BuildGradleFilesModifier(
                 WriteCommandAction.runWriteCommandAction(project) {
                     document.setText(content)
                 }
+                added = true
                 return@filesLoop
             }
 
@@ -137,6 +173,7 @@ internal class BuildGradleFilesModifier(
                 WriteCommandAction.runWriteCommandAction(project) {
                     document.setText(content)
                 }
+                added = true
                 return@filesLoop
             }
 
@@ -149,7 +186,10 @@ internal class BuildGradleFilesModifier(
             }
         }
 
-        return GradleFileStatus.ERROR
+        return if (added)
+            GradleFileStatus.ADDED_SUCCESSFULLY
+        else
+            GradleFileStatus.ERROR
     }
 }
 

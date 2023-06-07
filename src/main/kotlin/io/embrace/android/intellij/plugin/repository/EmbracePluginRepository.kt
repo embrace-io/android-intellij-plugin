@@ -65,6 +65,10 @@ internal class EmbracePluginRepository(
         }
     }
 
+    fun getApplicationModules(){
+        return
+    }
+
     fun addStartToApplicationClass(callback: StartMethodCallback) =
         startMethodModifier.addStartToApplicationClass(callback)
 
