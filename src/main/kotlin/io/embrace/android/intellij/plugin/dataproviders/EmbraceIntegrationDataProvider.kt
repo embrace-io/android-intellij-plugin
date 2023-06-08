@@ -165,8 +165,7 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun buildOnboardDashURL(): String {
         val projectName = repo.getProjectName()
-        return EmbracePluginRepository.embraceDashboardUrl +
-                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+        return EmbracePluginRepository.embraceDashboardUrl //+                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
     }
 
 
