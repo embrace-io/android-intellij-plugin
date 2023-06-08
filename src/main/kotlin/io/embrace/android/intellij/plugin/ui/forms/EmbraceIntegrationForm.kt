@@ -54,6 +54,7 @@ internal class EmbraceIntegrationForm(
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
+    private var gradlePopup: GradleFilesPopup? = null
 
     init {
 
@@ -143,13 +144,11 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerPluginExampleCode()))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
             val applicationModules = dataProvider.getApplicationModules()
             if (!applicationModules.isNullOrEmpty()) {
-                GradleFilesPopup(
-                    dataProvider,
-                    applicationModules
-                ) { dataProvider.modifyGradleFile(this@EmbraceIntegrationForm) }.showPopup()
+                showGradlePopupIfNecessary(applicationModules)
             } else {
                 Messages.showErrorDialog("NoApplicationModule".text(), "Error")
             }
@@ -160,6 +159,18 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
     }
 
+    private fun showGradlePopupIfNecessary(applicationModules: List<String>) {
+        if (gradlePopup == null) {
+            gradlePopup = GradleFilesPopup(
+                dataProvider,
+                applicationModules
+            ) { dataProvider.modifyGradleFile(this@EmbraceIntegrationForm) }
+        }
+
+        if (!gradlePopup!!.isVisible) {
+            gradlePopup?.showPopup()
+        }
+    }
 
     private fun initStartEmbraceStep() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
