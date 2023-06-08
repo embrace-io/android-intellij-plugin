@@ -18,7 +18,7 @@ import javax.swing.JPanel
 internal class GradleFilesPopup(
     dataProvider: EmbraceIntegrationDataProvider,
     applicationModules: List<String>?,
-    private val yesButtonAction: () -> Unit
+    private val yesButtonAction: (String) -> Unit
 ) : JDialog() {
 
     companion object {
@@ -85,7 +85,7 @@ internal class GradleFilesPopup(
         val okButton = JButton("Replace")
         okButton.addActionListener {
             dispose()
-            yesButtonAction.invoke()
+            yesButtonAction.invoke(dropdown.selectedItem as String)
         }
 
         val cancelButton = JButton("Cancel")

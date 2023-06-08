@@ -77,119 +77,104 @@ internal class BuildGradleFilesModifier(
         return GradleFileStatus.ERROR
     }
 
-    internal fun getApplicationModules(): List<File> {
-        val buildGradleFiles = gradleAPI?.getBuildGradleFilesForModules()
+    internal fun getApplicationModules(): List<String> {
+        val modules = gradleAPI?.getModules()
 
-        if (buildGradleFiles.isNullOrEmpty()) {
+        if (modules.isNullOrEmpty()) {
             Log.e(TAG, "root build.gradle file not found.")
             return emptyList()
         }
 
-        val applicationModules = mutableListOf<File>()
-        buildGradleFiles.forEach filesLoop@{ file ->
+        val applicationModules = mutableListOf<String>()
+
+        modules.forEach { module ->
+            val file = module.buildScript.sourceFile
+
             if (file == null) {
                 Log.e(TAG, "build.gradle file not found.")
-                return@filesLoop
+                return@forEach
             }
 
             val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
             if (virtualBuildGradleFile == null) {
                 Log.e(TAG, "build.gradle virtual file not found.")
-                return@filesLoop
+                return@forEach
             }
 
             val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
             if (document == null) {
                 Log.e(TAG, "build.gradle document not found.")
-                return@filesLoop
+                return@forEach
             }
 
             if (document.text.contains("com.android.application")) {
-                applicationModules.add(file)
+                applicationModules.add(module.name)
             }
+
         }
 
         return applicationModules
     }
 
-    internal fun addSwazzlerPlugin(): GradleFileStatus {
-        val buildGradleFiles = gradleAPI?.getBuildGradleFilesForModules()
+    internal fun addSwazzlerPlugin(selectedModule: String): GradleFileStatus {
+        val file = gradleAPI?.getBuildGradleFilesForModules(selectedModule)
 
-        if (buildGradleFiles.isNullOrEmpty()) {
+        if (file == null) {
             Log.e(TAG, "root build.gradle file not found.")
-            return GradleFileStatus.FILE_NOT_FOUND
+            return GradleFileStatus.ERROR
         }
 
-        var added = false
-        buildGradleFiles.forEach filesLoop@{ file ->
-            if (file == null) {
-                Log.e(TAG, "build.gradle file not found.")
-                return@filesLoop
-            }
-
-            val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
-            if (virtualBuildGradleFile == null) {
-                Log.e(TAG, "build.gradle virtual file not found.")
-                return@filesLoop
-            }
-
-            val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
-            if (document == null) {
-                Log.e(TAG, "build.gradle document not found.")
-                return GradleFileStatus.FILE_NOT_FOUND
-            }
-
-            var content = document.text
-
-            val androidApplicationIndexV1 = content.indexOf("apply plugin: 'com.android.application'")
-            val isAndroidApplicationV1AlreadyApplied = content.contains(EMBRACE_APPLY_PLUGIN_V1)
-            if (androidApplicationIndexV1 >= 0 && !isAndroidApplicationV1AlreadyApplied) {
-                val newLineIndex = content.indexOf("\n", androidApplicationIndexV1) + 1
-
-                content = content.substring(0, newLineIndex) +
-                        EMBRACE_APPLY_PLUGIN_V1 +
-                        "\n" +
-                        content.substring(newLineIndex)
-
-                WriteCommandAction.runWriteCommandAction(project) {
-                    document.setText(content)
-                }
-                added = true
-                return@filesLoop
-            }
-
-            val androidApplicationIndexV2 = content.indexOf("id 'com.android.application'")
-            val isAndroidApplicationV2AlreadyApplied = content.contains(EMBRACE_APPLY_PLUGIN_V2)
-            if (androidApplicationIndexV2 >= 0 && !isAndroidApplicationV2AlreadyApplied) {
-                val newLineIndex = content.indexOf("\n", androidApplicationIndexV2) + 1
-                val newLineWithIntentIndex = content.indexOfFirstNonWhitespace(newLineIndex)
-                val indent = content.substring(newLineIndex, newLineWithIntentIndex)
-                content = content.substring(0, newLineWithIntentIndex) +
-                        EMBRACE_APPLY_PLUGIN_V2 +
-                        "\n" +
-                        indent +
-                        content.substring(newLineWithIntentIndex)
-
-                WriteCommandAction.runWriteCommandAction(project) {
-                    document.setText(content)
-                }
-                added = true
-                return@filesLoop
-            }
-
-            if (androidApplicationIndexV1 < 0 && androidApplicationIndexV2 < 0) {
-                // TODO:("Add support for other types of modules")
-                Log.e(TAG, "apply plugin: 'com.android.application' not found on this module.")
-                return@filesLoop
-            } else {
-                GradleFileStatus.ADDED_SUCCESSFULLY
-            }
+        val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+        if (virtualBuildGradleFile == null) {
+            Log.e(TAG, "build.gradle virtual file not found.")
+            return GradleFileStatus.ERROR
         }
 
-        return if (added)
-            GradleFileStatus.ADDED_SUCCESSFULLY
-        else
-            GradleFileStatus.ERROR
+        val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
+        if (document == null) {
+            Log.e(TAG, "build.gradle document not found.")
+            return GradleFileStatus.ERROR
+        }
+
+        var content = document.text
+
+        val androidApplicationIndexV1 = content.indexOf("apply plugin: 'com.android.application'")
+        val isAndroidApplicationV1AlreadyApplied = content.contains(EMBRACE_APPLY_PLUGIN_V1)
+        if (androidApplicationIndexV1 >= 0 && !isAndroidApplicationV1AlreadyApplied) {
+            val newLineIndex = content.indexOf("\n", androidApplicationIndexV1) + 1
+
+            content = content.substring(0, newLineIndex) +
+                    EMBRACE_APPLY_PLUGIN_V1 +
+                    "\n" +
+                    content.substring(newLineIndex)
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                document.setText(content)
+            }
+
+            return GradleFileStatus.ADDED_SUCCESSFULLY
+        }
+
+        val androidApplicationIndexV2 = content.indexOf("id 'com.android.application'")
+        val isAndroidApplicationV2AlreadyApplied = content.contains(EMBRACE_APPLY_PLUGIN_V2)
+        if (androidApplicationIndexV2 >= 0 && !isAndroidApplicationV2AlreadyApplied) {
+            val newLineIndex = content.indexOf("\n", androidApplicationIndexV2) + 1
+            val newLineWithIntentIndex = content.indexOfFirstNonWhitespace(newLineIndex)
+            val indent = content.substring(newLineIndex, newLineWithIntentIndex)
+            content = content.substring(0, newLineWithIntentIndex) +
+                    EMBRACE_APPLY_PLUGIN_V2 +
+                    "\n" +
+                    indent +
+                    content.substring(newLineWithIntentIndex)
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                document.setText(content)
+            }
+
+            return GradleFileStatus.ADDED_SUCCESSFULLY
+        }
+
+        return GradleFileStatus.ERROR
     }
 }
 

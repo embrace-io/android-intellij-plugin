@@ -164,7 +164,7 @@ internal class EmbraceIntegrationForm(
             gradlePopup = GradleFilesPopup(
                 dataProvider,
                 applicationModules
-            ) { dataProvider.modifyGradleFile(this@EmbraceIntegrationForm) }
+            ) { dataProvider.modifyGradleFile(it, this@EmbraceIntegrationForm) }
         }
 
         if (!gradlePopup!!.isVisible) {
@@ -226,93 +226,6 @@ internal class EmbraceIntegrationForm(
     override fun onConfigError(error: String) {
         configFileErrorLabel.text = error
         configFileErrorLabel.isVisible = true
-    }
-
-    private fun showModifyGradleFilesConfirmation(applicationModules: List<String>) {
-//
-//        val popupPanel = JPanel()
-//        popupPanel.layout = BoxLayout(popupPanel, BoxLayout.Y_AXIS)
-//        popupPanel.border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
-//
-//        // Create the label
-//        val label = JLabel("Select an option:")
-//        label.alignmentX = Component.LEFT_ALIGNMENT
-//        popupPanel.add(label)
-//        val dropdownPanel = JPanel()
-//        dropdownPanel.layout = FlowLayout(FlowLayout.LEFT)
-//        dropdownPanel.add(EmbLabel("Target module:", TextStyle.BODY))
-//
-//        val dropdown = ComboBox(applicationModules.toTypedArray())
-////        dropdown.renderer = ComboBoxRenderer()
-//        dropdown.selectedIndex = 0
-//        dropdownPanel.add(dropdown)
-
-//        popupPanel.add(dropdownPanel)
-
-
-        val popupPanel = JPanel()
-        popupPanel.layout = GridBagLayout()
-        val constraints = GridBagConstraints()
-
-        constraints.gridx = 0
-        constraints.gridy = 0
-        constraints.anchor = GridBagConstraints.WEST
-        constraints.insets = Insets(0, 0, 5, 5) // Optional: Add spacing between components
-
-        // Create the label
-        val label = JLabel("TargetModules".text())
-        popupPanel.add(label, constraints)
-
-        constraints.gridx = 1
-        constraints.gridy = 0
-        constraints.anchor = GridBagConstraints.WEST
-        constraints.insets = Insets(0, 0, 5, 0) // Optional: Add spacing between components
-
-        val dropdown = JComboBox(applicationModules.toTypedArray())
-        dropdown.selectedIndex = 0
-        popupPanel.add(dropdown, constraints)
-
-        constraints.gridx = 0
-        constraints.gridy = 1
-        constraints.anchor = GridBagConstraints.WEST
-        constraints.gridwidth = GridBagConstraints.REMAINDER // Span across all available columns
-
-        constraints.insets = Insets(5, 0, 5, 0) // Optional: Add spacing between components
-
-        popupPanel.add(JLabel("ConfirmChanges".text()), constraints)
-
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-
-        constraints.gridy++
-        popupPanel.add(JLabel("ProjectLevel".text()), constraints)
-
-        constraints.gridy++
-        popupPanel.add(
-            EmbLabel(dataProvider.getSwazzlerClasspathLine(), TextStyle.HEADLINE_3, successColor),
-            constraints
-        )
-
-        constraints.gridy++
-        panel.add(JSeparator(), constraints)
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        constraints.gridy++
-        popupPanel.add(EmbLabel("app/build.gradle file:", TextStyle.BODY), constraints)
-
-        constraints.gridy++
-        popupPanel.add(EmbLabel(dataProvider.getSwazzlerPluginLine(), TextStyle.HEADLINE_3, successColor), constraints)
-
-        val scrollPane = JScrollPane(popupPanel)
-        scrollPane.preferredSize = Dimension(800, 300)
-
-
-        val choice = JOptionPane.showOptionDialog(
-            null, scrollPane, "Modify Gradle Files",
-            JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf<Any>("Add", "Cancel"), "Add"
-        )
-
-        if (choice == JOptionPane.YES_OPTION) {
-            dataProvider.modifyGradleFile(this)
-        }
     }
 
     override fun onGradleFileError(error: String) {

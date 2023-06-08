@@ -11,7 +11,6 @@ import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModi
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
-import java.io.File
 import java.net.InetSocketAddress
 import java.net.URI
 
@@ -84,13 +83,13 @@ internal class EmbraceIntegrationDataProvider(
 
 
     fun getApplicationModules(): List<String>? {
-        return buildGradleFilesModifier.value?.getApplicationModules()?.map { it.name }
+        return buildGradleFilesModifier.value?.getApplicationModules()
     }
 
-    fun modifyGradleFile(callback: ProjectGradleFileModificationCallback) {
+    fun modifyGradleFile(selectedModule : String, callback: ProjectGradleFileModificationCallback) {
 
         val rootFileStatus = buildGradleFilesModifier.value?.updateBuildGradleFileContent()
-        val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin()
+        val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 
         if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
             && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY

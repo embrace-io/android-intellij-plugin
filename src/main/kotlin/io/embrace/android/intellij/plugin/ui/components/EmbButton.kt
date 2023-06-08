@@ -5,7 +5,7 @@ import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.SwingConstants
 
-public class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
+internal class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
 
 
     init {
@@ -17,7 +17,6 @@ public class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
         font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
 
         addActionListener {
-//            isEnabled = false
             onClick.invoke()
         }
     }

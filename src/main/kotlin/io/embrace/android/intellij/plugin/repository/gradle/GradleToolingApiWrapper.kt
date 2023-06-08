@@ -26,12 +26,25 @@ class GradleToolingApiWrapper(basePath: String) {
         return null
     }
 
-    fun getBuildGradleFilesForModules(): List<File?> {
+    fun getBuildGradleFilesForModules(selectedModule: String): File? {
         try {
             connector.connect().use { connection ->
                 val model = connection.getModel(GradleProject::class.java)
                 val modules = model.children
-                return modules.map { it.buildScript.sourceFile }
+                return modules.first { it?.name.contentEquals(selectedModule) }.buildScript.sourceFile
+            }
+        }
+        catch (e: Exception) {
+            Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
+        }
+        return null
+    }
+
+    fun getModules(): Collection<GradleProject>? {
+        try {
+            connector.connect().use { connection ->
+                val model = connection.getModel(GradleProject::class.java)
+                return model.children
             }
         }
         catch (e: Exception) {
