@@ -6,13 +6,11 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreat
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
-import io.embrace.android.intellij.plugin.dataproviders.callback.SwazzlerPluginAddedCallback
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
-import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.URI
 
@@ -34,6 +32,7 @@ internal class EmbraceIntegrationDataProvider(
     companion object {
         private const val APP_ID_LENGTH = 5
         private const val TOKEN_LENGTH = 32
+
     }
 
     fun openFinishIntegrationDashboard() {
@@ -56,6 +55,13 @@ internal class EmbraceIntegrationDataProvider(
         openDashboard()
     }
 
+    fun getSwazzlerClasspathLine() =
+        EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace("LAST_VERSION", lastEmbraceVersion)
+
+    fun getSwazzlerPluginLine() =
+        EmbracePluginRepository.EMBRACE_SWAZZLER_PLUGIN
+
+
     fun getSdkExampleCode(): String {
         val code = getResourceAsText("/examplecode/sdk.txt") ?: ""
         return code.replace("LAST_VERSION", lastEmbraceVersion)
@@ -71,26 +77,33 @@ internal class EmbraceIntegrationDataProvider(
         return code.replace("LAST_VERSION", lastEmbraceVersion)
     }
 
-
     fun getStartExampleCode(): String {
         return getResourceAsText("/examplecode/embrace_start.txt") ?: ""
     }
 
-    fun getGradleContentToModify(callback: ProjectGradleFileModificationCallback) {
-        buildGradleFilesModifier.value?.getBuildGradleFileContent(callback)
+
+    fun getApplicationModules(): List<String>? {
+        return buildGradleFilesModifier.value?.getApplicationModules()
     }
 
-    fun modifyGradleFile(content: String, callback: ProjectGradleFileModificationCallback) {
-        try {
-            buildGradleFilesModifier.value?.updateBuildGradleFileForProject(content)
-            callback.onGradleContentModified()
-        } catch (e: IOException) {
-            callback.onGradleFileError("cannotModifyGradle".text())
-        }
-    }
+    fun modifyGradleFile(selectedModule : String, callback: ProjectGradleFileModificationCallback) {
 
-    fun addSwazzlerPlugin(callback: SwazzlerPluginAddedCallback) {
-        buildGradleFilesModifier.value?.addSwazzlerPlugin(callback)
+        val rootFileStatus = buildGradleFilesModifier.value?.updateBuildGradleFileContent()
+        val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
+
+        if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
+            && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
+        ) {
+            callback.onGradleFilesModifiedSuccessfully()
+        } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
+            callback.onGradleFileAlreadyModified()
+        } else if (rootFileStatus == GradleFileStatus.FILE_NOT_FOUND
+            || appFileStatus == GradleFileStatus.FILE_NOT_FOUND
+        ) {
+            callback.onGradleFileError("gradleFileNotFound".text())
+        } else
+            callback.onGradleFileError("oneOrMoreFilesError".text())
+
     }
 
     fun addEmbraceStartMethod(callback: StartMethodCallback) {
@@ -151,8 +164,7 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun buildOnboardDashURL(): String {
         val projectName = repo.getProjectName()
-        return EmbracePluginRepository.embraceDashboardUrl +
-                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+        return EmbracePluginRepository.embraceDashboardUrl //+                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
     }
 
 

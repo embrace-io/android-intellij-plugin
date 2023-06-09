@@ -14,7 +14,7 @@ internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = 
         wrapStyleWord = true
         isOpaque = false
         border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
-
+        isEditable = false
         font = when (textLevel) {
             TextStyle.HEADLINE_1 -> Font(Font.SANS_SERIF, Font.BOLD, 18)
             TextStyle.HEADLINE_2 -> Font(Font.SANS_SERIF, Font.BOLD, 14)
