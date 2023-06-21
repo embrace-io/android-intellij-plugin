@@ -9,10 +9,11 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.search.GlobalSearchScope
-import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
+import io.embrace.android.intellij.plugin.data.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import org.jetbrains.android.facet.AndroidFacet
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.SwingWorker
 
@@ -67,10 +68,16 @@ internal class StartMethodModifier(private val project: Project) {
             }
 
             var psiClass: PsiClass? = null
+            var kotlinClassPath: String? = null
+            var kotlinClassFile: Path? = null
 
             ApplicationManager.getApplication().runReadAction {
                 val psiFacade = JavaPsiFacade.getInstance(project)
                 psiClass = psiFacade.findClass(applicationClass, GlobalSearchScope.allScope(project))
+                psiClass?.let {
+                    kotlinClassPath = it.containingFile.virtualFile.path
+                    kotlinClassFile = Paths.get(kotlinClassPath)
+                }
             }
 
             if (psiClass == null) {
@@ -78,10 +85,7 @@ internal class StartMethodModifier(private val project: Project) {
                 return StartMethodStatus.ERROR
             }
 
-            val kotlinClassPath = psiClass!!.containingFile.virtualFile.path
-            val kotlinClassFile = Paths.get(kotlinClassPath)
-
-            if (Files.exists(kotlinClassFile)) {
+            if (kotlinClassFile != null && Files.exists(kotlinClassFile!!)) {
                 val lines = Files.readAllLines(kotlinClassFile)
                 val embraceImportLine = getEmbraceImportLine(psiClass!!)
                 val embraceStartLine = getStartMethodLine(psiClass!!)
@@ -103,7 +107,8 @@ internal class StartMethodModifier(private val project: Project) {
 
                     if (line.startsWith("import")
                         && index < lines.size - 1
-                        && !lines[index + 1].startsWith("import")) {
+                        && !lines[index + 1].startsWith("import")
+                    ) {
                         embraceImportLineIndex = index + 1
                         return@forEachIndexed
                     }
@@ -120,7 +125,7 @@ internal class StartMethodModifier(private val project: Project) {
                             lines.add(embraceImportLineIndex, embraceImportLine)
                             embraceStartLineIndex++
                         }
-                        val blankSpaces = lines[embraceStartLineIndex-1].substringBefore("super.")
+                        val blankSpaces = lines[embraceStartLineIndex - 1].substringBefore("super.")
                         lines.add(embraceStartLineIndex, "$blankSpaces$embraceStartLine")
                         Files.write(kotlinClassFile, lines)
                         psiClass!!.containingFile.virtualFile.refresh(false, true)

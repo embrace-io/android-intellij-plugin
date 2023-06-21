@@ -1,4 +1,4 @@
-package io.embrace.android.intellij.plugin.dataproviders
+package io.embrace.android.intellij.plugin.data
 
 internal enum class GradleFileStatus {
     ADDED_SUCCESSFULLY,
