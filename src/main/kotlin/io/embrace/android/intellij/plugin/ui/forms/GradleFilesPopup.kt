@@ -2,6 +2,8 @@ package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.util.ui.JBUI
+import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
@@ -18,7 +20,7 @@ import javax.swing.JPanel
 
 internal class GradleFilesPopup(
     dataProvider: EmbraceIntegrationDataProvider,
-    applicationModules: List<String>?,
+    applicationModules: List<AppModule>,
     private val yesButtonAction: (String) -> Unit
 ) : JDialog() {
 
@@ -46,7 +48,7 @@ internal class GradleFilesPopup(
         constraints.gridx = 1
         constraints.insets = JBUI.insetsLeft(5)
 
-        val dropdown = ComboBox(applicationModules?.toTypedArray() ?: arrayOf())
+        val dropdown = ComboBox(applicationModules.map { it.name }.toTypedArray())
         dropdown.selectedIndex = 0
         popupPanel.add(dropdown, constraints)
 
@@ -77,9 +79,11 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
 
-        val pluginLine = JLabel(dataProvider.getSwazzlerClasspathLine())
+        val pluginLine = JLabel(applicationModules[dropdown.selectedIndex].type.value)
         pluginLine.foreground = successColor
         pluginLine.font = boldFont
+        dropdown.addActionListener { pluginLine.text = applicationModules[dropdown.selectedIndex].type.value }
+
         popupPanel.add(pluginLine, constraints)
 
         // Add buttons

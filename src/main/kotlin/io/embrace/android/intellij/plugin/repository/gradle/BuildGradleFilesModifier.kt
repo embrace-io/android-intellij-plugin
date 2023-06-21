@@ -7,7 +7,10 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import io.embrace.android.intellij.plugin.dataproviders.GradleFileStatus
+import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.GradleFileStatus
+import io.embrace.android.intellij.plugin.data.PluginType
+import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import org.gradle.tooling.model.GradleProject
 import java.io.File
 
@@ -55,7 +58,10 @@ internal class BuildGradleFilesModifier(
                     val firstDependencyIndexWithIndent =
                         content.indexOfFirstNonWhitespace(firstDependencyIndexWithoutIndent)
                     val indent = content.substring(firstDependencyIndexWithoutIndent, firstDependencyIndexWithIndent)
-                    val newDependency = EMBRACE_CLASSPATH_DEPENDENCY.replace("EMBRACE_SDK_VERSION", lastEmbraceVersion)
+                    val newDependency = EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace(
+                        "LAST_VERSION",
+                        lastEmbraceVersion
+                    )
 
                     val newFile = content.substring(0, firstDependencyIndexWithIndent) +
                             newDependency +
@@ -82,14 +88,14 @@ internal class BuildGradleFilesModifier(
         return gradleAPI?.getModules()
     }
 
-    internal fun getApplicationModules(modules : Collection<GradleProject>?): List<String> {
+    internal fun getApplicationModules(modules: Collection<GradleProject>?): List<AppModule> {
 
         if (modules.isNullOrEmpty()) {
             Log.e(TAG, "root build.gradle file not found.")
             return emptyList()
         }
 
-        val applicationModules = mutableListOf<String>()
+        val applicationModules = mutableListOf<AppModule>()
 
         modules.forEach { module ->
             val file = module.buildScript.sourceFile
@@ -112,7 +118,11 @@ internal class BuildGradleFilesModifier(
             }
 
             if (document.text.contains("com.android.application")) {
-                applicationModules.add(module.name)
+                if (document.text.contains("apply plugin:")) {
+                    applicationModules.add(AppModule(module.name, PluginType.V1))
+                } else {
+                    applicationModules.add(AppModule(module.name, PluginType.V2))
+                }
             }
 
         }
@@ -183,7 +193,5 @@ internal class BuildGradleFilesModifier(
 }
 
 private val TAG = BuildGradleFilesModifier::class.simpleName.orEmpty()
-private const val EMBRACE_CLASSPATH_DEPENDENCY = "classpath \"io.embrace:embrace-swazzler:EMBRACE_SDK_VERSION\""
 private const val EMBRACE_APPLY_PLUGIN_V1 = "apply plugin: 'embrace-swazzler'"
 private const val EMBRACE_APPLY_PLUGIN_V2 = "id 'embrace-swazzler'"
-private const val EMBRACE_SDK_DEPENDENCY = "implementation \"io.embrace:embrace-android-sdk:EMBRACE_SDK_VERSION\""

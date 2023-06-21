@@ -1,20 +1,15 @@
 package io.embrace.android.intellij.plugin.repository
 
 
-import com.android.tools.build.jetifier.core.utils.Log
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFileManager
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
-import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.io.File
 import java.io.FileWriter
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 internal class EmbracePluginRepository(
@@ -29,7 +24,6 @@ internal class EmbracePluginRepository(
         internal const val MAIN_PATH = "/app/src/main"
         internal const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
         internal const val EMBRACE_SWAZZLER_CLASSPATH = "classpath \"io.embrace:embrace-swazzler:LAST_VERSION\""
-        internal const val EMBRACE_SWAZZLER_PLUGIN = "apply plugin: 'embrace-swazzler'"
         internal const val embraceDashboardUrl = ApiService.EMBRACE_DASHBOARD_URL
         internal const val embraceDashboardIntegrationUrl = ApiService.EMBRACE_DASHBOARD_COMPLETE_INTEGRATION
     }
@@ -83,18 +77,4 @@ internal class EmbracePluginRepository(
         return currentProject.name
     }
 
-    fun refreshAndOpenFile(filePath: String) {
-        ApplicationManager.getApplication().invokeLater {
-            try {
-                VirtualFileManager.getInstance().syncRefresh()
-                val virtualFile = VirtualFileManager.getInstance().findFileByUrl("file://$filePath")
-                if (virtualFile != null) {
-                    virtualFile.refresh(false, false)
-                    FileEditorManager.getInstance(project).openFile(virtualFile, true)
-                }
-            } catch (e: Exception) {
-                Log.e("ConfigFile", "Refreshing project is not possible.")
-            }
-        }
-    }
 }

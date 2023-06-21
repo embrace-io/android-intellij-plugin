@@ -3,8 +3,9 @@ package io.embrace.android.intellij.plugin.ui.forms
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
+import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
-import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
+import io.embrace.android.intellij.plugin.data.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
@@ -160,7 +161,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
     }
 
-    private fun showGradlePopupIfNecessary(applicationModules: List<String>) {
+    private fun showGradlePopupIfNecessary(applicationModules: List<AppModule>) {
         if (gradlePopup == null) {
             gradlePopup = GradleFilesPopup(
                 dataProvider,

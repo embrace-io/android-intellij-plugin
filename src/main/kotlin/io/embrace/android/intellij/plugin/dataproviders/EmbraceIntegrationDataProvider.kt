@@ -3,6 +3,8 @@ package io.embrace.android.intellij.plugin.dataproviders
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
+import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
@@ -11,7 +13,6 @@ import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import org.jetbrains.kotlin.tools.projectWizard.core.asPath
 import java.awt.Desktop
 import java.net.InetSocketAddress
 import java.net.URI
@@ -25,7 +26,7 @@ internal class EmbraceIntegrationDataProvider(
     private lateinit var appId: String
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
-    internal var applicationModules: List<String>? = null
+    internal var applicationModules: List<AppModule>? = null
 
 
     private val buildGradleFilesModifier = lazy {
@@ -73,10 +74,6 @@ internal class EmbraceIntegrationDataProvider(
 
     fun getSwazzlerClasspathLine() =
         EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace("LAST_VERSION", lastEmbraceVersion)
-
-    fun getSwazzlerPluginLine() =
-        EmbracePluginRepository.EMBRACE_SWAZZLER_PLUGIN
-
 
     fun getSdkExampleCode(): String {
         val code = getResourceAsText("/examplecode/sdk.txt") ?: ""
