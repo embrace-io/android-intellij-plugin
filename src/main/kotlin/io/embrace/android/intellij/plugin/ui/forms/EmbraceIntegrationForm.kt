@@ -1,7 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
@@ -23,11 +22,11 @@ import java.awt.event.HierarchyListener
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
-import javax.swing.JOptionPane
 import javax.swing.JPanel
 
 
 private const val VERTICAL_SPACE = 20
+private const val VERTICAL_SPACE_SMALL = 10
 private const val BORDER_TOP = 0
 private const val BORDER_BOTTOM = 20
 private const val BORDER_LEFT = 20
@@ -47,6 +46,7 @@ internal class EmbraceIntegrationForm(
     private val successColor = Color.decode("#16c74e")
     private val connectToEmbraceResultLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
+    private val gradleResultLabel = EmbLabel("swazzlerAdded".text(), TextStyle.BODY, successColor)
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
     private var gradlePopup: GradleFilesPopup? = null
@@ -58,7 +58,7 @@ internal class EmbraceIntegrationForm(
         initGetStartedLayout()
         initCreateAppStep()
         initConfigFileStep()
-        initBuildConfigFileStep()
+        initDependenciesStep()
         initStartEmbraceStep()
         initEmbraceVerificationStep()
 
@@ -94,7 +94,7 @@ internal class EmbraceIntegrationForm(
     private fun initCreateAppStep() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("step1Title".text(), TextStyle.HEADLINE_2))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbLabel("step1Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
@@ -117,10 +117,10 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(5))
         panel.add(etToken)
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        configFileErrorLabel.isVisible = false
 
         panel.add(EmbButton("btnConfigFile".text()) {
             if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
-                configFileErrorLabel.isVisible = false
                 dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
             } else {
                 configFileErrorLabel.text = "noIdOrTokenError".text()
@@ -131,7 +131,7 @@ internal class EmbraceIntegrationForm(
         panel.add(configFileErrorLabel)
     }
 
-    private fun initBuildConfigFileStep() {
+    private fun initDependenciesStep() {
         panel.add(EmbLabel("step3Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("addSwazzler".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
@@ -151,6 +151,8 @@ internal class EmbraceIntegrationForm(
             }
         })
 
+        gradleResultLabel.isVisible = false
+        panel.add(gradleResultLabel)
         panel.add(EmbLabel("applyDependencyDescription".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
@@ -203,20 +205,11 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onConfigAlreadyExists() {
-        val options = arrayOf<Any>("Replace", "Cancel")
+        val options = arrayOf("Replace", "Cancel")
+        val result =
+            Messages.showDialog("replaceConfig".text(), "Replace Configuration", options, 0, Messages.getQuestionIcon())
 
-        val choice = JOptionPane.showOptionDialog(
-            null,
-            "replaceConfig".text(),
-            "Replace Configuration",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            options,
-            options[0]
-        )
-
-        if (choice == JOptionPane.YES_OPTION) {
+        if (result == 0) {
             dataProvider.createEmbraceFile(etAppId.text, etToken.text, this, true)
         }
     }
@@ -234,6 +227,7 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onGradleFileAlreadyModified() {
+        gradleResultLabel.isVisible = true
         Messages.showInfoMessage(
             "gradleFilesAlreadyAdded".text(),
             "Info"
@@ -241,6 +235,7 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onGradleFilesModifiedSuccessfully() {
+        gradleResultLabel.isVisible = true
         Messages.showInfoMessage(
             "SwazzlerPluginAdded".text(),
             "Info"
