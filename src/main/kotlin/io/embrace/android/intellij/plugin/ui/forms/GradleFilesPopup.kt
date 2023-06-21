@@ -3,7 +3,6 @@ package io.embrace.android.intellij.plugin.ui.forms
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.data.AppModule
-import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
@@ -42,7 +41,7 @@ internal class GradleFilesPopup(
         constraints.gridy = 0
         constraints.anchor = GridBagConstraints.WEST
 
-        val label = JLabel("TargetModules".text())
+        val label = JLabel("targetModules".text())
         popupPanel.add(label, constraints)
 
         constraints.gridx = 1
@@ -59,11 +58,11 @@ internal class GradleFilesPopup(
 
         constraints.insets = JBUI.insetsLeft(0)
         constraints.insets = JBUI.insetsTop(15)
-        popupPanel.add(JLabel("ConfirmChanges".text()), constraints)
+        popupPanel.add(JLabel("confirmChanges".text()), constraints)
 
         constraints.insets = JBUI.insetsTop(25)
         constraints.gridy++
-        popupPanel.add(JLabel("ProjectLevel".text()), constraints)
+        popupPanel.add(JLabel("projectLevel".text()), constraints)
 
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
@@ -74,7 +73,7 @@ internal class GradleFilesPopup(
 
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(25)
-        popupPanel.add(JLabel("AppLevel".text()), constraints)
+        popupPanel.add(JLabel("appLevelFile".text()), constraints)
 
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
