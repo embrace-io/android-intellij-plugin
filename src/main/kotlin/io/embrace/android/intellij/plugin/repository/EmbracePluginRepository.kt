@@ -58,26 +58,17 @@ internal class EmbracePluginRepository(
         }
     }
 
+    /**
+     * It refreshes the directory and then displays the file in the IDE.
+     */
     private fun refreshProjectFolder(filePath: String) {
         ApplicationManager.getApplication().invokeLater {
             val virtualFile =
                 LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath)
             if (virtualFile != null) {
-//                FileEditorManager.getInstance(project).openFile(virtualFile, true)
-
-                // Close the file
+//             closes the file and open it again in case that is already being displayed and need to display new changes
                 FileEditorManager.getInstance(project).closeFile(virtualFile)
                 FileEditorManager.getInstance(project).openFile(virtualFile, true)
-
-//                val executorService = Executors.newSingleThreadScheduledExecutor()
-//                executorService.schedule({
-//
-//                        FileEditorManager.getInstance(
-//                            project
-//                        ).openFile(virtualFile, true)
-//
-//                }, 5, TimeUnit.SECONDS)
-
             }
         }
 

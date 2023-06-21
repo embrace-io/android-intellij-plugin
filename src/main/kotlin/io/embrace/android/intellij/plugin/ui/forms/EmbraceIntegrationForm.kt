@@ -121,12 +121,12 @@ internal class EmbraceIntegrationForm(
         configFileErrorLabel.isVisible = false
 
         panel.add(EmbButton("btnConfigFile".text()) {
-//            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
+            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
                 dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
-//            } else {
-//                configFileErrorLabel.text = "noIdOrTokenError".text()
-//                configFileErrorLabel.isVisible = true
-//            }
+            } else {
+                configFileErrorLabel.text = "noIdOrTokenError".text()
+                configFileErrorLabel.isVisible = true
+            }
         })
 
         panel.add(configFileErrorLabel)
