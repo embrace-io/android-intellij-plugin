@@ -1,9 +1,11 @@
 package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
+import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.model.GradleProject
 import java.io.File
+
 
 class GradleToolingApiWrapper(basePath: String) {
     private val connector: GradleConnector = GradleConnector.newConnector()
@@ -19,8 +21,7 @@ class GradleToolingApiWrapper(basePath: String) {
                 val buildScript = model.buildScript
                 return buildScript.sourceFile
             }
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return null
@@ -33,8 +34,7 @@ class GradleToolingApiWrapper(basePath: String) {
                 val modules = model.children
                 return modules.first { it?.name.contentEquals(selectedModule) }.buildScript.sourceFile
             }
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return null
@@ -46,11 +46,12 @@ class GradleToolingApiWrapper(basePath: String) {
                 val model = connection.getModel(GradleProject::class.java)
                 return model.children
             }
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return emptyList()
     }
+
 }
+
 private val TAG = GradleToolingApiWrapper::class.simpleName.orEmpty()

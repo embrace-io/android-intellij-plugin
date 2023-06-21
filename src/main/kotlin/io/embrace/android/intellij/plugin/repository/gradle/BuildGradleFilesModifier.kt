@@ -8,6 +8,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.dataproviders.GradleFileStatus
+import org.gradle.tooling.model.GradleProject
 import java.io.File
 
 
@@ -77,8 +78,11 @@ internal class BuildGradleFilesModifier(
         return GradleFileStatus.ERROR
     }
 
-    internal fun getApplicationModules(): List<String> {
-        val modules = gradleAPI?.getModules()
+    internal fun getModules(): Collection<GradleProject>? {
+        return gradleAPI?.getModules()
+    }
+
+    internal fun getApplicationModules(modules : Collection<GradleProject>?): List<String> {
 
         if (modules.isNullOrEmpty()) {
             Log.e(TAG, "root build.gradle file not found.")

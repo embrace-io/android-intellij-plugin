@@ -1,6 +1,5 @@
 dependencies {
     ...
     implementation 'io.embrace:embrace-android-sdk:LAST_VERSION'
-    // Ensure the Swazzler version set in
-    // app/build.gradle matches this version.
+    // Ensure the Swazzler version set in app/build.gradle matches this version.
 }

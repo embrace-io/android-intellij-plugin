@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
@@ -10,6 +11,7 @@ import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import org.jetbrains.kotlin.tools.projectWizard.core.asPath
 import java.awt.Desktop
 import java.net.InetSocketAddress
 import java.net.URI
@@ -23,6 +25,9 @@ internal class EmbraceIntegrationDataProvider(
     private lateinit var appId: String
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
+    internal var applicationModules: List<String>? = null
+
+
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
             BuildGradleFilesModifier(project, lastEmbraceVersion)
@@ -32,12 +37,23 @@ internal class EmbraceIntegrationDataProvider(
     companion object {
         private const val APP_ID_LENGTH = 5
         private const val TOKEN_LENGTH = 32
+    }
 
+    init {
+        loadApplicationModules()
+    }
+
+    private fun loadApplicationModules() {
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val modules = buildGradleFilesModifier.value?.getModules()
+            ApplicationManager.getApplication().invokeLater {
+                applicationModules = buildGradleFilesModifier.value?.getApplicationModules(modules)
+            }
+        }
     }
 
     fun openFinishIntegrationDashboard() {
         try {
-
             val url = if (::appId.isInitialized) {
                 EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", appId)
             } else {
@@ -82,12 +98,7 @@ internal class EmbraceIntegrationDataProvider(
     }
 
 
-    fun getApplicationModules(): List<String>? {
-        return buildGradleFilesModifier.value?.getApplicationModules()
-    }
-
-    fun modifyGradleFile(selectedModule : String, callback: ProjectGradleFileModificationCallback) {
-
+    fun modifyGradleFile(selectedModule: String, callback: ProjectGradleFileModificationCallback) {
         val rootFileStatus = buildGradleFilesModifier.value?.updateBuildGradleFileContent()
         val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 
@@ -130,10 +141,11 @@ internal class EmbraceIntegrationDataProvider(
             configFile = configFile.replace("MY_APP_ID", appId)
             configFile = configFile.replace("MY_TOKEN", token)
 
-            if (repo.createEmbraceConfigFile(configFile, path))
+            if (repo.createEmbraceConfigFile(configFile, path)) {
                 callback.onConfigSuccess()
-            else
+            } else {
                 callback.onConfigError("cannot create config file")
+            }
 
         } ?: callback.onConfigError("cannot get the path")
     }

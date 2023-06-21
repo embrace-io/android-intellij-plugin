@@ -47,6 +47,7 @@ internal class EmbraceIntegrationForm(
     private val connectToEmbraceResultLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val configFileErrorLabel = EmbLabel("", TextStyle.BODY, errorColor)
     private val gradleResultLabel = EmbLabel("swazzlerAdded".text(), TextStyle.BODY, successColor)
+    private val startResultLabel = EmbLabel("StartAddedSuccessfully".text(), TextStyle.BODY, successColor)
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
     private var gradlePopup: GradleFilesPopup? = null
@@ -120,12 +121,12 @@ internal class EmbraceIntegrationForm(
         configFileErrorLabel.isVisible = false
 
         panel.add(EmbButton("btnConfigFile".text()) {
-            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
+//            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
                 dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
-            } else {
-                configFileErrorLabel.text = "noIdOrTokenError".text()
-                configFileErrorLabel.isVisible = true
-            }
+//            } else {
+//                configFileErrorLabel.text = "noIdOrTokenError".text()
+//                configFileErrorLabel.isVisible = true
+//            }
         })
 
         panel.add(configFileErrorLabel)
@@ -143,12 +144,13 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            val applicationModules = dataProvider.getApplicationModules()
-            if (!applicationModules.isNullOrEmpty()) {
-                showGradlePopupIfNecessary(applicationModules)
-            } else {
-                Messages.showErrorDialog("NoApplicationModule".text(), "Error")
-            }
+            dataProvider.applicationModules?.let {
+                if (it.isNotEmpty()) {
+                    showGradlePopupIfNecessary(it)
+                } else {
+                    Messages.showErrorDialog("NoApplicationModule".text(), "GenericErrorTitle".text())
+                }
+            } ?: Messages.showErrorDialog("NoApplicationModule".text(), "GenericErrorTitle".text())
         })
 
         gradleResultLabel.isVisible = false
@@ -182,6 +184,8 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbButton("btnAddEmbraceStart".text()) {
             dataProvider.addEmbraceStartMethod(this)
         })
+        startResultLabel.isVisible = false
+        panel.add(startResultLabel)
     }
 
     private fun initEmbraceVerificationStep() {
@@ -243,15 +247,30 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onStartStatusUpdated(status: StartMethodStatus) {
-        val message = when (status) {
-            StartMethodStatus.ERROR -> "StartMethodError".text()
-            StartMethodStatus.START_ADDED_SUCCESSFULLY -> "StartAddedSuccessfully".text()
-            StartMethodStatus.START_ALREADY_ADDED -> "StartAlreadyAdded".text()
-            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> "ApplicationClassNotFound".text()
-            StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> "ApplicationClassNotOnCreate".text()
-        }
+        when (status) {
+            StartMethodStatus.ERROR -> {
+                Messages.showErrorDialog("StartMethodError".text(), "GenericErrorTitle".text())
+            }
 
-        Messages.showMessageDialog(project, message, "Embrace", Messages.getInformationIcon())
+            StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
+                startResultLabel.isVisible = true
+                "StartAddedSuccessfully".text()
+            }
+
+            StartMethodStatus.START_ALREADY_ADDED -> {
+                startResultLabel.isVisible = true
+                Messages.showInfoMessage("StartAlreadyAdded".text(), "")
+            }
+
+            StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
+                Messages.showErrorDialog("ApplicationClassNotFound".text(), "GenericErrorTitle".text())
+            }
+
+            StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
+                Messages.showErrorDialog("ApplicationClassNotOnCreate".text(), "GenericErrorTitle".text())
+            }
+
+        }
     }
 
 
