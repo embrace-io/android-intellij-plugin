@@ -10,6 +10,7 @@ import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -104,14 +105,24 @@ internal class GradleFilesPopup(
         popupPanel.add(buttonPanel, constraints)
     }
 
-    fun showPopup() {
+    fun showPopup(ideWindow: JComponent?) {
         title = "Modify Gradle Files"
         contentPane.add(popupPanel)
         isResizable = true
         defaultCloseOperation = DISPOSE_ON_CLOSE
         pack()
-        isVisible = true
+
         minimumSize = Dimension(POPUP_MIN_WIDTH, POPUP_MIN_HEIGHT)
+
+        // Calculate the location relative to the parent frame
+        if (ideWindow?.isShowing == true) {
+            val ideLocation = ideWindow.locationOnScreen
+            val x: Int = ideLocation.x + (ideWindow.width - width) / 2
+            val y: Int = ideLocation.y + (ideWindow.height - height) / 2
+            setLocation(x, y)
+        }
+
+        isVisible = true
     }
 
 

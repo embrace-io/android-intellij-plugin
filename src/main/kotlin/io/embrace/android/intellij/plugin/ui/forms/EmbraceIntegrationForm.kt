@@ -1,6 +1,8 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.StartMethodStatus
@@ -16,21 +18,13 @@ import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
-import java.awt.Dimension
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
-import javax.swing.JComboBox
-import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JSeparator
 
 
 private const val VERTICAL_SPACE = 20
@@ -171,7 +165,8 @@ internal class EmbraceIntegrationForm(
         }
 
         if (!gradlePopup!!.isVisible) {
-            gradlePopup?.showPopup()
+            val ideWindow = WindowManager.getInstance().getIdeFrame(project)?.component
+            gradlePopup?.showPopup(ideWindow)
         }
     }
 
