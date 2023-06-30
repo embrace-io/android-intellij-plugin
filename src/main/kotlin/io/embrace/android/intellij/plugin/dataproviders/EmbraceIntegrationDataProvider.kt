@@ -172,8 +172,8 @@ internal class EmbraceIntegrationDataProvider(
         object {}.javaClass.getResource(path)?.readText()
 
     private fun buildOnboardDashURL(): String {
-        val projectName = repo.getProjectName()
-        return EmbracePluginRepository.embraceDashboardUrl //+                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+        val projectName = repo.getProjectName().replace(" ","")
+        return EmbracePluginRepository.embraceDashboardUrl + "?project_name=$projectName&localhost_port=$callbackPort"
     }
 
 

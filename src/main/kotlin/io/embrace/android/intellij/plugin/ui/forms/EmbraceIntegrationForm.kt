@@ -20,6 +20,7 @@ import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.intellij.datavis.r.inlays.table.filters.gui.FilterSettings.errorColor
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
+import java.awt.Component
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
 import javax.swing.BorderFactory

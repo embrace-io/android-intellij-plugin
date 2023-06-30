@@ -24,7 +24,7 @@ internal class EmbracePluginRepository(
         internal const val MAIN_PATH = "/app/src/main"
         internal const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
         internal const val EMBRACE_SWAZZLER_CLASSPATH = "classpath \"io.embrace:embrace-swazzler:LAST_VERSION\""
-        internal const val embraceDashboardUrl = ApiService.EMBRACE_DASHBOARD_URL
+        internal const val embraceDashboardUrl = "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/onboard/android-plugin"//ApiService.EMBRACE_DASHBOARD_URL
         internal const val embraceDashboardIntegrationUrl = ApiService.EMBRACE_DASHBOARD_COMPLETE_INTEGRATION
     }
 
