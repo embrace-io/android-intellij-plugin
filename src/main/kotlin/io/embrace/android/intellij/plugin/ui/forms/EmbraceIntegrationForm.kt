@@ -14,8 +14,10 @@ import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
 import io.embrace.android.intellij.plugin.ui.components.EmbLabel
+import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import org.intellij.datavis.r.inlays.table.filters.gui.FilterSettings.errorColor
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Color
 import java.awt.event.HierarchyEvent
@@ -24,6 +26,7 @@ import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 
 private const val VERTICAL_SPACE = 20
@@ -41,31 +44,31 @@ internal class EmbraceIntegrationForm(
     StartMethodCallback,
     OnboardConnectionCallback {
 
-    internal val panel = JPanel()
+    internal val panel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+    }
+
     private val scrollPane = JBScrollPane(panel)
-    private val errorColor = Color.decode("#d42320")
-    private val successColor = Color.decode("#16c74e")
-    private val connectToEmbraceResultLabel = EmbLabel("", TextStyle.BODY, errorColor)
-    private val configFileStatusLabel = EmbLabel("", TextStyle.BODY, errorColor)
-    private val gradleResultLabel = EmbLabel("swazzlerAdded".text(), TextStyle.BODY, successColor)
-    private val startResultLabel = EmbLabel("startAddedSuccessfully".text(), TextStyle.BODY, successColor)
+    private val componentManager = FormComponentManager()
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
     private var gradlePopup: GradleFilesPopup? = null
 
     init {
+        SwingUtilities.invokeLater {
+            initGetStartedLayout()
+            initCreateAppStep()
+            initConfigFileStep()
+            initDependenciesStep()
+            initStartEmbraceStep()
+            initEmbraceVerificationStep()
+            scrollToTop()
+        }
+    }
 
-        initMainPanel()
-
-        initGetStartedLayout()
-        initCreateAppStep()
-        initConfigFileStep()
-        initDependenciesStep()
-        initStartEmbraceStep()
-        initEmbraceVerificationStep()
-
-
-        // Add HierarchyListener to detect when the view is added to the scroll pane, scroll top and remove it. 
+    private fun scrollToTop() {
+        // Add HierarchyListener to detect when the view is added to the scroll pane, scroll top and remove it.
         scrollPane.addHierarchyListener(object : HierarchyListener {
             override fun hierarchyChanged(e: HierarchyEvent) {
                 if ((e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L && scrollPane.isShowing) {
@@ -83,11 +86,6 @@ internal class EmbraceIntegrationForm(
         return scrollPane
     }
 
-    private fun initMainPanel() {
-        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
-    }
-
     private fun initGetStartedLayout() {
         panel.add(EmbLabel("getStartedTitle".text(), TextStyle.HEADLINE_1))
         panel.add(EmbLabel("getStartedDescription".text(), TextStyle.BODY))
@@ -102,8 +100,9 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbButton("btnConnect".text()) {
             dataProvider.connectToEmbrace(this)
         })
-        connectToEmbraceResultLabel.isVisible = false
-        panel.add(connectToEmbraceResultLabel)
+
+
+        panel.add(componentManager.connectToEmbraceResultLabel)
     }
 
     private fun initConfigFileStep() {
@@ -119,18 +118,18 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(5))
         panel.add(etToken)
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        configFileStatusLabel.isVisible = false
+        componentManager.configFileStatusLabel.isVisible = false
 
         panel.add(EmbButton("btnConfigFile".text()) {
             if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
                 dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
             } else {
-                configFileStatusLabel.text = "noIdOrTokenError".text()
-                configFileStatusLabel.isVisible = true
+                componentManager.configFileStatusLabel.text = "noIdOrTokenError".text()
+                componentManager.configFileStatusLabel.isVisible = true
             }
         })
 
-        panel.add(configFileStatusLabel)
+        panel.add(componentManager.configFileStatusLabel)
     }
 
     private fun initDependenciesStep() {
@@ -154,8 +153,8 @@ internal class EmbraceIntegrationForm(
             } ?: Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
         })
 
-        gradleResultLabel.isVisible = false
-        panel.add(gradleResultLabel)
+
+        panel.add(componentManager.gradleResultPanel)
         panel.add(EmbLabel("applyDependencyDescription".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
@@ -185,8 +184,8 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbButton("btnAddEmbraceStart".text()) {
             dataProvider.addEmbraceStartMethod(this)
         })
-        startResultLabel.isVisible = false
-        panel.add(startResultLabel)
+        componentManager.startResultLabel.isVisible = false
+        panel.add(componentManager.startResultLabel)
     }
 
     private fun initEmbraceVerificationStep() {
@@ -194,7 +193,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step5Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbButton("btnOpenDashboard".text()) {
+        panel.add(EmbButton("btnVerifyIntegration".text()) {
             dataProvider.openFinishIntegrationDashboard()
         })
 
@@ -204,9 +203,9 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onConfigSuccess() {
-        configFileStatusLabel.foreground = successColor
-        configFileStatusLabel.text = "configFileCreated".text()
-        configFileStatusLabel.isVisible = true
+        componentManager.configFileStatusLabel.foreground = componentManager.successColor
+        componentManager.configFileStatusLabel.text = "configFileCreated".text()
+        componentManager.configFileStatusLabel.isVisible = true
     }
 
     override fun onConfigAlreadyExists() {
@@ -220,9 +219,9 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onConfigError(error: String) {
-        configFileStatusLabel.foreground = errorColor
-        configFileStatusLabel.text = error
-        configFileStatusLabel.isVisible = true
+        componentManager.configFileStatusLabel.foreground = componentManager.errorColor
+        componentManager.configFileStatusLabel.text = error
+        componentManager.configFileStatusLabel.isVisible = true
     }
 
     override fun onGradleFileError(error: String) {
@@ -233,7 +232,7 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onGradleFileAlreadyModified() {
-        gradleResultLabel.isVisible = true
+        componentManager.gradleResultPanel.isVisible = true
         Messages.showInfoMessage(
             "gradleFilesAlreadyAdded".text(),
             "Info"
@@ -241,7 +240,7 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onGradleFilesModifiedSuccessfully() {
-        gradleResultLabel.isVisible = true
+        componentManager.gradleResultPanel.isVisible = true
         Messages.showInfoMessage(
             "swazzlerPluginAdded".text(),
             "Info"
@@ -255,12 +254,12 @@ internal class EmbraceIntegrationForm(
             }
 
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
-                startResultLabel.isVisible = true
+                componentManager.startResultLabel.isVisible = true
                 "startAddedSuccessfully".text()
             }
 
             StartMethodStatus.START_ALREADY_ADDED -> {
-                startResultLabel.isVisible = true
+                componentManager.startResultLabel.isVisible = true
                 Messages.showInfoMessage("startAlreadyAdded".text(), "")
             }
 
@@ -279,15 +278,15 @@ internal class EmbraceIntegrationForm(
     override fun onOnboardConnected(appId: String, token: String) {
         etAppId.text = appId
         etToken.text = token
-        connectToEmbraceResultLabel.text = "connectedToEmbraceSuccessfully".text()
-        connectToEmbraceResultLabel.foreground = successColor
-        connectToEmbraceResultLabel.isVisible = true
+        componentManager.connectToEmbraceResultLabel.text = "connectedToEmbraceSuccessfully".text()
+        componentManager.connectToEmbraceResultLabel.foreground = componentManager.successColor
+        componentManager.connectToEmbraceResultLabel.isVisible = true
     }
 
     override fun onOnboardConnectedError(error: String) {
-        connectToEmbraceResultLabel.text = "connectedToEmbraceError".text()
-        connectToEmbraceResultLabel.foreground = errorColor
-        connectToEmbraceResultLabel.isVisible = true
+        componentManager.connectToEmbraceResultLabel.text = "connectedToEmbraceError".text()
+        componentManager.connectToEmbraceResultLabel.foreground = componentManager.errorColor
+        componentManager.connectToEmbraceResultLabel.isVisible = true
     }
 
 
