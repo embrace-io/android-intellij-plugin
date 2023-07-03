@@ -45,4 +45,11 @@ internal class EmbEditableText(private val hint: String) : JTextField(hint), Foc
     override fun getText(): String {
         return if (showingHint) "" else super.getText()
     }
+
+    override fun setText(text: String?) {
+        super.setText(text)
+        showingHint = text.isNullOrBlank()
+    }
+
+
 }

@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.EmbraceProject
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
@@ -23,7 +24,7 @@ internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
 
-    private lateinit var appId: String
+    private var embraceProject: EmbraceProject? = null
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     internal var applicationModules: List<AppModule>? = null
@@ -53,24 +54,59 @@ internal class EmbraceIntegrationDataProvider(
         }
     }
 
-    fun openFinishIntegrationDashboard() {
-        try {
-            val url = if (::appId.isInitialized) {
-                EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", appId)
-            } else {
-                EmbracePluginRepository.embraceDashboardUrl
-            }
-
-            Desktop.getDesktop().browse(URI(url))
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-    }
-
     fun connectToEmbrace(callback: OnboardConnectionCallback) {
         startServer(callback)
-        openDashboard()
+
+        val url = buildOnboardDashURL()
+        Desktop.getDesktop().browse(URI(url))
     }
+
+    private fun startServer(callback: OnboardConnectionCallback) {
+        val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
+        val handler = OnboardConnectionCallbackHandler({
+            embraceProject = it
+            callback.onOnboardConnected(it.appId, it.token)
+        }, {
+            callback.onOnboardConnectedError(it)
+        })
+
+        server.createContext("/", handler)
+        server.executor = null
+        server.start()
+        callbackPort = server.address.port
+        println("Server started on port $callbackPort")
+    }
+
+    internal fun createEmbraceFile(
+        appId: String,
+        token: String,
+        callback: ConfigFileCreationCallback,
+        shouldOverrideFile: Boolean? = false
+    ) {
+        project.basePath?.let { path ->
+            val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(path)
+
+            if (isFileAlreadyCreated && shouldOverrideFile == false) {
+                callback.onConfigAlreadyExists()
+                return
+            }
+
+            var configFile = getResourceAsText("/examplecode/config_template.txt") ?: ""
+            configFile = configFile.replace("MY_APP_ID", appId)
+            configFile = configFile.replace("MY_TOKEN", token)
+
+            if (repo.createEmbraceConfigFile(configFile, path)) {
+                callback.onConfigSuccess()
+            } else {
+                callback.onConfigError("cannot create config file")
+            }
+
+        } ?: callback.onConfigError("cannot get the path")
+    }
+
+    fun validateConfigFields(appId: String, token: String) =
+        appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
+
 
     fun getSwazzlerClasspathLine() =
         EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace("LAST_VERSION", lastEmbraceVersion)
@@ -118,50 +154,16 @@ internal class EmbraceIntegrationDataProvider(
         repo.addStartToApplicationClass(callback)
     }
 
-    internal fun createEmbraceFile(
-        appId: String,
-        token: String,
-        callback: ConfigFileCreationCallback,
-        shouldOverrideFile: Boolean? = false
-    ) {
-        this.appId = appId
 
-        project.basePath?.let { path ->
-            val isFileAlreadyCreated = repo.isConfigurationAlreadyCreated(path)
-
-            if (isFileAlreadyCreated && shouldOverrideFile == false) {
-                callback.onConfigAlreadyExists()
-                return
-            }
-
-            var configFile = getResourceAsText("/examplecode/config_template.txt") ?: ""
-            configFile = configFile.replace("MY_APP_ID", appId)
-            configFile = configFile.replace("MY_TOKEN", token)
-
-            if (repo.createEmbraceConfigFile(configFile, path)) {
-                callback.onConfigSuccess()
-            } else {
-                callback.onConfigError("cannot create config file")
-            }
-
-        } ?: callback.onConfigError("cannot get the path")
-    }
-
-    fun validateConfigFields(appId: String, token: String) =
-        appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
-
-    private fun startServer(callback: OnboardConnectionCallback) {
-        val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
-        server.createContext("/", OnboardConnectionCallbackHandler(callback))
-        server.executor = null
-        server.start()
-        callbackPort = server.address.port
-        println("Server started on port $callbackPort")
-    }
-
-    private fun openDashboard() {
+    fun openFinishIntegrationDashboard() {
         try {
-            val url = buildOnboardDashURL()
+
+            val url = if (embraceProject?.appId != null) {
+                EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", embraceProject!!.appId)
+            } else {
+                EmbracePluginRepository.embraceDashboardUrl
+            }
+
             Desktop.getDesktop().browse(URI(url))
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -172,8 +174,8 @@ internal class EmbraceIntegrationDataProvider(
         object {}.javaClass.getResource(path)?.readText()
 
     private fun buildOnboardDashURL(): String {
-        val projectName = repo.getProjectName()
-        return EmbracePluginRepository.embraceDashboardUrl //+                "?projectName=$projectName&platform=Android&localPort=$callbackPort"
+        val projectName = repo.getProjectName().replace(" ", "")
+        return EmbracePluginRepository.embraceDashboardUrl + "?project_name=$projectName&localhost_port=$callbackPort"
     }
 
 
