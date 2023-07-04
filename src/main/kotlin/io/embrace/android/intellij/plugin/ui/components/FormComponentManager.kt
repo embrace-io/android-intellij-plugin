@@ -1,5 +1,9 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+import com.intellij.openapi.ui.popup.Balloon
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.ui.JBColor
+import com.intellij.ui.awt.RelativePoint
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
 import java.awt.Component
@@ -11,6 +15,7 @@ import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
+import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -109,5 +114,17 @@ internal class FormComponentManager {
     fun setAppIdAndToken(appId: String, token: String) {
         etAppId.text = appId
         etToken.text = token
+    }
+
+    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Loading..."))
+    private var balloon : Balloon? = null
+
+    fun showLoadingPopup(component: JComponent) {
+        balloon = balloonBuilder.setFillColor(JBColor.background()).setAnimationCycle(500).createBalloon()
+        balloon?.show(RelativePoint.getNorthEastOf(component), Balloon.Position.above)
+    }
+
+    fun hideLoadingPopup(){
+        balloon?.dispose()
     }
 }

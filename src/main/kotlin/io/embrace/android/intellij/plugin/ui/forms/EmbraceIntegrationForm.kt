@@ -178,7 +178,9 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+
         panel.add(EmbButton("btnVerifyIntegration".text()) {
+            componentManager.showLoadingPopup(it)
             dataProvider.verifyIntegration(this)
         })
 
@@ -309,11 +311,13 @@ internal class EmbraceIntegrationForm(
 
 
     override fun onEmbraceIntegrationSuccess() {
+        componentManager.hideLoadingPopup()
         Messages.showInfoMessage("embraceVerificationSuccess".text(), "Success")
         btnOpenDashboard.isVisible = true
     }
 
     override fun onEmbraceIntegrationError() {
+        componentManager.hideLoadingPopup()
         Messages.showErrorDialog("embraceVerificationError".text(), "GenericErrorTitle".text())
     }
 
