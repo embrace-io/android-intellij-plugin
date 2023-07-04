@@ -10,7 +10,7 @@ import javax.swing.JTextField
 
 
 private const val VIEW_WIDTH = 270
-private const val VIEW_HEIGHT = 35
+private const val VIEW_HEIGHT = 30
 
 internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12) : JTextField(hint),
     FocusListener {
