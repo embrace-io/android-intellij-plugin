@@ -1,56 +1,64 @@
 package io.embrace.android.intellij.plugin.ui.components
 
-import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
 import java.awt.Component
 import java.awt.Image
+import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JTextArea
 
-class FormComponentManager {
+internal class FormComponentManager {
+
     private val errorColor = Color.decode("#d42320")
-    private val successColor = Color.decode("#53C541")
-    private val icon = ImageIcon(
+    private val successColor = Color.decode("#75D554")
+
+    private val successIcon = ImageIcon(
         ImageIcon(javaClass.classLoader.getResource("icons/check_circle.png")).image.getScaledInstance(
-            25,
-            25,
+            20,
+            20,
             Image.SCALE_SMOOTH
         )
     )
-    private val successIcon = JLabel(icon)
+
+    internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
+    internal val configFileStatusPanel = getResultLayout().apply { isVisible = false }
+    internal val gradleResultPanel = getResultLayout().apply { isVisible = false }
+    internal val startResultPanel = getResultLayout().apply { isVisible = false }
 
 
-    internal val connectEmbraceResultLabel = EmbLabel("", TextStyle.BODY, errorColor)
-    internal val connectEmbraceResultPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        alignmentY = Component.CENTER_ALIGNMENT
-        alignmentX = Component.LEFT_ALIGNMENT
-        add(successIcon)
-        add(connectEmbraceResultLabel)
-    }
+    private fun getResultLayout(): JPanel {
+        return JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            alignmentY = Component.CENTER_ALIGNMENT
+            alignmentX = Component.LEFT_ALIGNMENT
 
-    internal val configFileStatusLabel = EmbLabel("", TextStyle.BODY, errorColor)
-    internal val configFileStatusPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        alignmentY = Component.CENTER_ALIGNMENT
-        alignmentX = Component.LEFT_ALIGNMENT
-        add(successIcon)
-        add(configFileStatusLabel)
-    }
-
-    internal val gradleResultLabel = EmbLabel("swazzlerAdded".text(), TextStyle.BODY, successColor)
-    internal val gradleResultPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        alignmentY = Component.CENTER_ALIGNMENT
-        alignmentX = Component.LEFT_ALIGNMENT
-        add(successIcon)
-        add(gradleResultLabel)
+            add(JLabel(successIcon))
+            add(EmbLabel("message", TextStyle.BODY).apply {
+                border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
+            })
+        }
     }
 
 
-    internal val startResultLabel = EmbLabel("startAddedSuccessfully".text(), TextStyle.BODY, successColor)
+    fun changeResultText(panel: JPanel, text: String, success: Boolean = true) {
+        panel.isVisible = true
+        val icon = panel.getComponent(0)
+        val label = panel.getComponent(1)
 
+        if (icon is JLabel && label is JLabel) {
+            label.text = text
+            icon.isVisible = success
+
+            if (success) {
+                label.foreground = successColor
+            } else {
+                label.foreground = errorColor
+            }
+
+        }
+    }
 
 }

@@ -6,7 +6,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
+import io.embrace.android.intellij.plugin.data.EmbraceProject
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import java.io.File
 import java.io.FileWriter
@@ -24,8 +26,6 @@ internal class EmbracePluginRepository(
         internal const val MAIN_PATH = "/app/src/main"
         internal const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
         internal const val EMBRACE_SWAZZLER_CLASSPATH = "classpath \"io.embrace:embrace-swazzler:LAST_VERSION\""
-        internal const val embraceDashboardUrl = "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/onboard/android-plugin"//ApiService.EMBRACE_DASHBOARD_URL
-        internal const val embraceDashboardIntegrationUrl = ApiService.EMBRACE_DASHBOARD_COMPLETE_INTEGRATION
     }
 
     fun getLastSDKVersion() =
@@ -75,6 +75,10 @@ internal class EmbracePluginRepository(
     fun getProjectName(): String {
         val currentProject = ProjectManager.getInstance().openProjects[0]
         return currentProject.name
+    }
+
+    fun verifyIntegration(embraceProject: EmbraceProject, callback: VerifyIntegrationCallback) {
+        apiService.verifyIntegration(embraceProject, callback)
     }
 
 }
