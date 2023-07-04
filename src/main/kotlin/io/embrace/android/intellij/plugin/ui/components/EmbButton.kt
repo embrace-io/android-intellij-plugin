@@ -3,9 +3,10 @@ package io.embrace.android.intellij.plugin.ui.components
 import java.awt.Font
 import javax.swing.BorderFactory
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.SwingConstants
 
-internal class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
+internal class EmbButton(tag: String, onClick: (JComponent) -> Unit) : JButton(tag) {
 
 
     init {
@@ -17,7 +18,7 @@ internal class EmbButton(tag: String, onClick: () -> Unit) : JButton(tag) {
         font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
 
         addActionListener {
-            onClick.invoke()
+            onClick.invoke(this)
         }
     }
 }
