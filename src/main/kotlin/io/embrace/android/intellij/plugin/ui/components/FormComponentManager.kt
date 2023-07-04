@@ -42,38 +42,9 @@ internal class FormComponentManager {
     private val etAppId = EmbEditableText()
     private val etToken = EmbEditableText("4f83459c39154c6b93b96ca6a875de15")
 
-    private val constraints = GridBagConstraints().apply {
-        fill = GridBagConstraints.HORIZONTAL
-    }
-
-    private val projectDataLayout = JPanel(GridBagLayout()).apply {
+    internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
-
-        // First row
-        constraints.gridy = 0
-        constraints.gridx = 0
-        add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3), constraints)
-
-        constraints.gridx = 1
-        constraints.insets = Insets(0, 10, 0, 0)
-        add(etAppId.apply { alignmentX = Component.LEFT_ALIGNMENT }, constraints)
-
-        constraints.weightx = 0.0
-        constraints.insets = Insets(5, 0, 0, 0)
-
-        // Second row
-        constraints.gridy = 1
-        constraints.gridx = 0
-        add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3), constraints)
-
-        constraints.gridx = 1
-        constraints.insets = Insets(5, 10, 0, 0)
-        add(etToken, constraints)
-    }
-
-    val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
-        alignmentX = Component.LEFT_ALIGNMENT
-        add(projectDataLayout)
+        add(getGridLayout())
     }
 
     private fun getResultLayout(): JPanel {
@@ -89,6 +60,38 @@ internal class FormComponentManager {
         }
     }
 
+    private fun getGridLayout(): JPanel {
+        val constraints = GridBagConstraints().apply {
+            fill = GridBagConstraints.HORIZONTAL
+        }
+
+        val panel = JPanel(GridBagLayout()).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+
+            // First row
+            constraints.gridy = 0
+            constraints.gridx = 0
+            add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3), constraints)
+
+            constraints.gridx = 1
+            constraints.insets = Insets(0, 10, 0, 0)
+            add(etAppId.apply { alignmentX = Component.LEFT_ALIGNMENT }, constraints)
+
+            constraints.weightx = 0.0
+            constraints.insets = Insets(5, 0, 0, 0)
+
+            // Second row
+            constraints.gridy = 1
+            constraints.gridx = 0
+            add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3), constraints)
+
+            constraints.gridx = 1
+            constraints.insets = Insets(5, 10, 0, 0)
+            add(etToken, constraints)
+        }
+
+        return panel
+    }
 
     fun changeResultText(panel: JPanel, text: String, success: Boolean = true) {
         panel.isVisible = true
@@ -117,14 +120,14 @@ internal class FormComponentManager {
     }
 
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Loading..."))
-    private var balloon : Balloon? = null
+    private var balloon: Balloon? = null
 
     fun showLoadingPopup(component: JComponent) {
         balloon = balloonBuilder.setFillColor(JBColor.background()).setAnimationCycle(500).createBalloon()
         balloon?.show(RelativePoint.getNorthEastOf(component), Balloon.Position.above)
     }
 
-    fun hideLoadingPopup(){
+    fun hideLoadingPopup() {
         balloon?.dispose()
     }
 }
