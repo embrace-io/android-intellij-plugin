@@ -2,7 +2,6 @@ package io.embrace.android.intellij.plugin.repository.network
 
 import java.io.IOException
 import java.net.URI
-import java.net.URISyntaxException
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -13,16 +12,10 @@ class ApiClient {
     fun executeGetRequest(url: String): String? {
         var response: String? = null
 
-        val httpRequest: HttpRequest
-        try {
-            httpRequest = HttpRequest.newBuilder()
-                .uri(URI(url))
-                .GET()
-                .build()
-        } catch (e: URISyntaxException) {
-            println("Error creating URI for URL: $url")
-            return null
-        }
+        val httpRequest = HttpRequest.newBuilder()
+            .uri(URI(url))
+            .GET()
+            .build()
 
         try {
             val httpResponse: HttpResponse<String> = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
@@ -35,4 +28,20 @@ class ApiClient {
 
         return response
     }
+
+    fun executeGetRequestAsync(url: String, sessionId : String?, callback: (String) -> Unit) {
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("SessionId", sessionId)
+            .build()
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            .thenAccept { response ->
+                val responseBody = response.body()
+                println(responseBody)
+                callback.invoke(responseBody)
+            }
+    }
+
+
 }

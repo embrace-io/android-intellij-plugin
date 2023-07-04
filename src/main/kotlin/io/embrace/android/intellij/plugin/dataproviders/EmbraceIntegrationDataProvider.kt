@@ -10,13 +10,17 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreat
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
+import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Desktop
+import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.URI
+import java.net.URISyntaxException
 
 
 internal class EmbraceIntegrationDataProvider(
@@ -154,20 +158,14 @@ internal class EmbraceIntegrationDataProvider(
         repo.addStartToApplicationClass(callback)
     }
 
-
-    fun openFinishIntegrationDashboard() {
-        try {
-
-            val url = if (embraceProject?.appId != null) {
-                EmbracePluginRepository.embraceDashboardIntegrationUrl.replace("{appId}", embraceProject!!.appId)
+    fun verifyIntegration(callback: VerifyIntegrationCallback) {
+        embraceProject?.also {
+            if (it.sessionId != null) {
+                repo.verifyIntegration(embraceProject!!, callback)
             } else {
-                EmbracePluginRepository.embraceDashboardUrl
+                callback.onEmbraceIntegrationError()
             }
-
-            Desktop.getDesktop().browse(URI(url))
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
+        } ?: callback.onEmbraceIntegrationError()
     }
 
     private fun getResourceAsText(path: String): String? =
@@ -175,8 +173,19 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun buildOnboardDashURL(): String {
         val projectName = repo.getProjectName().replace(" ", "")
-        return EmbracePluginRepository.embraceDashboardUrl + "?project_name=$projectName&localhost_port=$callbackPort"
+        return ApiService.EMBRACE_CREATE_PROJECT_URL + "?project_name=$projectName&localhost_port=$callbackPort"
     }
 
-
+    fun openDashboard() {
+        embraceProject?.let {
+            try {
+                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("appId", it.appId)
+                Desktop.getDesktop().browse(URI(url))
+            } catch (ex: IOException) {
+                ex.printStackTrace()
+            } catch (ex: URISyntaxException) {
+                ex.printStackTrace()
+            }
+        }
+    }
 }
