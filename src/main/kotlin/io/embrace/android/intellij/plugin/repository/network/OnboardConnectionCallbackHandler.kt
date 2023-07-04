@@ -79,7 +79,7 @@ private data class EmbraceCallbackRequestBody(
     @SerializedName("token")
     val token: String?,
 
-    @SerializedName("sessionid")
+    @SerializedName("session_id")
     val sessionId: String?
 )
 

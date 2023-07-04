@@ -4,12 +4,13 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
 import io.embrace.android.intellij.plugin.data.AppModule
-import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.data.StartMethodStatus
+import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnectionCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
+import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
@@ -23,7 +24,9 @@ import java.awt.event.HierarchyListener
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
+import javax.swing.JEditorPane
 import javax.swing.JPanel
+import javax.swing.event.HyperlinkEvent
 
 
 private const val VERTICAL_SPACE = 20
@@ -39,7 +42,8 @@ internal class EmbraceIntegrationForm(
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
     StartMethodCallback,
-    OnboardConnectionCallback {
+    OnboardConnectionCallback,
+    VerifyIntegrationCallback {
 
     internal val panel = JPanel()
     private val scrollPane = JBScrollPane(panel)
@@ -52,6 +56,7 @@ internal class EmbraceIntegrationForm(
     private val etAppId = EmbEditableText("Eg: sawWz")
     private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
     private var gradlePopup: GradleFilesPopup? = null
+    private val btnOpenDashboard = EmbButton("btnOpenDashboard".text()) { dataProvider.openDashboard() }
 
     init {
 
@@ -64,15 +69,12 @@ internal class EmbraceIntegrationForm(
         initStartEmbraceStep()
         initEmbraceVerificationStep()
 
-
         // Add HierarchyListener to detect when the view is added to the scroll pane, scroll top and remove it. 
         scrollPane.addHierarchyListener(object : HierarchyListener {
             override fun hierarchyChanged(e: HierarchyEvent) {
                 if ((e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L && scrollPane.isShowing) {
-                    // Scroll to the top
                     scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
                     scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
-                    // Remove the HierarchyListener
                     scrollPane.removeHierarchyListener(this)
                 }
             }
@@ -194,11 +196,14 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("step5Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbLabel("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbButton("btnOpenDashboard".text()) {
-            dataProvider.openFinishIntegrationDashboard()
+        panel.add(EmbButton("btnVerifyIntegration".text()) {
+            dataProvider.verifyIntegration(this)
         })
 
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(5))
+        btnOpenDashboard.isVisible = false
+        panel.add(btnOpenDashboard)
+
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbLabel("contactInfo".text(), TextStyle.BODY))
     }
@@ -288,6 +293,15 @@ internal class EmbraceIntegrationForm(
         connectToEmbraceResultLabel.text = "connectedToEmbraceError".text()
         connectToEmbraceResultLabel.foreground = errorColor
         connectToEmbraceResultLabel.isVisible = true
+    }
+
+    override fun onEmbraceIntegrationSuccess() {
+        Messages.showInfoMessage("embraceVerificationSuccess".text(), "Success")
+        btnOpenDashboard.isVisible = true
+    }
+
+    override fun onEmbraceIntegrationError() {
+        Messages.showErrorDialog("embraceVerificationError".text(), "GenericErrorTitle".text())
     }
 
 
