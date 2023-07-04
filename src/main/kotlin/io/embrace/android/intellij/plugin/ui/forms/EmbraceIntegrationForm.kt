@@ -13,12 +13,12 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCall
 import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
-import io.embrace.android.intellij.plugin.ui.components.EmbEditableText
 import io.embrace.android.intellij.plugin.ui.components.EmbTextArea
 import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
+import java.awt.Component
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
 import javax.swing.BorderFactory
@@ -47,13 +47,13 @@ internal class EmbraceIntegrationForm(
 
     internal val panel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        alignmentX = Component.LEFT_ALIGNMENT
         border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
     }
 
     private val scrollPane = JBScrollPane(panel)
     private val componentManager = FormComponentManager()
-    private val etAppId = EmbEditableText("Eg: sawWz")
-    private val etToken = EmbEditableText("Eg: 123k1jn123998asd")
+
     private var gradlePopup: GradleFilesPopup? = null
     private val btnOpenDashboard = EmbButton("btnOpenDashboard".text()) { dataProvider.openDashboard() }
 
@@ -110,18 +110,13 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step2Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("createConfigFile".text(), TextStyle.BODY))
 
-        panel.add(EmbTextArea("appIdLabel".text(), TextStyle.HEADLINE_3))
-        panel.add(Box.createVerticalStrut(5))
-        panel.add(etAppId)
-
-        panel.add(EmbTextArea("tokenLabel".text(), TextStyle.HEADLINE_3))
-        panel.add(Box.createVerticalStrut(5))
-        panel.add(etToken)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(componentManager.configFieldsLayout)
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnConfigFile".text()) {
-            if (dataProvider.validateConfigFields(etAppId.text, etToken.text)) {
-                dataProvider.createEmbraceFile(etAppId.text, etToken.text, this)
+            if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
+                dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this)
             } else {
                 componentManager.changeResultText(
                     componentManager.configFileStatusPanel,
@@ -196,8 +191,7 @@ internal class EmbraceIntegrationForm(
     }
 
     override fun onOnboardConnected(appId: String, token: String) {
-        etAppId.text = appId
-        etToken.text = token
+        componentManager.setAppIdAndToken(appId, token)
 
         componentManager.changeResultText(
             componentManager.connectEmbraceResultPanel,
@@ -226,7 +220,7 @@ internal class EmbraceIntegrationForm(
             Messages.showDialog("replaceConfig".text(), "Replace Configuration", options, 0, Messages.getQuestionIcon())
 
         if (result == 0) {
-            dataProvider.createEmbraceFile(etAppId.text, etToken.text, this, true)
+            dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this, true)
         }
     }
 

@@ -1,14 +1,20 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
 import java.awt.Component
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.Image
+import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JTextArea
+
+private const val ICON_SIZE = 20
 
 internal class FormComponentManager {
 
@@ -17,8 +23,8 @@ internal class FormComponentManager {
 
     private val successIcon = ImageIcon(
         ImageIcon(javaClass.classLoader.getResource("icons/check_circle.png")).image.getScaledInstance(
-            20,
-            20,
+            ICON_SIZE,
+            ICON_SIZE,
             Image.SCALE_SMOOTH
         )
     )
@@ -28,6 +34,42 @@ internal class FormComponentManager {
     internal val gradleResultPanel = getResultLayout().apply { isVisible = false }
     internal val startResultPanel = getResultLayout().apply { isVisible = false }
 
+    private val etAppId = EmbEditableText()
+    private val etToken = EmbEditableText("4f83459c39154c6b93b96ca6a875de15")
+
+    private val constraints = GridBagConstraints().apply {
+        fill = GridBagConstraints.HORIZONTAL
+    }
+
+    private val projectDataLayout = JPanel(GridBagLayout()).apply {
+        alignmentX = Component.LEFT_ALIGNMENT
+
+        // First row
+        constraints.gridy = 0
+        constraints.gridx = 0
+        add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3), constraints)
+
+        constraints.gridx = 1
+        constraints.insets = Insets(0, 10, 0, 0)
+        add(etAppId.apply { alignmentX = Component.LEFT_ALIGNMENT }, constraints)
+
+        constraints.weightx = 0.0
+        constraints.insets = Insets(5, 0, 0, 0)
+
+        // Second row
+        constraints.gridy = 1
+        constraints.gridx = 0
+        add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3), constraints)
+
+        constraints.gridx = 1
+        constraints.insets = Insets(5, 10, 0, 0)
+        add(etToken, constraints)
+    }
+
+    val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+        alignmentX = Component.LEFT_ALIGNMENT
+        add(projectDataLayout)
+    }
 
     private fun getResultLayout(): JPanel {
         return JPanel().apply {
@@ -57,8 +99,15 @@ internal class FormComponentManager {
             } else {
                 label.foreground = errorColor
             }
-
         }
     }
 
+    fun getAppId() = etAppId.text
+
+    fun getToken() = etToken.text
+
+    fun setAppIdAndToken(appId: String, token: String) {
+        etAppId.text = appId
+        etToken.text = token
+    }
 }

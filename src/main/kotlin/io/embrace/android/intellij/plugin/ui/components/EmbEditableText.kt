@@ -9,20 +9,24 @@ import java.awt.event.FocusListener
 import javax.swing.JTextField
 
 
-internal class EmbEditableText(private val hint: String) : JTextField(hint), FocusListener {
+private const val VIEW_WIDTH = 270
+private const val VIEW_HEIGHT = 35
+
+internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12) : JTextField(hint),
+    FocusListener {
+
     private var showingHint = true
     private val darkGray = Color.decode("#5c5c5c")
-    private val viewWidth = 300
-    private val viewHeight = 60
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
         alignmentY = Component.CENTER_ALIGNMENT
 
-        font = Font("Monospaced", Font.PLAIN, 12)
+        font = Font("Monospaced", Font.PLAIN, fontSize)
         isOpaque = true
         background = darkGray
-        maximumSize = Dimension(viewWidth, viewHeight)
+        maximumSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
+        preferredSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
 
         addFocusListener(this)
     }
