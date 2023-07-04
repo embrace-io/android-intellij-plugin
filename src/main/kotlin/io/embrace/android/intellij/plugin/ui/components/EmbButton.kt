@@ -1,24 +1,17 @@
 package io.embrace.android.intellij.plugin.ui.components
 
 import java.awt.Font
-import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.SwingConstants
 
-internal class EmbButton(tag: String, onClick: (JComponent) -> Unit) : JButton(tag) {
-
+internal class EmbButton(text: String, onClick: (JComponent) -> Unit) : JButton(text) {
 
     init {
-        alignmentX = LEFT_ALIGNMENT
-        horizontalAlignment = SwingConstants.CENTER
-        verticalAlignment = SwingConstants.CENTER
-
-        border = BorderFactory.createEmptyBorder(5, 15, 5, 15)
         font = Font(Font.SANS_SERIF, Font.PLAIN, 14)
 
         addActionListener {
             onClick.invoke(this)
         }
     }
+
 }

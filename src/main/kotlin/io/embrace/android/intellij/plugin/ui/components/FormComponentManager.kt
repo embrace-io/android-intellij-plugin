@@ -40,7 +40,7 @@ internal class FormComponentManager {
     internal val startResultPanel = getResultLayout().apply { isVisible = false }
 
     private val etAppId = EmbEditableText()
-    private val etToken = EmbEditableText("4f83459c39154c6b93b96ca6a875de15")
+    private val etToken = EmbEditableText()
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
