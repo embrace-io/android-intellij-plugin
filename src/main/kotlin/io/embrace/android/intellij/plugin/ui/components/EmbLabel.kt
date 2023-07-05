@@ -4,7 +4,7 @@ import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
-internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null) : JLabel(text) {
+internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null, step: Steps? = null) : JLabel(text) {
 
     init {
         font = when (textLevel) {
@@ -13,7 +13,7 @@ internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = 
             TextStyle.HEADLINE_3 -> Font(Font.SANS_SERIF, Font.BOLD, 12)
             TextStyle.BODY -> Font(Font.SANS_SERIF, Font.PLAIN, 12)
         }
-
+        step?.let { putClientProperty("step", it) }
         textColor?.let { foreground = textColor }
     }
 }
