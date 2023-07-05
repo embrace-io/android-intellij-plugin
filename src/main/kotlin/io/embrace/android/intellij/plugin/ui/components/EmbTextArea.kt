@@ -2,6 +2,7 @@ package io.embrace.android.intellij.plugin.ui.components
 
 import java.awt.Color
 import java.awt.Component
+import java.awt.Dimension
 import java.awt.Font
 import javax.swing.BorderFactory
 import javax.swing.JTextArea
@@ -23,5 +24,8 @@ internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color?
         }
 
         textColor?.let { foreground = textColor }
+
+        maximumSize = Dimension(maximumSize.width, preferredSize.height)
+
     }
 }

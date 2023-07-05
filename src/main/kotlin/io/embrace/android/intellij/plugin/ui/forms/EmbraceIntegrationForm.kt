@@ -18,6 +18,7 @@ import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
+import java.awt.CardLayout
 import java.awt.Component
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
@@ -51,7 +52,11 @@ internal class EmbraceIntegrationForm(
         border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
     }
 
-    private val scrollPane = JBScrollPane(panel)
+    private val cardLayout = JPanel(CardLayout()).apply {
+        border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+
+    }
+    private val scrollPane = JBScrollPane(cardLayout)
     private val componentManager = FormComponentManager()
 
     private var gradlePopup: GradleFilesPopup? = null
@@ -59,13 +64,23 @@ internal class EmbraceIntegrationForm(
 
     init {
         SwingUtilities.invokeLater {
-            initGetStartedLayout()
-            initCreateAppStep()
-            initConfigFileStep()
-            initDependenciesStep()
-            initStartEmbraceStep()
-            initEmbraceVerificationStep()
-            scrollToTop()
+            val step1 = initGetStartedLayout()
+            val step2 = initConfigFileStep()
+            val step3 = initDependenciesStep()
+            val step4 = initStartEmbraceStep()
+            val step5 = initEmbraceVerificationStep()
+
+            cardLayout.add(step1, "step1")
+            cardLayout.add(step2, "step2")
+            cardLayout.add(step3, "step3")
+            cardLayout.add(step4, "step4")
+            cardLayout.add(step5, "step5")
+//            initCreateAppStep()
+//            initConfigFileStep()
+//            initDependenciesStep()
+//            initStartEmbraceStep()
+//            initEmbraceVerificationStep()
+//            scrollToTop()
         }
     }
 
@@ -86,26 +101,37 @@ internal class EmbraceIntegrationForm(
         return scrollPane
     }
 
-    private fun initGetStartedLayout() {
+    private fun initGetStartedLayout(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        }
         panel.add(EmbTextArea("getStartedTitle".text(), TextStyle.HEADLINE_1))
         panel.add(EmbTextArea("getStartedDescription".text(), TextStyle.BODY))
-    }
 
-    private fun initCreateAppStep() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step1Title".text(), TextStyle.HEADLINE_2))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step1Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnConnect".text()) {
-            dataProvider.connectToEmbrace(this)
+//            dataProvider.connectToEmbrace(this)
+            val layout = cardLayout.layout as CardLayout
+            layout.next(cardLayout)
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.connectEmbraceResultPanel)
+        return panel
     }
 
-    private fun initConfigFileStep() {
+    private fun initConfigFileStep(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        }
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step2Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("createConfigFile".text(), TextStyle.BODY))
@@ -115,22 +141,32 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnConfigFile".text()) {
-            if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
-                dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this)
-            } else {
-                componentManager.changeResultText(
-                    componentManager.configFileStatusPanel,
-                    "noIdOrTokenError".text(),
-                    false
-                )
-            }
+            val layout = cardLayout.layout as CardLayout
+            layout.next(cardLayout)
+
+//            if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
+//                dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this)
+//            } else {
+//                componentManager.changeResultText(
+//                    componentManager.configFileStatusPanel,
+//                    "noIdOrTokenError".text(),
+//                    false
+//                )
+//            }
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.configFileStatusPanel)
+        return panel
     }
 
-    private fun initDependenciesStep() {
+    private fun initDependenciesStep(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        }
+
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step3Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("addSwazzler".text(), TextStyle.BODY))
@@ -143,13 +179,16 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text()) {
-            dataProvider.applicationModules?.let {
-                if (it.isNotEmpty()) {
-                    showGradlePopupIfNecessary(it)
-                } else {
-                    Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
-                }
-            } ?: Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
+            val layout = cardLayout.layout as CardLayout
+            layout.next(cardLayout)
+
+//            dataProvider.applicationModules?.let {
+//                if (it.isNotEmpty()) {
+//                    showGradlePopupIfNecessary(it)
+//                } else {
+//                    Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
+//                }
+//            } ?: Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
@@ -157,9 +196,15 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("applyDependencyDescription".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode()))
+        return panel
     }
 
-    private fun initStartEmbraceStep() {
+    private fun initStartEmbraceStep(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        }
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step4Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("step4Description".text(), TextStyle.BODY))
@@ -167,21 +212,32 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode()))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnAddEmbraceStart".text()) {
-            dataProvider.addEmbraceStartMethod(this)
+            val layout = cardLayout.layout as CardLayout
+            layout.next(cardLayout)
+//            dataProvider.addEmbraceStartMethod(this)
         })
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.startResultPanel)
+        return panel
     }
 
-    private fun initEmbraceVerificationStep() {
+    private fun initEmbraceVerificationStep(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        }
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnVerifyIntegration".text()) {
-            componentManager.showLoadingPopup(it)
-            dataProvider.verifyIntegration(this)
+            val layout = cardLayout.layout as CardLayout
+            layout.next(cardLayout)
+
+//            componentManager.showLoadingPopup(it)
+//            dataProvider.verifyIntegration(this)
         })
 
         panel.add(Box.createVerticalStrut(5))
@@ -190,6 +246,7 @@ internal class EmbraceIntegrationForm(
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("contactInfo".text(), TextStyle.BODY))
+        return panel
     }
 
     override fun onOnboardConnected(appId: String, token: String) {
