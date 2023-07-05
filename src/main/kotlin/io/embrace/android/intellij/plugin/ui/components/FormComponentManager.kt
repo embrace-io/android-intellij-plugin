@@ -35,16 +35,80 @@ internal class FormComponentManager {
     )
 
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
-    internal val configFileStatusPanel = getResultLayout().apply { isVisible = false }
-    internal val gradleResultPanel = getResultLayout().apply { isVisible = false }
-    internal val startResultPanel = getResultLayout().apply { isVisible = false }
 
-    private val etAppId = EmbEditableText()
-    private val etToken = EmbEditableText()
+    internal val configFileStatusPanel = getResultLayout().apply {
+        isVisible = false
+        putClientProperty("step", Steps.CONFIG)
+    }
+
+    internal val gradleResultPanel = getResultLayout().apply {
+        isVisible = false
+        putClientProperty("step", Steps.GRADLE)
+    }
+
+    internal val startResultPanel = getResultLayout().apply {
+        isVisible = false
+        putClientProperty("step", Steps.ADD_START)
+    }
+
+    private val etAppId = EmbEditableText(step = Steps.CONFIG)
+    private val etToken = EmbEditableText(step = Steps.CONFIG)
+    private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
+    private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
         add(getGridLayout())
+        putClientProperty("step", Steps.CONFIG)
+    }
+
+    fun setCurrentStep(parentPanel: JPanel, currentStep: Steps) {
+        val enableComponents = mutableListOf<Steps>()
+
+        when (currentStep) {
+            Steps.CREATE_PROJECT -> enableComponents.add(Steps.CREATE_PROJECT)
+
+            Steps.CONFIG -> {
+                enableComponents.add(Steps.CREATE_PROJECT)
+                enableComponents.add(Steps.CONFIG)
+            }
+
+            Steps.GRADLE -> {
+                enableComponents.add(Steps.CREATE_PROJECT)
+                enableComponents.add(Steps.CONFIG)
+                enableComponents.add(Steps.GRADLE)
+            }
+
+            Steps.ADD_START -> {
+                enableComponents.add(Steps.CREATE_PROJECT)
+                enableComponents.add(Steps.CONFIG)
+                enableComponents.add(Steps.GRADLE)
+                enableComponents.add(Steps.ADD_START)
+            }
+
+            Steps.VERIFY -> {
+                parentPanel.components.forEach { component ->
+                    if (component is JComponent) {
+                        component.isEnabled = true
+                    }
+                }
+                return
+            }
+        }
+        enableConfigLayout(currentStep != Steps.CREATE_PROJECT)
+        parentPanel.components.forEach { component ->
+            if (component is JComponent) {
+                val id = component.getClientProperty("step")
+                component.isEnabled = enableComponents.contains(id)
+            }
+        }
+    }
+
+    private fun enableConfigLayout(enable: Boolean) {
+        appIdLabel.isEnabled = enable
+        etAppId.isEnabled = enable
+        tokenLabel.isEnabled = enable
+        etToken.isEnabled = enable
     }
 
     private fun getResultLayout(): JPanel {
@@ -71,7 +135,7 @@ internal class FormComponentManager {
             // First row
             constraints.gridy = 0
             constraints.gridx = 0
-            add(EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3), constraints)
+            add(appIdLabel, constraints)
 
             constraints.gridx = 1
             constraints.insets = Insets(0, 10, 0, 0)
@@ -83,7 +147,7 @@ internal class FormComponentManager {
             // Second row
             constraints.gridy = 1
             constraints.gridx = 0
-            add(EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3), constraints)
+            add(tokenLabel, constraints)
 
             constraints.gridx = 1
             constraints.insets = Insets(5, 10, 0, 0)

@@ -12,7 +12,7 @@ internal class ApiService {
         const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
 
         const val EMBRACE_CREATE_PROJECT_URL: String =
-            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/onboard/android-plugin"
+            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/android-plugin/landing"
 
         const val EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL: String =
             "https://dash-api.android-plugin.joaquin-diaz.dev.emb-eng.com/external/v4/org/app/{appId}/verify_integration"

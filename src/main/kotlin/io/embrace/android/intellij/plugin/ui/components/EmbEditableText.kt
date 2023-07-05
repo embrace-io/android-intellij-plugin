@@ -12,7 +12,7 @@ import javax.swing.JTextField
 private const val VIEW_WIDTH = 270
 private const val VIEW_HEIGHT = 30
 
-internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12) : JTextField(hint),
+internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12, step : Steps? = null) : JTextField(hint),
     FocusListener {
 
     private var showingHint = true
@@ -27,6 +27,7 @@ internal class EmbEditableText(private val hint: String? = null, fontSize: Int =
         background = darkGray
         maximumSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
         preferredSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
+        step?.let { putClientProperty("step", it) }
 
         addFocusListener(this)
     }

@@ -6,7 +6,8 @@ import java.awt.Font
 import javax.swing.BorderFactory
 import javax.swing.JTextArea
 
-internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color? = null) : JTextArea(text) {
+internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color? = null, step: Steps? = null) :
+    JTextArea(text) {
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
@@ -23,5 +24,6 @@ internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color?
         }
 
         textColor?.let { foreground = textColor }
+        step?.let { putClientProperty("step", it) }
     }
 }
