@@ -23,6 +23,7 @@ import java.net.URI
 import java.net.URISyntaxException
 
 private const val VERIFICATION_COUNT_MAX = 5
+private const val RETRY_TIME = 2000L
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
@@ -163,7 +164,7 @@ internal class EmbraceIntegrationDataProvider(
     fun verifyIntegration(callback: VerifyIntegrationCallback) {
         embraceProject?.also {
             if (it.sessionId != null) {
-                repo.verifyIntegration(embraceProject!!, {
+                repo.verifyIntegration(it, {
                     verificationCounter = 0
                     callback.onEmbraceIntegrationSuccess()
                 }, {
@@ -171,7 +172,7 @@ internal class EmbraceIntegrationDataProvider(
                         verificationCounter = 0
                         callback.onEmbraceIntegrationError()
                     } else {
-                        Thread.sleep(2000)
+                        Thread.sleep(RETRY_TIME)
                         verifyIntegration(callback)
                     }
                 })
