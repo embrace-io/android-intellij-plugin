@@ -171,7 +171,7 @@ internal class EmbraceIntegrationDataProvider(
                         verificationCounter = 0
                         callback.onEmbraceIntegrationError()
                     } else {
-                        Thread.sleep(100)
+                        Thread.sleep(2000)
                         verifyIntegration(callback)
                     }
                 })
