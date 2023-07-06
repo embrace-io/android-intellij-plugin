@@ -86,7 +86,7 @@ internal class GradleFilesPopup(
         popupPanel.add(pluginLine, constraints)
 
         // Add buttons
-        val okButton = JButton("Replace")
+        val okButton = JButton("Add")
         okButton.addActionListener {
             dispose()
             yesButtonAction.invoke(dropdown.selectedItem as String)

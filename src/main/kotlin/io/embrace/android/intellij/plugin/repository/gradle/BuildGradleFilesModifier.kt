@@ -4,6 +4,9 @@ import com.android.tools.build.jetifier.core.utils.Log
 import com.android.tools.idea.gradle.project.build.output.indexOfFirstNonWhitespace
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
+import com.intellij.openapi.externalSystem.model.ProjectSystemId
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -189,6 +192,14 @@ internal class BuildGradleFilesModifier(
         }
 
         return GradleFileStatus.ERROR
+    }
+
+    fun syncGradle(project: Project) {
+        try {
+            ExternalSystemUtil.refreshProjects(ImportSpecBuilder(project, ProjectSystemId("GRADLE")))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
 

@@ -22,6 +22,8 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.net.URISyntaxException
 
+private const val VERIFICATION_COUNT_MAX = 5
+private const val RETRY_TIME = 2000L
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
@@ -32,7 +34,7 @@ internal class EmbraceIntegrationDataProvider(
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     internal var applicationModules: List<AppModule>? = null
-
+    private var verificationCounter = 0
 
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
@@ -142,6 +144,7 @@ internal class EmbraceIntegrationDataProvider(
         if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
             && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
         ) {
+            buildGradleFilesModifier.value?.syncGradle(project)
             callback.onGradleFilesModifiedSuccessfully()
         } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
             callback.onGradleFileAlreadyModified()
@@ -161,7 +164,19 @@ internal class EmbraceIntegrationDataProvider(
     fun verifyIntegration(callback: VerifyIntegrationCallback) {
         embraceProject?.also {
             if (it.sessionId != null) {
-                repo.verifyIntegration(embraceProject!!, callback)
+                repo.verifyIntegration(it, {
+                    verificationCounter = 0
+                    callback.onEmbraceIntegrationSuccess()
+                }, {
+                    if (verificationCounter >= VERIFICATION_COUNT_MAX) {
+                        verificationCounter = 0
+                        callback.onEmbraceIntegrationError()
+                    } else {
+                        Thread.sleep(RETRY_TIME)
+                        verifyIntegration(callback)
+                    }
+                })
+                verificationCounter++
             } else {
                 callback.onEmbraceIntegrationError()
             }
@@ -177,9 +192,10 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun openDashboard() {
+
         embraceProject?.let {
             try {
-                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("appId", it.appId)
+                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
                 Desktop.getDesktop().browse(URI(url))
             } catch (ex: IOException) {
                 ex.printStackTrace()

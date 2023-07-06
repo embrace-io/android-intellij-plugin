@@ -2,9 +2,13 @@ package io.embrace.android.intellij.plugin.repository
 
 import com.android.tools.idea.projectsystem.getManifestFiles
 import com.android.utils.XmlUtils
+import com.intellij.ide.diff.VirtualFileDiffElement.refreshFile
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -59,7 +63,7 @@ internal class StartMethodModifier(private val project: Project) {
         private val project: Project?,
         private val callback: StartMethodCallback
     ) : SwingWorker<StartMethodStatus, Void>() {
-
+        private var kotlinClassPath: String? = null
 
         override fun doInBackground(): StartMethodStatus {
 
@@ -68,7 +72,6 @@ internal class StartMethodModifier(private val project: Project) {
             }
 
             var psiClass: PsiClass? = null
-            var kotlinClassPath: String? = null
             var kotlinClassFile: Path? = null
 
             ApplicationManager.getApplication().runReadAction {
@@ -128,7 +131,7 @@ internal class StartMethodModifier(private val project: Project) {
                         val blankSpaces = lines[embraceStartLineIndex - 1].substringBefore("super.")
                         lines.add(embraceStartLineIndex, "$blankSpaces$embraceStartLine")
                         Files.write(kotlinClassFile, lines)
-                        psiClass!!.containingFile.virtualFile.refresh(false, true)
+                        psiClass?.containingFile?.virtualFile?.refresh(true, true)
                         return StartMethodStatus.START_ADDED_SUCCESSFULLY
                     } else {
                         return StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE
@@ -142,9 +145,31 @@ internal class StartMethodModifier(private val project: Project) {
             }
         }
 
+
         override fun done() {
             val result = get() as StartMethodStatus
+
+            if (result == StartMethodStatus.START_ADDED_SUCCESSFULLY ||
+                result == StartMethodStatus.START_ALREADY_ADDED) {
+                refreshProjectFolder()
+            }
             callback.onStartStatusUpdated(result)
+        }
+
+        /**
+         * It refreshes the directory and then displays the file in the IDE.
+         */
+        private fun refreshProjectFolder() {
+            kotlinClassPath?.let { kotlinClassPath ->
+                ApplicationManager.getApplication().invokeLater {
+                    val virtualFile =
+                        LocalFileSystem.getInstance().refreshAndFindFileByPath(kotlinClassPath)
+                    if (virtualFile != null) {
+                        FileEditorManager.getInstance(project!!).closeFile(virtualFile)
+                        FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                    }
+                }
+            }
         }
 
         private fun getEmbraceImportLine(psiClass: PsiClass): String {
@@ -167,6 +192,7 @@ internal class StartMethodModifier(private val project: Project) {
             }
         }
     }
+
 }
 
 private const val EMBRACE_IMPORT_LINE = "import io.embrace.android.embracesdk.Embrace"

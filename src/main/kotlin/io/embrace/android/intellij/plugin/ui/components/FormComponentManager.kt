@@ -2,6 +2,7 @@ package io.embrace.android.intellij.plugin.ui.components
 
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -27,7 +28,7 @@ internal class FormComponentManager {
     private val successColor = Color.decode("#75D554")
 
     private val successIcon = ImageIcon(
-        ImageIcon(javaClass.classLoader.getResource("icons/check_circle.png")).image.getScaledInstance(
+        ImageIcon(javaClass.classLoader.getResource("icons/check_small.png")).image.getScaledInstance(
             ICON_SIZE,
             ICON_SIZE,
             Image.SCALE_SMOOTH
@@ -51,10 +52,19 @@ internal class FormComponentManager {
         putClientProperty("step", Steps.ADD_START)
     }
 
+    internal val verifyResultPanel = getResultLayout().apply {
+        isVisible = false
+        putClientProperty("step", Steps.VERIFY)
+    }
+
+    internal val labelOpenDashboard = EmbTextArea("seeSessions".text(), TextStyle.BODY).apply { isVisible = false }
+
     private val etAppId = EmbEditableText(step = Steps.CONFIG)
     private val etToken = EmbEditableText(step = Steps.CONFIG)
     private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
     private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
+
+    internal var btnVerifyIntegration: EmbButton? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
