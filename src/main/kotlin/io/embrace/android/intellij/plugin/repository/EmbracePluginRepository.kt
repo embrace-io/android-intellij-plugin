@@ -8,7 +8,6 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.EmbraceProject
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
-import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import java.io.File
 import java.io.FileWriter
@@ -77,8 +76,8 @@ internal class EmbracePluginRepository(
         return currentProject.name
     }
 
-    fun verifyIntegration(embraceProject: EmbraceProject, callback: VerifyIntegrationCallback) {
-        apiService.verifyIntegration(embraceProject, callback)
+    fun verifyIntegration(embraceProject: EmbraceProject, onSucccess : () -> Unit,  onError : () -> Unit) {
+        apiService.verifyIntegration(embraceProject, onSucccess, onError)
     }
 
 }

@@ -22,6 +22,7 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.net.URISyntaxException
 
+private const val VERIFICATION_COUNT_MAX = 5
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
@@ -32,7 +33,7 @@ internal class EmbraceIntegrationDataProvider(
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     internal var applicationModules: List<AppModule>? = null
-
+    private var verificationCounter = 0
 
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
@@ -159,9 +160,22 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun verifyIntegration(callback: VerifyIntegrationCallback) {
+
         embraceProject?.also {
             if (it.sessionId != null) {
-                repo.verifyIntegration(embraceProject!!, callback)
+                repo.verifyIntegration(embraceProject!!, {
+                    verificationCounter = 0
+                    callback.onEmbraceIntegrationSuccess()
+                }, {
+                    if (verificationCounter >= VERIFICATION_COUNT_MAX) {
+                        verificationCounter = 0
+                        callback.onEmbraceIntegrationError()
+                    } else {
+                        Thread.sleep(100)
+                        verifyIntegration(callback)
+                    }
+                })
+                verificationCounter++
             } else {
                 callback.onEmbraceIntegrationError()
             }
@@ -177,9 +191,10 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun openDashboard() {
+
         embraceProject?.let {
             try {
-                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("appId", it.appId)
+                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
                 Desktop.getDesktop().browse(URI(url))
             } catch (ex: IOException) {
                 ex.printStackTrace()

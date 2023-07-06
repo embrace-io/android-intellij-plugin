@@ -1,7 +1,6 @@
 package io.embrace.android.intellij.plugin.repository.network
 
 import io.embrace.android.intellij.plugin.data.EmbraceProject
-import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -18,7 +17,7 @@ internal class ApiService {
             "https://dash-api.android-plugin.joaquin-diaz.dev.emb-eng.com/external/v4/org/app/{appId}/verify_integration"
 
         const val EMBRACE_DASHBOARD_URL: String =
-            "https://dash.embrace.io/app/{appId}/grouped_sessions/hour"
+            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/app/{appId}/grouped_sessions/hour"
     }
 
     fun getLastSDKVersion(): String {
@@ -33,14 +32,14 @@ internal class ApiService {
         }
     }
 
-    fun verifyIntegration(embraceProject: EmbraceProject, callback: VerifyIntegrationCallback) {
+    fun verifyIntegration(embraceProject: EmbraceProject, onSuccess: () -> Unit, onError: () -> Unit) {
         val url = EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL.replace("{appId}", embraceProject.appId)
 
         apiClient.executeGetRequestAsync(url, embraceProject.sessionId) { response ->
             if (response.contains("\"integration_verified\":true")) {
-                callback.onEmbraceIntegrationSuccess()
+                onSuccess.invoke()
             } else {
-                callback.onEmbraceIntegrationError()
+                onError.invoke()
             }
         }
     }

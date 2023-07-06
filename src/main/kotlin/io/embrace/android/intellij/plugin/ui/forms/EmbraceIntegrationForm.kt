@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
@@ -26,7 +27,6 @@ import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
-
 import javax.swing.SwingUtilities
 
 
@@ -67,7 +67,7 @@ internal class EmbraceIntegrationForm(
             initStartEmbraceStep()
             initEmbraceVerificationStep()
 
-            componentManager.setCurrentStep(panel, Steps.VERIFY)
+            componentManager.setCurrentStep(panel, Steps.CREATE_PROJECT)
             scrollToTop()
         }
     }
@@ -150,9 +150,9 @@ internal class EmbraceIntegrationForm(
                 if (it.isNotEmpty()) {
                     showGradlePopupIfNecessary(it)
                 } else {
-                    Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
+                    Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
                 }
-            } ?: Messages.showErrorDialog("noApplicationModule".text(), "GenericErrorTitle".text())
+            } ?: Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
@@ -182,11 +182,17 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY, step = Steps.VERIFY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
-        panel.add(EmbButton("btnVerifyIntegration".text(), Steps.VERIFY) {
+        componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text(), Steps.VERIFY) {
+            componentManager.verifyResultPanel.isVisible = false
+            componentManager.btnVerifyIntegration?.isEnabled = false
             componentManager.showLoadingPopup(it)
             dataProvider.verifyIntegration(this)
-        })
-
+        }
+        panel.add(componentManager.btnVerifyIntegration)
+        panel.add(Box.createVerticalStrut(5))
+        panel.add(componentManager.verifyResultPanel)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(componentManager.labelOpenDashboard)
         panel.add(Box.createVerticalStrut(5))
         btnOpenDashboard.isVisible = false
         panel.add(btnOpenDashboard)
@@ -226,7 +232,14 @@ internal class EmbraceIntegrationForm(
     override fun onConfigAlreadyExists() {
         val options = arrayOf("Replace", "Cancel")
         val result =
-            Messages.showDialog("replaceConfig".text(), "Replace Configuration", options, 0, Messages.getQuestionIcon())
+            Messages.showDialog(
+                scrollPane,
+                "replaceConfig".text(),
+                "Replace Configuration",
+                options,
+                0,
+                Messages.getQuestionIcon()
+            )
 
         if (result == 0) {
             dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this, true)
@@ -258,6 +271,7 @@ internal class EmbraceIntegrationForm(
 
     override fun onGradleFileError(error: String) {
         Messages.showInfoMessage(
+            scrollPane,
             error,
             "Error"
         )
@@ -269,6 +283,7 @@ internal class EmbraceIntegrationForm(
             "swazzlerPluginAddedResult".text()
         )
         Messages.showInfoMessage(
+            scrollPane,
             "gradleFilesAlreadyAdded".text(),
             "Info"
         )
@@ -282,6 +297,7 @@ internal class EmbraceIntegrationForm(
             "swazzlerPluginAddedResult".text()
         )
         Messages.showInfoMessage(
+            scrollPane,
             "swazzlerPluginAdded".text(),
             "Info"
         )
@@ -292,7 +308,7 @@ internal class EmbraceIntegrationForm(
     override fun onStartStatusUpdated(status: StartMethodStatus) {
         when (status) {
             StartMethodStatus.ERROR -> {
-                Messages.showErrorDialog("startMethodError".text(), "GenericErrorTitle".text())
+                Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
             }
 
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
@@ -314,11 +330,11 @@ internal class EmbraceIntegrationForm(
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
-                Messages.showErrorDialog("applicationClassNotFound".text(), "GenericErrorTitle".text())
+                Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
-                Messages.showErrorDialog("applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
+                Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
             }
 
         }
@@ -326,14 +342,32 @@ internal class EmbraceIntegrationForm(
 
 
     override fun onEmbraceIntegrationSuccess() {
+        componentManager.btnVerifyIntegration?.isEnabled = true
         componentManager.hideLoadingPopup()
-        Messages.showInfoMessage("embraceVerificationSuccess".text(), "Success")
         btnOpenDashboard.isVisible = true
+        componentManager.labelOpenDashboard.isVisible = true
+
+        componentManager.changeResultText(
+            componentManager.verifyResultPanel,
+            "embraceVerificationSuccess".text()
+        )
+
+        ApplicationManager.getApplication().invokeLater {
+            Messages.showInfoMessage(
+                "Embrace is all set! You can now access and review all your sessions in our dashboard!",
+                "Success!"
+            )
+        }
     }
 
     override fun onEmbraceIntegrationError() {
+        componentManager.btnVerifyIntegration?.isEnabled = true
         componentManager.hideLoadingPopup()
-        Messages.showErrorDialog("embraceVerificationError".text(), "GenericErrorTitle".text())
+        componentManager.changeResultText(
+            componentManager.verifyResultPanel,
+            "embraceVerificationError".text(),
+            false
+        )
     }
 
 
