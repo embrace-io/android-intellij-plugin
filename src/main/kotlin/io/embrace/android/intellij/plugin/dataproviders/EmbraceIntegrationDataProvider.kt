@@ -143,6 +143,7 @@ internal class EmbraceIntegrationDataProvider(
         if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
             && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
         ) {
+            buildGradleFilesModifier.value?.syncGradle(project)
             callback.onGradleFilesModifiedSuccessfully()
         } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
             callback.onGradleFileAlreadyModified()
@@ -160,7 +161,6 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun verifyIntegration(callback: VerifyIntegrationCallback) {
-
         embraceProject?.also {
             if (it.sessionId != null) {
                 repo.verifyIntegration(embraceProject!!, {

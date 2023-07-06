@@ -4,6 +4,9 @@ import com.android.tools.build.jetifier.core.utils.Log
 import com.android.tools.idea.gradle.project.build.output.indexOfFirstNonWhitespace
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
+import com.intellij.openapi.externalSystem.model.ProjectSystemId
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -191,29 +194,12 @@ internal class BuildGradleFilesModifier(
         return GradleFileStatus.ERROR
     }
 
-    fun syncGradleFiles() {
-        // Get the Gradle execution settings
-//        val executionSettings = GradleExecutionSettings(
-//            null,
-//            null,
-//            DistributionType.DEFAULT_WRAPPED,
-//            false
-//        )
-////        executionSettings.isUseAutoImport = true
-////        executionSettings.isBuildLinkedGradleProjectsBeforeRun = true
-//        executionSettings.ideProjectPath = project.basePath
-//
-//        // Create the Gradle build invoker
-//        val buildInvoker = GradleExecutionHelper.getInstance(project)
-//
-//        // Define the execution callback
-//        val callback = ThrowableRunnable<Throwable> {
-//            // Sync the project Gradle files
-//            buildInvoker.runBuild(executionSettings, DEFAULT_MODE)
-//        }
-//
-//        // Execute the Gradle build invoker
-//        buildInvoker.runBuild(callback)
+    fun syncGradle(project: Project) {
+        try {
+            ExternalSystemUtil.refreshProjects(ImportSpecBuilder(project, ProjectSystemId("GRADLE")))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
 
