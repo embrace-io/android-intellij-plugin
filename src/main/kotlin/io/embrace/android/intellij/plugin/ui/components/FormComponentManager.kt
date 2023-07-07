@@ -2,7 +2,6 @@ package io.embrace.android.intellij.plugin.ui.components
 
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -16,6 +15,7 @@ import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
+import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -52,6 +52,15 @@ internal class FormComponentManager {
         putClientProperty("step", Steps.ADD_START)
     }
 
+    internal var btnVerifyIntegration: EmbButton? = null
+
+    internal val verifyCheckBox = JCheckBox("checkVerify".text()).apply {
+        putClientProperty("step", Steps.VERIFY)
+        addItemListener {
+            btnVerifyIntegration?.isEnabled = it.stateChange == java.awt.event.ItemEvent.SELECTED
+        }
+    }
+
     internal val verifyResultPanel = getResultLayout().apply {
         isVisible = false
         putClientProperty("step", Steps.VERIFY)
@@ -64,7 +73,8 @@ internal class FormComponentManager {
     private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
     private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
 
-    internal var btnVerifyIntegration: EmbButton? = null
+    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
+    private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
@@ -192,9 +202,6 @@ internal class FormComponentManager {
         etAppId.text = appId
         etToken.text = token
     }
-
-    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Loading..."))
-    private var balloon: Balloon? = null
 
     fun showLoadingPopup(component: JComponent) {
         balloon = balloonBuilder.setFillColor(JBColor.background()).setAnimationCycle(500).createBalloon()

@@ -177,12 +177,13 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initEmbraceVerificationStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2, step = Steps.VERIFY))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY, step = Steps.VERIFY))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-
-        componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text(), Steps.VERIFY) {
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(componentManager.verifyCheckBox)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text()) {
             componentManager.verifyResultPanel.isVisible = false
             componentManager.btnVerifyIntegration?.isEnabled = false
             componentManager.showLoadingPopup(it)
