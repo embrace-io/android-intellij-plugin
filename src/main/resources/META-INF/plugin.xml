@@ -11,9 +11,7 @@
 
     <!-- Text to display as description on Preferences/Settings | Plugin page -->
     <description>
-        <![CDATA[
-      Embrace IntelliJ Plugin helps Embrace customers with the integration of the Embrace SDK.
-    ]]>
+        <![CDATA[ The Embrace IntelliJ Plugin assists customers in integrating the Embrace SDK. ]]>
     </description>
 
     <!-- Changelog -->
@@ -32,13 +30,6 @@
     <resource-bundle>messages.messages</resource-bundle>
 
     <actions>
-        <!--
-          See https://plugins.jetbrains.com/docs/intellij/basic-action-system.html#registering-actions
-          for information about the elements and attributes used for actions and groups.
-          This <action> element adds a static menu item in last position of the Tools menu that shows Embrace.
-          Note this element has no text or description attributes because translations for them are given
-          by action-id in the resource-bundle.
-        -->
         <action id="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
                 class="io.embrace.android.intellij.plugin.actions.EmbraceIntegrationAction"
                 text="Embrace" description="Embrace SDK Integration"
@@ -56,8 +47,4 @@
                     factoryClass="io.embrace.android.intellij.plugin.ui.forms.EmbraceIntegrationFactory"/>
     </extensions>
 
-    <!--    <applicationListeners>-->
-    <!--        <listener class="io.embrace.android.intellij.plugin.listeners.MyProjectManagerListener"-->
-    <!--                  topic="com.intellij.openapi.project.ProjectManagerListener"/>-->
-    <!--    </applicationListeners>-->
 </idea-plugin>

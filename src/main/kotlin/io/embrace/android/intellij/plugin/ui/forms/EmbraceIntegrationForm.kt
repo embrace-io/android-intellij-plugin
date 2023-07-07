@@ -188,7 +188,7 @@ internal class EmbraceIntegrationForm(
             componentManager.btnVerifyIntegration?.isEnabled = false
             componentManager.showLoadingPopup(it)
             dataProvider.verifyIntegration(this)
-        }
+        }.apply { isEnabled = false }
         panel.add(componentManager.btnVerifyIntegration)
         panel.add(Box.createVerticalStrut(5))
         panel.add(componentManager.verifyResultPanel)
@@ -355,7 +355,7 @@ internal class EmbraceIntegrationForm(
 
         ApplicationManager.getApplication().invokeLater {
             Messages.showInfoMessage(
-                "Embrace is all set! You can now access and review all your sessions in our dashboard!",
+                "Embrace is all set! You can now access and review all your sessions in our dashboard.",
                 "Success!"
             )
         }

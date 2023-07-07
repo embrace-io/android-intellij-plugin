@@ -66,7 +66,8 @@ internal class FormComponentManager {
         putClientProperty("step", Steps.VERIFY)
     }
 
-    internal val labelOpenDashboard = EmbTextArea("seeSessions".text(), TextStyle.BODY).apply { isVisible = false }
+    internal val labelOpenDashboard =
+        EmbTextArea("seeSessions".text(), TextStyle.BODY, step = Steps.VERIFY).apply { isVisible = false }
 
     private val etAppId = EmbEditableText(step = Steps.CONFIG)
     private val etToken = EmbEditableText(step = Steps.CONFIG)
@@ -107,12 +108,11 @@ internal class FormComponentManager {
             }
 
             Steps.VERIFY -> {
-                parentPanel.components.forEach { component ->
-                    if (component is JComponent) {
-                        component.isEnabled = true
-                    }
-                }
-                return
+                enableComponents.add(Steps.CREATE_PROJECT)
+                enableComponents.add(Steps.CONFIG)
+                enableComponents.add(Steps.GRADLE)
+                enableComponents.add(Steps.ADD_START)
+                enableComponents.add(Steps.VERIFY)
             }
         }
         enableConfigLayout(currentStep != Steps.CREATE_PROJECT)
