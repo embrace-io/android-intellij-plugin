@@ -177,17 +177,18 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initEmbraceVerificationStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2, step = Steps.VERIFY))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY, step = Steps.VERIFY))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-
-        componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text(), Steps.VERIFY) {
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(componentManager.verifyCheckBox)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text()) {
             componentManager.verifyResultPanel.isVisible = false
             componentManager.btnVerifyIntegration?.isEnabled = false
             componentManager.showLoadingPopup(it)
             dataProvider.verifyIntegration(this)
-        }
+        }.apply { isEnabled = false }
         panel.add(componentManager.btnVerifyIntegration)
         panel.add(Box.createVerticalStrut(5))
         panel.add(componentManager.verifyResultPanel)
@@ -354,7 +355,7 @@ internal class EmbraceIntegrationForm(
 
         ApplicationManager.getApplication().invokeLater {
             Messages.showInfoMessage(
-                "Embrace is all set! You can now access and review all your sessions in our dashboard!",
+                "Embrace is all set! You can now access and review all your sessions in our dashboard.",
                 "Success!"
             )
         }
