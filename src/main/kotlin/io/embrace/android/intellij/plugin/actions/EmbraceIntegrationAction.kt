@@ -16,7 +16,7 @@ internal class EmbraceIntegrationAction : AnAction {
 
     override fun actionPerformed(event: AnActionEvent) {
         val toolWindowManager = event.project?.let { ToolWindowManager.getInstance(it) }
-        val window: ToolWindow? = toolWindowManager?.getToolWindow("Embrace Integration Assistant")
+        val window: ToolWindow? = toolWindowManager?.getToolWindow("Embrace Assistant")
         window?.show()
     }
 

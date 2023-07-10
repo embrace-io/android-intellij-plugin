@@ -1,8 +1,6 @@
-import org.gradle.internal.classpath.Instrumented.systemProperty
-import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
-import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import java.nio.file.Paths
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -12,7 +10,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.8.0"
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.15.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.0.0"
 }
@@ -45,9 +43,27 @@ changelog {
     repositoryUrl.set(properties("pluginRepositoryUrl"))
 }
 
+dependencies {
+    implementation("org.json:json:20230227")
+}
+
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion")
+    }
+
+    register<Jar>("generateJar") {
+        from(sourceSets.main.get().output)
+        archiveBaseName.set("embraceAssistant")
+        archiveVersion.set("1.0.0")
+
+        dependsOn(configurations.runtimeClasspath)
+        from({
+            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+        })
+
+        val desktopPath = Paths.get(System.getProperty("user.home"), "Desktop")
+        destinationDirectory.set(file(desktopPath.toString()))
     }
 
     patchPluginXml {
@@ -67,7 +83,6 @@ tasks {
                 subList(indexOf(start) + 1, indexOf(end))
             }.joinToString("\n").let { markdownToHTML(it) }
         )
-
         // Get the latest available change notes from the changelog file
         changeNotes.set(provider {
             with(changelog) {
@@ -79,6 +94,7 @@ tasks {
             }
         })
     }
+
 
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
@@ -103,4 +119,5 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
+
 }

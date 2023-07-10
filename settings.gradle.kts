@@ -1,1 +1,1 @@
-rootProject.name = "Embrace IntelliJ Plugin"
+rootProject.name = "Embrace Assistant"

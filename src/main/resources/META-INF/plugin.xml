@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>io.embrace.android.intellij.plugin</id>
-    <name>Embrace</name>
+    <name>Embrace Assistant</name>
     <vendor>Embrace</vendor>
 
     <!-- Indicate this plugin can be loaded in all IntelliJ Platform-based products. -->
@@ -10,9 +10,7 @@
     <depends>org.jetbrains.android</depends>
 
     <!-- Text to display as description on Preferences/Settings | Plugin page -->
-    <description>
-        <![CDATA[ The Embrace IntelliJ Plugin assists customers in integrating the Embrace SDK. ]]>
-    </description>
+    <description>Embrace Assistant helps Embrace customers with the integration of the Embrace SDK. </description>
 
     <!-- Changelog -->
     <change-notes>
@@ -43,7 +41,7 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Embrace Integration Assistant" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+        <toolWindow id="Embrace Assistant" secondary="true" icon="AllIcons.General.Modified" anchor="right"
                     factoryClass="io.embrace.android.intellij.plugin.ui.forms.EmbraceIntegrationFactory"/>
     </extensions>
 

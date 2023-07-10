@@ -1,6 +1,6 @@
-# Embrace Intellij Plugin
+# Embrace Assistant
 
 <!-- Plugin description -->
-**Embrace IntelliJ Plugin** helps Embrace customers with the integration of the Embrace SDK.
+**Embrace Assistant** helps customers with the integration of the Embrace SDK.
 
 <!-- Plugin description end -->

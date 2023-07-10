@@ -17,7 +17,7 @@ internal class ApiService {
             "https://dash-api.android-plugin.joaquin-diaz.dev.emb-eng.com/external/v4/org/app/{appId}/verify_integration"
 
         const val EMBRACE_DASHBOARD_URL: String =
-            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/app/{appId}/grouped_sessions/hour"
+            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
     }
 
     fun getLastSDKVersion(): String {
