@@ -10,16 +10,11 @@
     <depends>org.jetbrains.android</depends>
 
     <!-- Text to display as description on Preferences/Settings | Plugin page -->
-    <description>Embrace Assistant helps Embrace customers with the integration of the Embrace SDK. </description>
+    <description>Embrace Assistant is the easiest way to integrate and use the Embrace SDK
+    </description>
 
     <!-- Changelog -->
-    <change-notes>
-        <![CDATA[
-      <ul>
-        <li><b>1.0</b> Initial Release.</li>
-      </ul>
-    ]]>
-    </change-notes>
+    <change-notes>Initial Release. </change-notes>
 
     <!-- Text to display as company information on Preferences/Settings | Plugin page -->
     <vendor>Embrace</vendor>

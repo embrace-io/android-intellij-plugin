@@ -89,7 +89,11 @@ internal class StartMethodModifier(private val project: Project) {
             }
 
             if (kotlinClassFile != null && Files.exists(kotlinClassFile!!)) {
-                val lines = Files.readAllLines(kotlinClassFile)
+                val lines = mutableListOf<String>()
+                ApplicationManager.getApplication().runReadAction {
+                    lines.addAll(Files.readAllLines(kotlinClassFile))
+                }
+
                 val embraceImportLine = getEmbraceImportLine(psiClass!!)
                 val embraceStartLine = getStartMethodLine(psiClass!!)
 
@@ -103,7 +107,7 @@ internal class StartMethodModifier(private val project: Project) {
                         return@forEachIndexed
                     }
 
-                    if (line.contains(embraceStartLine)) {
+                    if (line.contains(EMBRACE_START_METHOD)) {
                         isEmbraceStartAdded = true
                         return@forEachIndexed
                     }
@@ -197,3 +201,4 @@ internal class StartMethodModifier(private val project: Project) {
 
 private const val EMBRACE_IMPORT_LINE = "import io.embrace.android.embracesdk.Embrace"
 private const val EMBRACE_START_LINE = "Embrace.getInstance().start(this)"
+private const val EMBRACE_START_METHOD = "Embrace.getInstance().start"
