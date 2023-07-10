@@ -2,6 +2,7 @@ package io.embrace.android.intellij.plugin.ui.components
 
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -10,30 +11,20 @@ import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Image
 import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
-import javax.swing.ImageIcon
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-private const val ICON_SIZE = 20
 
 internal class FormComponentManager {
 
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#75D554")
-
-    private val successIcon = ImageIcon(
-        ImageIcon(javaClass.classLoader.getResource("icons/check_small.png")).image.getScaledInstance(
-            ICON_SIZE,
-            ICON_SIZE,
-            Image.SCALE_SMOOTH
-        )
-    )
+    private val successIcon = IconLoader.getIcon("/icons/check.svg")
 
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
