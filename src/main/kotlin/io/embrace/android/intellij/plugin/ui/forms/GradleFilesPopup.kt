@@ -6,6 +6,7 @@ import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
 import java.awt.Component
@@ -36,7 +37,7 @@ internal class GradleFilesPopup(
     private val popupPanel = JPanel().apply {
         border = BorderFactory.createEmptyBorder(15, 10, 10, 10)
     }
-    private var backgroundColor = JBColor(JBColor.decode("#c4c2c2"), Color.decode("#5c5c5c"))
+    private var backgroundColor = JBColor(Colors.GRAY_LIGHT_MODE, Colors.GRAY_DARK_MODE)
 
     init {
         popupPanel.layout = GridBagLayout()

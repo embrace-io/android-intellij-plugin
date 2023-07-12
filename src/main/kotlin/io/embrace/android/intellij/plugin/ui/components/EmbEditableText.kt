@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.ui.components
 
 import com.intellij.ui.JBColor
+import io.embrace.android.intellij.plugin.ui.constants.Colors
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -18,7 +19,7 @@ internal class EmbEditableText(private val hint: String? = null, fontSize: Int =
     FocusListener {
 
     private var showingHint = true
-    private var backgroundColor = JBColor(JBColor.decode("#c4c2c2"), Color.decode("#5c5c5c"))
+    private var backgroundColor = JBColor(Colors.GRAY_LIGHT_MODE, Colors.GRAY_DARK_MODE)
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
