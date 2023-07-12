@@ -36,7 +36,7 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="  Embrace Assistant" secondary="false" icon="icons/logo_gray.svg" anchor="right"
+        <toolWindow id="  Embrace Assistant" secondary="false" icon="io.embrace.android.intellij.plugin.ui.icons.EmbraceIcons.toolwindowIcon" anchor="right"
                     factoryClass="io.embrace.android.intellij.plugin.ui.forms.EmbraceIntegrationFactory"/>
     </extensions>
 
