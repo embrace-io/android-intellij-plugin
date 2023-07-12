@@ -15,6 +15,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.search.GlobalSearchScope
 import io.embrace.android.intellij.plugin.data.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
+import io.sentry.Sentry
 import org.jetbrains.android.facet.AndroidFacet
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,6 +52,7 @@ internal class StartMethodModifier(private val project: Project) {
                     return packageName + applicationNode.nodeValue
                 }
             } catch (e: Exception) {
+                Sentry.captureException(e)
                 e.printStackTrace()
             }
         }

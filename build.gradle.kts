@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
+import java.util.*
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -45,6 +47,7 @@ changelog {
 
 dependencies {
     implementation("org.json:json:20230227")
+    implementation("io.sentry:sentry:6.25.0")
 }
 
 tasks {
@@ -65,7 +68,6 @@ tasks {
         val desktopPath = Paths.get(System.getProperty("user.home"), "Desktop")
         destinationDirectory.set(file(desktopPath.toString()))
     }
-
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))

@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.EmbraceProject
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.repository.network.ApiService
+import io.sentry.Sentry
 import java.io.File
 import java.io.FileWriter
 
@@ -46,7 +47,7 @@ internal class EmbracePluginRepository(
             refreshProjectFolder(path)
             return true
         } catch (e: Exception) {
-            e.printStackTrace()
+            Sentry.captureException(e)
             return false
         }
     }

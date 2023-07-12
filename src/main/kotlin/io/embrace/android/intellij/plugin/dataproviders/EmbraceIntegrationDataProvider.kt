@@ -16,6 +16,7 @@ import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModi
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import io.sentry.Sentry
 import java.awt.Desktop
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -198,9 +199,9 @@ internal class EmbraceIntegrationDataProvider(
                 val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
                 Desktop.getDesktop().browse(URI(url))
             } catch (ex: IOException) {
-                ex.printStackTrace()
+                Sentry.captureException(ex)
             } catch (ex: URISyntaxException) {
-                ex.printStackTrace()
+                Sentry.captureException(ex)
             }
         }
     }

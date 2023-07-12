@@ -14,6 +14,7 @@ import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
+import io.sentry.Sentry
 import org.gradle.tooling.model.GradleProject
 import java.io.File
 
@@ -78,6 +79,7 @@ internal class BuildGradleFilesModifier(
                         }
                         GradleFileStatus.ADDED_SUCCESSFULLY
                     } catch (e: Exception) {
+                        Sentry.captureException(e)
                         GradleFileStatus.ERROR
                     }
                 }
@@ -198,6 +200,7 @@ internal class BuildGradleFilesModifier(
         try {
             ExternalSystemUtil.refreshProjects(ImportSpecBuilder(project, ProjectSystemId("GRADLE")))
         } catch (e: Exception) {
+            Sentry.captureException(e)
             e.printStackTrace()
         }
     }

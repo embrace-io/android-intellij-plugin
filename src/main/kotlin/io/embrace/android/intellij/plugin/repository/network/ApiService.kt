@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.repository.network
 
 import io.embrace.android.intellij.plugin.data.EmbraceProject
+import io.sentry.Sentry
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -27,7 +28,7 @@ internal class ApiService {
             jsonObject.getString("value")
         } catch (e: JSONException) {
             println("An error occurred on json parser for getting last version")
-            e.printStackTrace()
+            Sentry.captureException(e)
             ""
         }
     }
