@@ -16,9 +16,8 @@ internal class EmbraceIntegrationAction : AnAction {
 
     override fun actionPerformed(event: AnActionEvent) {
         val toolWindowManager = event.project?.let { ToolWindowManager.getInstance(it) }
-        val window: ToolWindow? = toolWindowManager?.getToolWindow("Embrace Assistant")
+        val window: ToolWindow? =
+            toolWindowManager?.getToolWindow("  Embrace Assistant") // a left space to set margin with the icon
         window?.show()
     }
-
-
 }

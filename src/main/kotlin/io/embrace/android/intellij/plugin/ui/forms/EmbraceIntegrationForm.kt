@@ -77,8 +77,10 @@ internal class EmbraceIntegrationForm(
         scrollPane.addHierarchyListener(object : HierarchyListener {
             override fun hierarchyChanged(e: HierarchyEvent) {
                 if ((e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L && scrollPane.isShowing) {
-                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
-                    scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
+                    SwingUtilities.invokeLater {
+                        scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
+                        scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
+                    }
                     scrollPane.removeHierarchyListener(this)
                 }
             }

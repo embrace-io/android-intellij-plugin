@@ -1,15 +1,19 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JDialog
@@ -24,14 +28,15 @@ internal class GradleFilesPopup(
 ) : JDialog() {
 
     companion object {
-        private const val POPUP_MIN_WIDTH = 500
+        private const val POPUP_MIN_WIDTH = 450
         private const val POPUP_MIN_HEIGHT = 300
         private const val smallMargin = 10
     }
 
-    private val popupPanel = JPanel()
-    private val successColor: Color = Color.decode("#16c74e")
-    private val boldFont = Font(Font.SANS_SERIF, Font.BOLD, 12)
+    private val popupPanel = JPanel().apply {
+        border = BorderFactory.createEmptyBorder(15, 10, 10, 10)
+    }
+    private var backgroundColor = JBColor(JBColor.decode("#c4c2c2"), Color.decode("#5c5c5c"))
 
     init {
         popupPanel.layout = GridBagLayout()
@@ -67,8 +72,18 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
         val swazzlerLine = JLabel(dataProvider.getSwazzlerClasspathLine())
-        swazzlerLine.foreground = successColor
-        swazzlerLine.font = boldFont
+            .apply {
+                background = backgroundColor
+                alignmentX = Component.LEFT_ALIGNMENT
+                font = Font("Monospaced", Font.BOLD, 12)
+                isOpaque = true
+                background = backgroundColor
+                border = BorderFactory.createCompoundBorder(
+                    border,
+                    BorderFactory.createEmptyBorder(5, 15, 5, 15)
+                )
+            }
+
         popupPanel.add(swazzlerLine, constraints)
 
         constraints.gridy++
@@ -78,12 +93,30 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
 
-        val pluginLine = JLabel(applicationModules[dropdown.selectedIndex].type.value)
-        pluginLine.foreground = successColor
-        pluginLine.font = boldFont
-        dropdown.addActionListener { pluginLine.text = applicationModules[dropdown.selectedIndex].type.value }
 
-        popupPanel.add(pluginLine, constraints)
+        val pluginText = JLabel(
+            if (applicationModules[dropdown.selectedIndex].type == PluginType.V1) {
+                "apply plugin: 'embrace-swazzler'"
+            } else {
+                "id 'embrace-swazzler'"
+            }
+        ).apply {
+            background = backgroundColor
+            alignmentX = Component.LEFT_ALIGNMENT
+            font = Font("Monospaced", Font.BOLD, 12)
+            isOpaque = true
+            background = backgroundColor
+            border = BorderFactory.createCompoundBorder(
+                border,
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+            )
+        }
+
+
+
+        dropdown.addActionListener { pluginText.text = applicationModules[dropdown.selectedIndex].type.value }
+
+        popupPanel.add(pluginText, constraints)
 
         // Add buttons
         val okButton = JButton("Add")
@@ -117,7 +150,7 @@ internal class GradleFilesPopup(
 
         minimumSize = Dimension(POPUP_MIN_WIDTH, POPUP_MIN_HEIGHT)
 
-        // Calculate the location relative to the parent frame
+        // Calculate the location relative to the parent frame to display the popup in the middle of the IDE.
         if (ideWindow?.isShowing == true) {
             val ideLocation = ideWindow.locationOnScreen
             val x: Int = ideLocation.x + (ideWindow.width - width) / 2
