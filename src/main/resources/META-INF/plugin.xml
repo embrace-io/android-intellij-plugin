@@ -14,7 +14,7 @@
     </description>
 
     <!-- Changelog -->
-    <change-notes>Initial Release. </change-notes>
+    <change-notes>Initial Release.</change-notes>
 
     <!-- Text to display as company information on Preferences/Settings | Plugin page -->
     <vendor>Embrace</vendor>
@@ -36,7 +36,7 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="  Embrace Assistant" secondary="true" icon="icons/logo_gray.svg" anchor="right"
+        <toolWindow id="  Embrace Assistant" secondary="false" icon="icons/logo_gray.svg" anchor="right"
                     factoryClass="io.embrace.android.intellij.plugin.ui.forms.EmbraceIntegrationFactory"/>
     </extensions>
 

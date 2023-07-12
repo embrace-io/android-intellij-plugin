@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+import com.intellij.ui.JBColor
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -12,11 +13,12 @@ import javax.swing.JTextField
 private const val VIEW_WIDTH = 270
 private const val VIEW_HEIGHT = 30
 
-internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12, step : Steps? = null) : JTextField(hint),
+internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12, step: Steps? = null) :
+    JTextField(hint),
     FocusListener {
 
     private var showingHint = true
-    private val darkGray = Color.decode("#5c5c5c")
+    private var backgroundColor = JBColor(JBColor.decode("#c4c2c2"), Color.decode("#5c5c5c"))
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
@@ -24,7 +26,7 @@ internal class EmbEditableText(private val hint: String? = null, fontSize: Int =
 
         font = Font("Monospaced", Font.PLAIN, fontSize)
         isOpaque = true
-        background = darkGray
+        background = backgroundColor
         maximumSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
         preferredSize = Dimension(VIEW_WIDTH, VIEW_HEIGHT)
         step?.let { putClientProperty("step", it) }

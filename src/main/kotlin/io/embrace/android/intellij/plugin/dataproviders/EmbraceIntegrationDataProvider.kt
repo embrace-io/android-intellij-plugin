@@ -104,10 +104,10 @@ internal class EmbraceIntegrationDataProvider(
             if (repo.createEmbraceConfigFile(configFile, path)) {
                 callback.onConfigSuccess()
             } else {
-                callback.onConfigError("cannot create config file")
+                callback.onConfigError("Unable to create configuration file. Please add it manually.")
             }
 
-        } ?: callback.onConfigError("cannot get the path")
+        } ?: callback.onConfigError("Unable to create configuration file, the file path is not found. Please add it manually.")
     }
 
     fun validateConfigFields(appId: String, token: String) =
