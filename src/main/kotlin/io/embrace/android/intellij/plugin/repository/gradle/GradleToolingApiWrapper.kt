@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
+import io.sentry.Sentry
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.model.GradleProject
@@ -22,6 +23,7 @@ class GradleToolingApiWrapper(basePath: String) {
                 return buildScript.sourceFile
             }
         } catch (e: Exception) {
+            Sentry.captureException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return null
@@ -35,6 +37,7 @@ class GradleToolingApiWrapper(basePath: String) {
                 return modules.first { it?.name.contentEquals(selectedModule) }.buildScript.sourceFile
             }
         } catch (e: Exception) {
+            Sentry.captureException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return null
@@ -47,6 +50,7 @@ class GradleToolingApiWrapper(basePath: String) {
                 return model.children
             }
         } catch (e: Exception) {
+            Sentry.captureException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
         }
         return emptyList()

@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Paths
+import java.util.*
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -26,6 +28,11 @@ repositories {
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
 kotlin {
     jvmToolchain(11)
+    tasks.withType<KotlinCompile>().configureEach {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-Xplugin-version=${project.property("pluginVersion")}")
+        }
+    }
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -45,6 +52,22 @@ changelog {
 
 dependencies {
     implementation("org.json:json:20230227")
+    implementation("io.sentry:sentry:6.25.0")
+}
+// Create a task to generate a properties file
+val generateProperties by tasks.registering {
+    doLast {
+        val props = Properties()
+        props.setProperty("version", properties("pluginVersion"))
+        file("$buildDir/generated").mkdirs()
+        props.store(file("$buildDir/generated/embrace.properties").outputStream(), null)
+    }
+}
+
+// Make the processResources task depend on the generateProperties task
+tasks.processResources {
+    dependsOn(generateProperties)
+    from("$buildDir/generated") // Include the generated file in the resources
 }
 
 tasks {
@@ -65,7 +88,6 @@ tasks {
         val desktopPath = Paths.get(System.getProperty("user.home"), "Desktop")
         destinationDirectory.set(file(desktopPath.toString()))
     }
-
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))

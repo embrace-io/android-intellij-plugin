@@ -2,7 +2,11 @@
 <idea-plugin>
     <id>io.embrace.android.intellij.plugin</id>
     <name>Embrace Assistant</name>
-    <vendor>Embrace</vendor>
+    <vendor
+            url="https://embrace.io/"
+            email="support@embrace.io">
+      Embrace
+    </vendor>
 
     <!-- Indicate this plugin can be loaded in all IntelliJ Platform-based products. -->
     <depends>com.intellij.modules.platform</depends>
