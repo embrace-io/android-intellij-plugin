@@ -24,7 +24,7 @@ internal class FormComponentManager {
 
     private val errorColor = Color.decode("#d42320")
     private val successColor = Color.decode("#75D554")
-    private val successIcon = IconLoader.getIcon("/icons/check.svg")
+    private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
 
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 

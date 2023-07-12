@@ -25,7 +25,7 @@ import javax.swing.JPanel
 internal class GradleFilesPopup(
     dataProvider: EmbraceIntegrationDataProvider,
     applicationModules: List<AppModule>,
-    private val yesButtonAction: (String) -> Unit
+    private val yesButtonAction: (AppModule) -> Unit
 ) : JDialog() {
 
     companion object {
@@ -94,14 +94,7 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
 
-
-        val pluginText = JLabel(
-            if (applicationModules[dropdown.selectedIndex].type == PluginType.V1) {
-                "apply plugin: 'embrace-swazzler'"
-            } else {
-                "id 'embrace-swazzler'"
-            }
-        ).apply {
+        val pluginText = JLabel(applicationModules[dropdown.selectedIndex].type.swazzler).apply {
             background = backgroundColor
             alignmentX = Component.LEFT_ALIGNMENT
             font = Font("Monospaced", Font.BOLD, 12)
@@ -113,17 +106,14 @@ internal class GradleFilesPopup(
             )
         }
 
-
-
-        dropdown.addActionListener { pluginText.text = applicationModules[dropdown.selectedIndex].type.value }
-
+        dropdown.addActionListener { pluginText.text = applicationModules[dropdown.selectedIndex].type.swazzler }
         popupPanel.add(pluginText, constraints)
 
         // Add buttons
         val okButton = JButton("Add")
         okButton.addActionListener {
             dispose()
-            yesButtonAction.invoke(dropdown.selectedItem as String)
+            yesButtonAction.invoke(applicationModules[dropdown.selectedIndex])
         }
 
         val cancelButton = JButton("Cancel")

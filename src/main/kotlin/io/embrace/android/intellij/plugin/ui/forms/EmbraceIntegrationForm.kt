@@ -19,7 +19,6 @@ import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.Steps
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import org.jetbrains.kotlin.idea.caches.project.NotUnderContentRootModuleInfo.project
 import java.awt.Component
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
@@ -29,6 +28,7 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
+import com.intellij.openapi.project.Project
 
 private const val VERTICAL_SPACE = 20
 private const val VERTICAL_SPACE_SMALL = 10
@@ -39,6 +39,7 @@ private const val BORDER_RIGHT = 30
 
 
 internal class EmbraceIntegrationForm(
+    private val project: Project,
     private val dataProvider: EmbraceIntegrationDataProvider
 ) : ConfigFileCreationCallback,
     ProjectGradleFileModificationCallback,
@@ -67,7 +68,7 @@ internal class EmbraceIntegrationForm(
             initStartEmbraceStep()
             initEmbraceVerificationStep()
 
-            componentManager.setCurrentStep(panel, Steps.CREATE_PROJECT)
+            componentManager.setCurrentStep(panel, Steps.GRADLE)
             scrollToTop()
         }
     }

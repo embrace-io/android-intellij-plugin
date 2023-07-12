@@ -138,7 +138,7 @@ internal class EmbraceIntegrationDataProvider(
     }
 
 
-    fun modifyGradleFile(selectedModule: String, callback: ProjectGradleFileModificationCallback) {
+    fun modifyGradleFile(selectedModule: AppModule, callback: ProjectGradleFileModificationCallback) {
         val rootFileStatus = buildGradleFilesModifier.value?.updateBuildGradleFileContent()
         val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 

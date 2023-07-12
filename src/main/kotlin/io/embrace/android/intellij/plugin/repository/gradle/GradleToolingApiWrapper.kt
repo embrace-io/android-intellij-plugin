@@ -2,7 +2,6 @@ package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
 import io.sentry.Sentry
-import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.model.GradleProject
 import java.io.File
