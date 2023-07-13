@@ -92,7 +92,9 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
 
-        val pluginText = JLabel(applicationModules[dropdown.selectedIndex].type.swazzler).apply {
+
+
+        val pluginText = JLabel(dataProvider.getSwazzlerPluginLine(applicationModules[dropdown.selectedIndex].type)).apply {
             background = backgroundColor
             alignmentX = Component.LEFT_ALIGNMENT
             font = Font("Monospaced", Font.BOLD, 12)
@@ -104,7 +106,6 @@ internal class GradleFilesPopup(
             )
         }
 
-        dropdown.addActionListener { pluginText.text = applicationModules[dropdown.selectedIndex].type.swazzler }
         popupPanel.add(pluginText, constraints)
 
         // Add buttons

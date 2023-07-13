@@ -25,8 +25,6 @@ internal class EmbracePluginRepository(
         internal const val FILE_ROOT = "file://"
         internal const val MAIN_PATH = "/app/src/main"
         internal const val EMBRACE_CONFIG_FILE = "/embrace-config.json"
-        internal const val EMBRACE_SWAZZLER_CLASSPATH = "classpath \"io.embrace:embrace-swazzler:LAST_VERSION\""
-        internal const val EMBRACE_SWAZZLER_CLASSPATH_V2 = "classpath (\"io.embrace:embrace-swazzler:LAST_VERSION\")"
     }
 
     fun getLastSDKVersion() =
