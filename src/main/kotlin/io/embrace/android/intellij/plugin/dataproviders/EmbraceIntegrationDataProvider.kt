@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.data.AppModule
+import io.embrace.android.intellij.plugin.data.BuildType
 import io.embrace.android.intellij.plugin.data.EmbraceProject
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
@@ -115,9 +116,6 @@ internal class EmbraceIntegrationDataProvider(
         appId.length == APP_ID_LENGTH && token.length == TOKEN_LENGTH
 
 
-    fun getSwazzlerClasspathLine() =
-        EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace("LAST_VERSION", lastEmbraceVersion)
-
     fun getSdkExampleCode(): String {
         val code = getResourceAsText("/examplecode/sdk.txt") ?: ""
         return code.replace("LAST_VERSION", lastEmbraceVersion)
@@ -138,8 +136,8 @@ internal class EmbraceIntegrationDataProvider(
     }
 
 
-    fun modifyGradleFile(selectedModule: String, callback: ProjectGradleFileModificationCallback) {
-        val rootFileStatus = buildGradleFilesModifier.value?.updateBuildGradleFileContent()
+    fun modifyGradleFile(selectedModule: AppModule, callback: ProjectGradleFileModificationCallback) {
+        val rootFileStatus = buildGradleFilesModifier.value?.addSwazzlerClasspath()
         val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 
         if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
@@ -204,5 +202,13 @@ internal class EmbraceIntegrationDataProvider(
                 Sentry.captureException(ex)
             }
         }
+    }
+
+    fun getSwazzlerClasspathLine(): String {
+        return buildGradleFilesModifier.value?.getClasspathSwazzlerLine(false) ?: ""
+    }
+
+    fun getSwazzlerPluginLine(buildType: BuildType): String {
+        return buildGradleFilesModifier.value?.getPluginSwazzlerLine(buildType) ?: ""
     }
 }
