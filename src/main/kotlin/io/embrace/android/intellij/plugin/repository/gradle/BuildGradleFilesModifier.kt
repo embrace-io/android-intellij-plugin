@@ -9,10 +9,11 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootModificationUtil.addDependency
 import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
-import io.embrace.android.intellij.plugin.data.PluginType
+import io.embrace.android.intellij.plugin.data.BuildType
 import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.sentry.Sentry
 import org.gradle.tooling.model.GradleProject
@@ -50,53 +51,59 @@ internal class BuildGradleFilesModifier(
     }
 
     internal fun updateBuildGradleFileContent(): GradleFileStatus {
-        appGradleFile.value?.text?.let { content ->
-            val dependenciesIndex = content.indexOf("dependencies {")
-            val isEmbraceDependencyAlreadyAdded = content.contains("embrace-swazzler")
+        try {
+            appGradleFile.value?.text?.let { content ->
+                val dependenciesIndex = content.indexOf("dependencies")
+                val isEmbraceDependencyAlreadyAdded = content.contains("embrace-swazzler")
 
-            if (isEmbraceDependencyAlreadyAdded) {
-                return GradleFileStatus.SWAZZLER_ALREADY_ADDED
-            } else {
-                if (dependenciesIndex >= 0) {
-                    val firstDependencyIndexWithoutIndent = content.indexOf("\n", dependenciesIndex) + 1
-                    val firstDependencyIndexWithIndent =
-                        content.indexOfFirstNonWhitespace(firstDependencyIndexWithoutIndent)
-                    val indent = content.substring(firstDependencyIndexWithoutIndent, firstDependencyIndexWithIndent)
+                if (isEmbraceDependencyAlreadyAdded) {
+                    return GradleFileStatus.SWAZZLER_ALREADY_ADDED
+                } else {
+                    if (dependenciesIndex >= 0) {
+                        val newFile = addDependency(dependenciesIndex, content)
 
-                    val newDependency =
-                        if (content.replace(" ", "").contains("classpath(")) {
-                            EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH_V2.replace(
-                                "LAST_VERSION",
-                                lastEmbraceVersion
-                            )
-                        } else {
-                            EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace(
-                                "LAST_VERSION",
-                                lastEmbraceVersion
-                            )
-                        }
-
-
-                    val newFile = content.substring(0, firstDependencyIndexWithIndent) +
-                            newDependency +
-                            "\n" +
-                            indent +
-                            content.substring(firstDependencyIndexWithIndent)
-
-                    return try {
                         WriteCommandAction.runWriteCommandAction(project) {
                             appGradleFile.value?.setText(newFile)
                         }
-                        GradleFileStatus.ADDED_SUCCESSFULLY
-                    } catch (e: Exception) {
-                        Sentry.captureException(e)
-                        GradleFileStatus.ERROR
+                        return GradleFileStatus.ADDED_SUCCESSFULLY
+
+                    } else {
+                        // here we should add the dependencies block as well.
                     }
                 }
-            }
-        } ?: return GradleFileStatus.FILE_NOT_FOUND
-
+            } ?: return GradleFileStatus.FILE_NOT_FOUND
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+            GradleFileStatus.ERROR
+        }
         return GradleFileStatus.ERROR
+    }
+
+    private fun addDependency(dependenciesIndex: Int, content: String): String {
+        val firstDependencyIndexWithoutIndent = content.indexOf("\n", dependenciesIndex) + 1
+        val firstDependencyIndexWithIndent =
+            content.indexOfFirstNonWhitespace(firstDependencyIndexWithoutIndent)
+        val indent = content.substring(firstDependencyIndexWithoutIndent, firstDependencyIndexWithIndent)
+
+        val newDependency =
+            if (content.replace(" ", "").contains("classpath(")) {
+                EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH_V2.replace(
+                    "LAST_VERSION",
+                    lastEmbraceVersion
+                )
+            } else {
+                EmbracePluginRepository.EMBRACE_SWAZZLER_CLASSPATH.replace(
+                    "LAST_VERSION",
+                    lastEmbraceVersion
+                )
+            }
+
+
+        return content.substring(0, firstDependencyIndexWithIndent) +
+                newDependency +
+                "\n" +
+                indent +
+                content.substring(firstDependencyIndexWithIndent)
     }
 
     internal fun getModules(): Collection<GradleProject>? {
@@ -134,11 +141,11 @@ internal class BuildGradleFilesModifier(
 
             if (document.text.contains("com.android.application")) {
                 if (document.text.contains("apply plugin:")) {
-                    applicationModules.add(AppModule(module.name, PluginType.V1))
+                    applicationModules.add(AppModule(module.name, BuildType.GROOVY_V1))
                 } else if (document.text.contains("id(") || document.text.contains("id (")) {
-                    applicationModules.add(AppModule(module.name, PluginType.V3))
+                    applicationModules.add(AppModule(module.name, BuildType.KOTLIN_DSL))
                 } else {
-                    applicationModules.add(AppModule(module.name, PluginType.V2))
+                    applicationModules.add(AppModule(module.name, BuildType.GROOVY_V2))
                 }
             }
 

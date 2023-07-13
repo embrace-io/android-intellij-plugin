@@ -4,11 +4,9 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.data.AppModule
-import io.embrace.android.intellij.plugin.data.PluginType
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
