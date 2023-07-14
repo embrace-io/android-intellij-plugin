@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.ui.components
 
 import com.intellij.ui.JBColor
+import io.embrace.android.intellij.plugin.ui.constants.Colors
 import java.awt.Cursor
 import java.awt.Font
 import java.awt.FontMetrics
@@ -18,7 +19,7 @@ internal class EmbClickableUnderlinedLabel(text: String, private val action: () 
 
 
     init {
-        foreground = JBColor.gray
+        foreground = Colors.grayText
         font = Font(Font.SANS_SERIF, Font.PLAIN, 12)
         horizontalAlignment = SwingConstants.CENTER
         addMouseListener(this)
@@ -38,7 +39,7 @@ internal class EmbClickableUnderlinedLabel(text: String, private val action: () 
         foreground = if (isHoveredOrClicked) {
             JBColor.blue
         } else {
-            JBColor.gray
+            Colors.grayText
         }
     }
 

@@ -53,7 +53,7 @@ internal class EmbraceIntegrationForm(
     }
 
     private val scrollPane = JBScrollPane(panel)
-    private val componentManager = FormComponentManager()
+    private val componentManager = FormComponentManager(panel)
 
     private var gradlePopup: GradleFilesPopup? = null
     private val btnOpenDashboard = EmbButton("btnOpenDashboard".text(), Steps.VERIFY) { dataProvider.openDashboard() }
@@ -67,7 +67,7 @@ internal class EmbraceIntegrationForm(
             initStartEmbraceStep()
             initEmbraceVerificationStep()
 
-            componentManager.setCurrentStep(panel, Steps.VERIFY)
+            componentManager.setCurrentStep(Steps.ADD_START)
             scrollToTop()
         }
     }
@@ -213,7 +213,7 @@ internal class EmbraceIntegrationForm(
             "connectedToEmbraceSuccessfully".text()
         )
 
-        componentManager.setCurrentStep(panel, Steps.CONFIG)
+        componentManager.setCurrentStep(Steps.CONFIG)
     }
 
     override fun onOnboardConnectedError(error: String) {
@@ -230,7 +230,7 @@ internal class EmbraceIntegrationForm(
             "configFileCreated".text()
         )
 
-        componentManager.setCurrentStep(panel, Steps.GRADLE)
+        componentManager.setCurrentStep(Steps.GRADLE)
     }
 
     override fun onConfigAlreadyExists() {
@@ -292,7 +292,7 @@ internal class EmbraceIntegrationForm(
             "Info"
         )
 
-        componentManager.setCurrentStep(panel, Steps.ADD_START)
+        componentManager.setCurrentStep(Steps.ADD_START)
     }
 
     override fun onGradleFilesModifiedSuccessfully() {
@@ -306,22 +306,22 @@ internal class EmbraceIntegrationForm(
             "Info"
         )
 
-        componentManager.setCurrentStep(panel, Steps.ADD_START)
+        componentManager.setCurrentStep(Steps.ADD_START)
     }
 
     override fun onStartStatusUpdated(status: StartMethodStatus) {
         when (status) {
             StartMethodStatus.ERROR -> {
-                Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
                 componentManager.changeResultText(
                     componentManager.startResultPanel,
                     "startMethodErrorShort".text(),
                     false
                 )
+                Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
             }
 
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
-                componentManager.setCurrentStep(panel, Steps.VERIFY)
+                componentManager.setCurrentStep(Steps.VERIFY)
 
                 componentManager.changeResultText(
                     componentManager.startResultPanel,
@@ -330,7 +330,7 @@ internal class EmbraceIntegrationForm(
             }
 
             StartMethodStatus.START_ALREADY_ADDED -> {
-                componentManager.setCurrentStep(panel, Steps.VERIFY)
+                componentManager.setCurrentStep(Steps.VERIFY)
 
                 componentManager.changeResultText(
                     componentManager.startResultPanel,
@@ -339,21 +339,21 @@ internal class EmbraceIntegrationForm(
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
-                Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
                 componentManager.changeResultText(
                     componentManager.startResultPanel,
                     "applicationClassNotFoundShort".text(),
                     false
                 )
+                Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
-                Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
                 componentManager.changeResultText(
                     componentManager.startResultPanel,
                     "applicationClassNotOnCreateShort".text(),
                     false
                 )
+                Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
             }
 
         }
@@ -385,7 +385,8 @@ internal class EmbraceIntegrationForm(
         componentManager.changeResultText(
             componentManager.verifyResultPanel,
             "embraceVerificationError".text(),
-            false
+            success = false,
+            displaySkip = false
         )
     }
 

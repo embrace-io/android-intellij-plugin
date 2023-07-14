@@ -23,7 +23,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 
-internal class FormComponentManager {
+internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
@@ -73,7 +73,7 @@ internal class FormComponentManager {
         putClientProperty("step", Steps.CONFIG)
     }
 
-    fun setCurrentStep(parentPanel: JPanel, currentStep: Steps) {
+    fun setCurrentStep(currentStep: Steps) {
         val enableComponents = mutableListOf<Steps>()
         this.currentStep = currentStep
         when (currentStep) {
@@ -106,7 +106,7 @@ internal class FormComponentManager {
             }
         }
         enableConfigLayout(currentStep != Steps.CREATE_PROJECT)
-        parentPanel.components.forEach { component ->
+        mainPanel.components.forEach { component ->
             if (component is JComponent) {
                 val id = component.getClientProperty("step")
                 component.isEnabled = enableComponents.contains(id)
@@ -124,23 +124,23 @@ internal class FormComponentManager {
     private fun nextStep() {
         when (currentStep) {
             Steps.CREATE_PROJECT -> {
-                setCurrentStep(configFieldsLayout, Steps.CONFIG)
+                setCurrentStep(Steps.CONFIG)
             }
 
             Steps.CONFIG -> {
-                setCurrentStep(configFieldsLayout, Steps.GRADLE)
+                setCurrentStep(Steps.GRADLE)
             }
 
             Steps.GRADLE -> {
-                setCurrentStep(configFieldsLayout, Steps.ADD_START)
+                setCurrentStep(Steps.ADD_START)
             }
 
             Steps.ADD_START -> {
-                setCurrentStep(configFieldsLayout, Steps.VERIFY)
+                setCurrentStep(Steps.VERIFY)
             }
 
             Steps.VERIFY -> {
-                setCurrentStep(configFieldsLayout, Steps.VERIFY)
+                setCurrentStep(Steps.VERIFY)
             }
         }
     }
