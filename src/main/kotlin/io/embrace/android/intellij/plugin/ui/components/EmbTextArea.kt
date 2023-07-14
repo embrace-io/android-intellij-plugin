@@ -3,7 +3,6 @@ package io.embrace.android.intellij.plugin.ui.components
 import java.awt.Color
 import java.awt.Component
 import java.awt.Font
-import javax.swing.BorderFactory
 import javax.swing.JTextArea
 
 internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color? = null, step: Steps? = null) :
@@ -14,7 +13,6 @@ internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color?
         lineWrap = true
         wrapStyleWord = true
         isOpaque = false
-        border = BorderFactory.createEmptyBorder(10, 0, 0, 0)
         isEditable = false
         font = when (textLevel) {
             TextStyle.HEADLINE_1 -> Font(Font.SANS_SERIF, Font.BOLD, 18)

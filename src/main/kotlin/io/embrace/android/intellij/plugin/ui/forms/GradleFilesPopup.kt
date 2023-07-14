@@ -1,7 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
@@ -35,7 +34,7 @@ internal class GradleFilesPopup(
     private val popupPanel = JPanel().apply {
         border = BorderFactory.createEmptyBorder(15, 10, 10, 10)
     }
-    private var backgroundColor = JBColor(Colors.GRAY_LIGHT_MODE, Colors.GRAY_DARK_MODE)
+    private var backgroundColor = Colors.grayBackground
 
     init {
         popupPanel.layout = GridBagLayout()

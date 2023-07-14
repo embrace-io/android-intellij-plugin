@@ -1,18 +1,21 @@
 package io.embrace.android.intellij.plugin.ui.components
 
+import com.android.tools.idea.wizard.template.Template
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
+import com.intellij.util.ui.JBUI
+import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
+import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
 import io.embrace.android.intellij.plugin.utils.extensions.text
-import java.awt.Color
 import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
 import javax.swing.BorderFactory
+import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JComponent
@@ -20,12 +23,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 
-internal class FormComponentManager {
-
-    private val errorColor = Color.decode("#d42320")
-    private val successColor = Color.decode("#75D554")
+internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
-
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
     internal val configFileStatusPanel = getResultLayout().apply {
@@ -64,19 +63,19 @@ internal class FormComponentManager {
     private val etToken = EmbEditableText(step = Steps.CONFIG)
     private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
     private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
-
+    private var currentStep: Steps = Steps.CREATE_PROJECT
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
-        add(getGridLayout())
+        add(getConfigGridLayout())
         putClientProperty("step", Steps.CONFIG)
     }
 
-    fun setCurrentStep(parentPanel: JPanel, currentStep: Steps) {
+    fun setCurrentStep(currentStep: Steps) {
         val enableComponents = mutableListOf<Steps>()
-
+        this.currentStep = currentStep
         when (currentStep) {
             Steps.CREATE_PROJECT -> enableComponents.add(Steps.CREATE_PROJECT)
 
@@ -107,7 +106,7 @@ internal class FormComponentManager {
             }
         }
         enableConfigLayout(currentStep != Steps.CREATE_PROJECT)
-        parentPanel.components.forEach { component ->
+        mainPanel.components.forEach { component ->
             if (component is JComponent) {
                 val id = component.getClientProperty("step")
                 component.isEnabled = enableComponents.contains(id)
@@ -122,20 +121,31 @@ internal class FormComponentManager {
         etToken.isEnabled = enable
     }
 
-    private fun getResultLayout(): JPanel {
-        return JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.X_AXIS)
-            alignmentY = Component.CENTER_ALIGNMENT
-            alignmentX = Component.LEFT_ALIGNMENT
+    private fun nextStep() {
+        when (currentStep) {
+            Steps.CREATE_PROJECT -> {
+                setCurrentStep(Steps.CONFIG)
+            }
 
-            add(JLabel(successIcon))
-            add(EmbLabel("message", TextStyle.BODY).apply {
-                border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
-            })
+            Steps.CONFIG -> {
+                setCurrentStep(Steps.GRADLE)
+            }
+
+            Steps.GRADLE -> {
+                setCurrentStep(Steps.ADD_START)
+            }
+
+            Steps.ADD_START -> {
+                setCurrentStep(Steps.VERIFY)
+            }
+
+            Steps.VERIFY -> {
+                setCurrentStep(Steps.VERIFY)
+            }
         }
     }
 
-    private fun getGridLayout(): JPanel {
+    private fun getConfigGridLayout(): JPanel {
         val constraints = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
         }
@@ -149,11 +159,11 @@ internal class FormComponentManager {
             add(appIdLabel, constraints)
 
             constraints.gridx = 1
-            constraints.insets = Insets(0, 10, 0, 0)
+            constraints.insets = JBUI.insetsLeft(10)
             add(etAppId.apply { alignmentX = Component.LEFT_ALIGNMENT }, constraints)
 
             constraints.weightx = 0.0
-            constraints.insets = Insets(5, 0, 0, 0)
+            constraints.insets = JBUI.insetsTop(5)
 
             // Second row
             constraints.gridy = 1
@@ -161,26 +171,47 @@ internal class FormComponentManager {
             add(tokenLabel, constraints)
 
             constraints.gridx = 1
-            constraints.insets = Insets(5, 10, 0, 0)
+            constraints.insets = JBUI.insets(5, 10, 0, 0)
             add(etToken, constraints)
         }
 
         return panel
     }
 
-    fun changeResultText(panel: JPanel, text: String, success: Boolean = true) {
+    private fun getResultLayout(): JPanel {
+        return JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentY = Component.CENTER_ALIGNMENT
+            alignmentX = Component.LEFT_ALIGNMENT
+
+            add(EmbLabel("message", TextStyle.BODY).apply {
+                border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
+            })
+            add(Box.createVerticalStrut(8))
+            add(EmbClickableUnderlinedLabel("skipStep".text()) {
+                nextStep()
+            }.apply {
+                border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
+                foreground = JBColor.GRAY
+            }, Template.constraints)
+        }
+    }
+
+    fun changeResultText(panel: JPanel, text: String, success: Boolean = true, displaySkip: Boolean = true) {
         panel.isVisible = true
-        val icon = panel.getComponent(0)
-        val label = panel.getComponent(1)
+        val label = panel.getComponent(0)
+        val skipStep = panel.getComponent(2)
+        skipStep.isVisible = displaySkip && !success
 
-        if (icon is JLabel && label is JLabel) {
+        if (label is JLabel) {
             label.text = text
-            icon.isVisible = success
-
             if (success) {
                 label.foreground = successColor
+                label.icon = successIcon
+                label.iconTextGap = 5
             } else {
                 label.foreground = errorColor
+                label.icon = null
             }
         }
     }

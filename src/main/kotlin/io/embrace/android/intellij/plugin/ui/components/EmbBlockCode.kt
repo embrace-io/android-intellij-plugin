@@ -1,6 +1,5 @@
 package io.embrace.android.intellij.plugin.ui.components
 
-import com.intellij.ui.JBColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import java.awt.Component
 import java.awt.Dimension
@@ -12,7 +11,7 @@ import javax.swing.JTextArea
 private const val VIEW_WIDTH = 500
 
 internal class EmbBlockCode(panel: JPanel, codeExample: String, step: Steps? = null) : JTextArea(codeExample) {
-    private var backgroundColor = JBColor(Colors.GRAY_LIGHT_MODE, Colors.GRAY_DARK_MODE)
+    private var backgroundColor = Colors.grayBackground
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT
