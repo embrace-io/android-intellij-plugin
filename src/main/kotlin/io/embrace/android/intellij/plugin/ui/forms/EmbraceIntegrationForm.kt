@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
@@ -27,8 +28,6 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-
-import com.intellij.openapi.project.Project
 
 private const val VERTICAL_SPACE = 20
 private const val VERTICAL_SPACE_SMALL = 10
@@ -68,7 +67,7 @@ internal class EmbraceIntegrationForm(
             initStartEmbraceStep()
             initEmbraceVerificationStep()
 
-            componentManager.setCurrentStep(panel, Steps.CREATE_PROJECT)
+            componentManager.setCurrentStep(panel, Steps.VERIFY)
             scrollToTop()
         }
     }
@@ -127,7 +126,8 @@ internal class EmbraceIntegrationForm(
                 componentManager.changeResultText(
                     componentManager.configFileStatusPanel,
                     "noIdOrTokenError".text(),
-                    false
+                    success = false,
+                    displaySkip = false
                 )
             }
         })
@@ -313,6 +313,11 @@ internal class EmbraceIntegrationForm(
         when (status) {
             StartMethodStatus.ERROR -> {
                 Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
+                componentManager.changeResultText(
+                    componentManager.startResultPanel,
+                    "startMethodErrorShort".text(),
+                    false
+                )
             }
 
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
@@ -335,10 +340,20 @@ internal class EmbraceIntegrationForm(
 
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
                 Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
+                componentManager.changeResultText(
+                    componentManager.startResultPanel,
+                    "applicationClassNotFoundShort".text(),
+                    false
+                )
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
                 Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
+                componentManager.changeResultText(
+                    componentManager.startResultPanel,
+                    "applicationClassNotOnCreateShort".text(),
+                    false
+                )
             }
 
         }

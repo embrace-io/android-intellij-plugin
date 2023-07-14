@@ -19,7 +19,7 @@ internal class EmbEditableText(private val hint: String? = null, fontSize: Int =
     FocusListener {
 
     private var showingHint = true
-    private var backgroundColor = JBColor(Colors.GRAY_LIGHT_MODE, Colors.GRAY_DARK_MODE)
+    private var backgroundColor = Colors.grayBackground
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT

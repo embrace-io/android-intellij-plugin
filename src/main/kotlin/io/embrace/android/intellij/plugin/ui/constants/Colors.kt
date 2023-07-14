@@ -1,9 +1,11 @@
 package io.embrace.android.intellij.plugin.ui.constants
 
 import com.intellij.ui.JBColor
-import java.awt.Color
 
 internal object Colors {
-    val GRAY_LIGHT_MODE = JBColor.decode("#d9d9d9")
-    val GRAY_DARK_MODE = Color.decode("#5c5c5c")
+    // regular - dark theme colors
+    val grayBackground = JBColor(JBColor.decode("#d9d9d9"), JBColor.decode("#5c5c5c"))
+    val errorColor  = JBColor(JBColor.decode("#8B0000"), JBColor.decode("#FF6F6F"))
+    val successColor  = JBColor(JBColor.decode("006400"), JBColor.decode("#90EE90"))
+
 }
