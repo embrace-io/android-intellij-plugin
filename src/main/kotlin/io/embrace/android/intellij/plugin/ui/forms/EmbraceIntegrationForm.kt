@@ -15,6 +15,7 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCall
 import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
+import io.embrace.android.intellij.plugin.ui.components.EmbClickableUnderlinedLabel
 import io.embrace.android.intellij.plugin.ui.components.EmbTextArea
 import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.Steps
@@ -29,12 +30,10 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
+
 private const val VERTICAL_SPACE = 20
 private const val VERTICAL_SPACE_SMALL = 10
-private const val BORDER_TOP = 0
-private const val BORDER_BOTTOM = 20
-private const val BORDER_LEFT = 20
-private const val BORDER_RIGHT = 30
+private const val HORIZONTAL_SPACE = 20
 
 
 internal class EmbraceIntegrationForm(
@@ -49,7 +48,8 @@ internal class EmbraceIntegrationForm(
     internal val panel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         alignmentX = Component.LEFT_ALIGNMENT
-        border = BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_LEFT, BORDER_BOTTOM, BORDER_RIGHT)
+        border =
+            BorderFactory.createEmptyBorder(VERTICAL_SPACE_SMALL, HORIZONTAL_SPACE, VERTICAL_SPACE, HORIZONTAL_SPACE)
     }
 
     private val scrollPane = JBScrollPane(panel)
@@ -66,8 +66,9 @@ internal class EmbraceIntegrationForm(
             initDependenciesStep()
             initStartEmbraceStep()
             initEmbraceVerificationStep()
+            addSupportContact()
 
-            componentManager.setCurrentStep(Steps.ADD_START)
+            componentManager.setCurrentStep(Steps.CREATE_PROJECT)
             scrollToTop()
         }
     }
@@ -93,6 +94,7 @@ internal class EmbraceIntegrationForm(
 
     private fun initGetStartedLayout() {
         panel.add(EmbTextArea("getStartedTitle".text(), TextStyle.HEADLINE_1, step = Steps.CREATE_PROJECT))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("getStartedDescription".text(), TextStyle.BODY, step = Steps.CREATE_PROJECT))
     }
 
@@ -113,11 +115,13 @@ internal class EmbraceIntegrationForm(
     private fun initConfigFileStep() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step2Title".text(), TextStyle.HEADLINE_2, step = Steps.CONFIG))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+
         panel.add(EmbTextArea("createConfigFile".text(), TextStyle.BODY, step = Steps.CONFIG))
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.configFieldsLayout)
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
 
         panel.add(EmbButton("btnConfigFile".text(), Steps.CONFIG) {
             if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
@@ -142,7 +146,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("addSwazzler".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode(), Steps.GRADLE))
-
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applySwazzlerPlugin".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerPluginExampleCode(), step = Steps.GRADLE))
@@ -182,6 +186,7 @@ internal class EmbraceIntegrationForm(
     private fun initEmbraceVerificationStep() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2, step = Steps.VERIFY))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY, step = Steps.VERIFY))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.verifyCheckBox)
@@ -200,9 +205,16 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(5))
         btnOpenDashboard.isVisible = false
         panel.add(btnOpenDashboard)
+    }
 
+    private fun addSupportContact() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbTextArea("contactInfo".text(), TextStyle.BODY, step = Steps.VERIFY))
+        panel.add(EmbTextArea("contactInfo".text(), TextStyle.BODY, step = Steps.CREATE_PROJECT))
+        panel.add(EmbClickableUnderlinedLabel(dataProvider.CONTACT_EMAIL, isColorHyperlink = true) {
+            dataProvider.sendSupportEmail()
+        }.apply {
+            putClientProperty("step", Steps.CREATE_PROJECT)  // first step so it is always enabled.
+        })
     }
 
     override fun onOnboardConnected(appId: String, token: String) {

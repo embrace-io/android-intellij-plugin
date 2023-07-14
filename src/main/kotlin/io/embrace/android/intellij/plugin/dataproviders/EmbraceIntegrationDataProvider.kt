@@ -31,7 +31,7 @@ internal class EmbraceIntegrationDataProvider(
     private val project: Project,
     private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
-
+    internal val CONTACT_EMAIL: String = "support@embrace.io"
     private var embraceProject: EmbraceProject? = null
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
@@ -210,5 +210,12 @@ internal class EmbraceIntegrationDataProvider(
 
     fun getSwazzlerPluginLine(buildType: BuildType): String {
         return buildGradleFilesModifier.value?.getPluginSwazzlerLine(buildType) ?: ""
+    }
+
+    fun sendSupportEmail() {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.MAIL)) {
+            val uri = URI("mailto:$CONTACT_EMAIL")
+            Desktop.getDesktop().mail(uri)
+        }
     }
 }

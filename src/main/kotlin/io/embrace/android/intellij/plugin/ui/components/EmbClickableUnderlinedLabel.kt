@@ -12,14 +12,18 @@ import java.awt.event.MouseMotionListener
 import javax.swing.JLabel
 import javax.swing.SwingConstants
 
-internal class EmbClickableUnderlinedLabel(text: String, private val action: () -> Unit) : JLabel(text),
+internal class EmbClickableUnderlinedLabel(
+    text: String,
+    private val isColorHyperlink: Boolean = false,
+    private val action: () -> Unit
+) : JLabel(text),
     MouseListener,
     MouseMotionListener {
     private var isHoveredOrClicked = false
 
 
     init {
-        foreground = Colors.grayText
+        foreground = if (isColorHyperlink) JBColor.blue else Colors.grayText
         font = Font(Font.SANS_SERIF, Font.PLAIN, 12)
         horizontalAlignment = SwingConstants.CENTER
         addMouseListener(this)
@@ -36,7 +40,7 @@ internal class EmbClickableUnderlinedLabel(text: String, private val action: () 
         val textY: Int = (height - textHeight) / 2 + fm.ascent
         g.drawLine(textX, textY + 2, textX + textWidth, textY + 2)
 
-        foreground = if (isHoveredOrClicked) {
+        foreground = if (isColorHyperlink || isHoveredOrClicked) {
             JBColor.blue
         } else {
             Colors.grayText
