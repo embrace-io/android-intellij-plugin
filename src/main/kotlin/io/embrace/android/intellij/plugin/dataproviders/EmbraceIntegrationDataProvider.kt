@@ -150,16 +150,12 @@ internal class EmbraceIntegrationDataProvider(
                 callback.onGradleFileAlreadyModified()
             }
 
-            rootFileStatus == GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND -> {
-                callback.onGradleFileError("dependenciesBlockNotFoundError".text())
-            }
-
-            rootFileStatus == GradleFileStatus.FILE_NOT_FOUND || appFileStatus == GradleFileStatus.FILE_NOT_FOUND -> {
-                callback.onGradleFileError("gradleFileNotFound".text())
+            rootFileStatus == GradleFileStatus.FILE_NOT_FOUND && appFileStatus == GradleFileStatus.FILE_NOT_FOUND -> {
+                callback.onGradleFileError("oneOrMoreFilesError".text())
             }
 
             else -> {
-                callback.onGradleFileError("oneOrMoreFilesError".text())
+                callback.onGradleFileError("gradleFileError".text())
             }
         }
     }
