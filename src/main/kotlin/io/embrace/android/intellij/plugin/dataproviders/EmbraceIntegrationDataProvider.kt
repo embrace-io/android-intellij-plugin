@@ -140,22 +140,28 @@ internal class EmbraceIntegrationDataProvider(
         val rootFileStatus = buildGradleFilesModifier.value?.addSwazzlerClasspath()
         val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 
-        if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
-            && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
-        ) {
-            buildGradleFilesModifier.value?.syncGradle(project)
-            callback.onGradleFilesModifiedSuccessfully()
-        } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
-            callback.onGradleFileAlreadyModified()
-        } else if (rootFileStatus == GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND) {
-            callback.onGradleFileError("dependenciesBlockNotFoundError".text())
-        } else if (rootFileStatus == GradleFileStatus.FILE_NOT_FOUND
-            || appFileStatus == GradleFileStatus.FILE_NOT_FOUND
-        ) {
-            callback.onGradleFileError("gradleFileNotFound".text())
-        } else
-            callback.onGradleFileError("oneOrMoreFilesError".text())
+        when {
+            rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY -> {
+                buildGradleFilesModifier.value?.syncGradle(project)
+                callback.onGradleFilesModifiedSuccessfully()
+            }
 
+            rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED -> {
+                callback.onGradleFileAlreadyModified()
+            }
+
+            rootFileStatus == GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND -> {
+                callback.onGradleFileError("dependenciesBlockNotFoundError".text())
+            }
+
+            rootFileStatus == GradleFileStatus.FILE_NOT_FOUND || appFileStatus == GradleFileStatus.FILE_NOT_FOUND -> {
+                callback.onGradleFileError("gradleFileNotFound".text())
+            }
+
+            else -> {
+                callback.onGradleFileError("oneOrMoreFilesError".text())
+            }
+        }
     }
 
     fun addEmbraceStartMethod(callback: StartMethodCallback) {
