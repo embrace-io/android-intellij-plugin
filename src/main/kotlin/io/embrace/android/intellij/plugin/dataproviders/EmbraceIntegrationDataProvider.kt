@@ -157,7 +157,10 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun addEmbraceStartMethod(callback: StartMethodCallback) {
-        repo.addStartToApplicationClass(callback)
+        if (buildGradleFilesModifier.value?.appPackageName == null) {
+            buildGradleFilesModifier.value?.retrievePackageName()
+        }
+        repo.addStartToApplicationClass(buildGradleFilesModifier.value?.appPackageName, callback)
     }
 
     fun verifyIntegration(callback: VerifyIntegrationCallback) {

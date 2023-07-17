@@ -59,7 +59,7 @@ internal class EmbracePluginRepository(
             val virtualFile =
                 LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath)
             if (virtualFile != null) {
-//             closes the file and open it again in case that is already being displayed and need to display new changes
+                // closes the file and open it again in case that is already being displayed and need to display new changes
                 FileEditorManager.getInstance(project).closeFile(virtualFile)
                 FileEditorManager.getInstance(project).openFile(virtualFile, true)
             }
@@ -67,8 +67,8 @@ internal class EmbracePluginRepository(
 
     }
 
-    fun addStartToApplicationClass(callback: StartMethodCallback) =
-        startMethodModifier.addStartToApplicationClass(callback)
+    fun addStartToApplicationClass(appPackageName: String?, callback: StartMethodCallback) =
+        startMethodModifier.addStartToApplicationClass(appPackageName, callback)
 
 
     fun getProjectName(): String {
@@ -76,7 +76,7 @@ internal class EmbracePluginRepository(
         return currentProject.name
     }
 
-    fun verifyIntegration(embraceProject: EmbraceProject, onSucccess : () -> Unit,  onError : () -> Unit) {
+    fun verifyIntegration(embraceProject: EmbraceProject, onSucccess: () -> Unit, onError: () -> Unit) {
         apiService.verifyIntegration(embraceProject, onSucccess, onError)
     }
 

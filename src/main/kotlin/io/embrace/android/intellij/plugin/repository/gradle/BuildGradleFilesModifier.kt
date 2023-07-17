@@ -9,11 +9,10 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.AppModule
-import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.data.BuildType
+import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.sentry.Sentry
 import org.gradle.tooling.model.GradleProject
 import java.io.File
@@ -28,6 +27,8 @@ internal class BuildGradleFilesModifier(
 ) {
 
     private val appGradleFile = lazy { getGradleDocument() }
+    internal var appPackageName: String? = null
+
 
     private fun getGradleDocument(): Document? {
         val buildGradleFile = gradleAPI?.getBuildGradleFileForProject() ?: File(project.basePath + "/build.gradle")
@@ -176,6 +177,9 @@ internal class BuildGradleFilesModifier(
             }
 
         val content = document.text
+
+        saveAppPackageName(content)
+
         val androidApplicationIndex = content.indexOf("com.android.application").takeIf { it >= 0 }
             ?: return GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND
 
@@ -190,6 +194,27 @@ internal class BuildGradleFilesModifier(
         }
 
         return GradleFileStatus.ADDED_SUCCESSFULLY
+    }
+
+    /**
+     * Save the app package name to be used later when adding the start method.
+     * It is contained in the build.gradle file as "applicationId" or "namespace".
+     */
+    private fun saveAppPackageName(content: String) {
+        val packageNamePrefixes = listOf("applicationId", "namespace")
+        val packageNamePrefix = packageNamePrefixes.find { content.contains(it) }
+
+        packageNamePrefix?.let {
+            val startIndex = content.indexOf(it)
+            val lineEndIndex = content.indexOf("\n", startIndex)
+            val line = content.substring(startIndex, lineEndIndex)
+
+            appPackageName = line
+                .replace(it, "")
+                .replace("=", "")
+                .replace("\"", "")
+                .trim()
+        }
     }
 
     private fun addPlugin(content: String, androidApplicationIndex: Int, type: BuildType): String {
@@ -220,6 +245,33 @@ internal class BuildGradleFilesModifier(
         } catch (e: Exception) {
             Sentry.captureException(e)
             e.printStackTrace()
+        }
+    }
+
+    fun retrievePackageName() {
+        try {
+            val file = gradleAPI?.getBuildGradleFilesForModules()
+                ?: run {
+                    Log.e(TAG, "root build.gradle file not found.")
+                    return
+                }
+
+            val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+                ?: run {
+                    Log.e(TAG, "build.gradle virtual file not found.")
+                    return
+                }
+
+            val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
+                ?: run {
+                    Log.e(TAG, "build.gradle document not found.")
+                    return
+                }
+
+            val content = document.text
+            saveAppPackageName(content)
+        } catch (e: Exception) {
+            Sentry.captureException(e)
         }
     }
 }

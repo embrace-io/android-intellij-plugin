@@ -28,12 +28,15 @@ class GradleToolingApiWrapper(basePath: String) {
         return null
     }
 
-    fun getBuildGradleFilesForModules(selectedModule: String): File? {
+    fun getBuildGradleFilesForModules(selectedModule: String? = null): File? {
         try {
             connector.connect().use { connection ->
                 val model = connection.getModel(GradleProject::class.java)
                 val modules = model.children
-                return modules.first { it?.name.contentEquals(selectedModule) }.buildScript.sourceFile
+                if (selectedModule != null)
+                    return modules.first { it?.name.contentEquals(selectedModule) }.buildScript.sourceFile
+                else
+                    return modules.first().buildScript.sourceFile
             }
         } catch (e: Exception) {
             Sentry.captureException(e)
