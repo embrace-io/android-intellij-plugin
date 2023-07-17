@@ -239,6 +239,33 @@ internal class BuildGradleFilesModifier(
             e.printStackTrace()
         }
     }
+
+    fun retrievePackageName() {
+        try {
+            val file = gradleAPI?.getBuildGradleFilesForModules()
+                ?: run {
+                    Log.e(TAG, "root build.gradle file not found.")
+                    return
+                }
+
+            val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+                ?: run {
+                    Log.e(TAG, "build.gradle virtual file not found.")
+                    return
+                }
+
+            val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
+                ?: run {
+                    Log.e(TAG, "build.gradle document not found.")
+                    return
+                }
+
+            val content = document.text
+            saveAppPackageName(content)
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+        }
+    }
 }
 
 private val TAG = BuildGradleFilesModifier::class.simpleName.orEmpty()

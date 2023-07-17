@@ -48,9 +48,13 @@ internal class StartMethodModifier(private val project: Project) {
                     .item(0).attributes?.getNamedItem("android:name")
                 if (applicationNode != null) {
                     var packageName = manifestXml.documentElement.getAttribute("package")
+
                     if (packageName.isNullOrEmpty() && !appPackageName.isNullOrEmpty()) {
                         packageName = appPackageName
+                    } else {
+                        return null
                     }
+
                     return packageName + applicationNode.nodeValue
                 }
             } catch (e: Exception) {
