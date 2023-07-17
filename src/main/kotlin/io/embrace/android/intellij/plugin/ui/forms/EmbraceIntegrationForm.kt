@@ -145,11 +145,11 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step3Title".text(), TextStyle.HEADLINE_2, step = Steps.GRADLE))
         panel.add(EmbTextArea("addSwazzler".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode(), Steps.GRADLE))
+        panel.add(EmbBlockCode(dataProvider.getSwazzlerExampleCode(), Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applySwazzlerPlugin".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerPluginExampleCode(), step = Steps.GRADLE))
+        panel.add(EmbBlockCode(dataProvider.getSwazzlerPluginExampleCode(), step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text(), Steps.GRADLE) {
@@ -158,9 +158,10 @@ internal class EmbraceIntegrationForm(
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.gradleResultPanel)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applyDependencyDescription".text(), TextStyle.BODY, step = Steps.GRADLE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode(), Steps.GRADLE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(EmbBlockCode(dataProvider.getSdkExampleCode(), Steps.GRADLE))
     }
 
     private fun initStartEmbraceStep() {
@@ -168,7 +169,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step4Title".text(), TextStyle.HEADLINE_2, step = Steps.ADD_START))
         panel.add(EmbTextArea("step4Description".text(), TextStyle.BODY, step = Steps.ADD_START))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode(), Steps.ADD_START))
+        panel.add(EmbBlockCode(dataProvider.getStartExampleCode(), Steps.ADD_START))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnAddEmbraceStart".text(), Steps.ADD_START) {
             dataProvider.addEmbraceStartMethod(this)
@@ -277,7 +278,7 @@ internal class EmbraceIntegrationForm(
     }
 
 
-    private fun showGradlePopup() {
+    private fun showGradlePopup(isRetry: Boolean = false) {
         if (dataProvider.applicationModules?.isNotEmpty() == true) {
             if (gradlePopup == null) {
                 gradlePopup = GradleFilesPopup(
@@ -291,6 +292,13 @@ internal class EmbraceIntegrationForm(
                 gradlePopup?.showPopup(ideWindow)
             } else {
                 onGradleFileError("noApplicationModule".text())
+            }
+        } else {
+            if (isRetry) {
+                onGradleFileError("noApplicationModule".text())
+            } else {
+                dataProvider.loadApplicationModules()
+                showGradlePopup(true)
             }
         }
     }

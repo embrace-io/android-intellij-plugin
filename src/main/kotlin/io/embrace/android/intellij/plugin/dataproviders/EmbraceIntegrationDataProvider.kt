@@ -53,7 +53,7 @@ internal class EmbraceIntegrationDataProvider(
         loadApplicationModules()
     }
 
-    private fun loadApplicationModules() {
+    internal fun loadApplicationModules() {
         ApplicationManager.getApplication().executeOnPooledThread {
             val modules = buildGradleFilesModifier.value?.getModules()
             ApplicationManager.getApplication().invokeLater {
@@ -210,7 +210,7 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun getSwazzlerClasspathLine(): String {
-        return buildGradleFilesModifier.value?.getClasspathSwazzlerLine(false) ?: ""
+        return buildGradleFilesModifier.value?.getClasspathSwazzlerLine() ?: ""
     }
 
     fun getSwazzlerPluginLine(buildType: BuildType): String {
@@ -223,4 +223,5 @@ internal class EmbraceIntegrationDataProvider(
             Desktop.getDesktop().mail(uri)
         }
     }
+
 }

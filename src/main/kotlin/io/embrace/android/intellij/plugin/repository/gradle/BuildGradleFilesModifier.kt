@@ -25,13 +25,13 @@ internal class BuildGradleFilesModifier(
     private val lastEmbraceVersion: String,
     private val gradleAPI: GradleToolingApiWrapper? = project.basePath?.let { GradleToolingApiWrapper(it) }
 ) {
-
     private val appGradleFile = lazy { getGradleDocument() }
+    private var isKotlinFile = false
     internal var appPackageName: String? = null
-
 
     private fun getGradleDocument(): Document? {
         val buildGradleFile = gradleAPI?.getBuildGradleFileForProject() ?: File(project.basePath + "/build.gradle")
+
         if (!buildGradleFile.exists()) {
             Log.e(TAG, "root build.gradle file not found.")
             return null
@@ -49,6 +49,7 @@ internal class BuildGradleFilesModifier(
             return null
         }
 
+        isKotlinFile = buildGradleFile.name.endsWith(".kts")
         return document
     }
 
@@ -112,10 +113,15 @@ internal class BuildGradleFilesModifier(
                 return GradleFileStatus.SWAZZLER_ALREADY_ADDED
             }
 
-            val dependenciesIndex = content.indexOf("dependencies").takeIf { it >= 0 }
-                ?: return GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND
+            var dependenciesIndex = content.indexOf("dependencies")
+            var newContent = content
 
-            val newContent = addClasspath(dependenciesIndex, content)
+            if (dependenciesIndex <= 0) {
+                newContent = addDependenciesBlock(content)
+            }
+
+            dependenciesIndex = newContent.indexOf("dependencies")
+            newContent = addClasspath(dependenciesIndex, newContent)
 
             WriteCommandAction.runWriteCommandAction(project) {
                 appGradleFile.value?.setText(newContent)
@@ -128,13 +134,39 @@ internal class BuildGradleFilesModifier(
         }
     }
 
+    private fun addDependenciesBlock(content: String): String {
+        if (content.contains("buildscript")) {
+            val buildScriptIndex = content.indexOf("buildscript") + 11
+            val endIndexOfBuildscript = content.indexOf('\n', startIndex = buildScriptIndex)
+
+            return content.substring(0, endIndexOfBuildscript) +
+                    "\n" +
+                    "    dependencies {\n" +
+                    "    }\n" +
+                    content.substring(endIndexOfBuildscript)
+        } else {
+            return content.plus(
+                "\n" +
+                        "buildscript {\n" +
+                        "    dependencies {\n" +
+                        "    }\n" +
+                        "}"
+            )
+        }
+    }
+
+
     private fun addClasspath(dependenciesIndex: Int, content: String): String {
         val firstDependencyIndexWithoutIndent = content.indexOf("\n", dependenciesIndex) + 1
         val firstDependencyIndexWithIndent =
             content.indexOfFirstNonWhitespace(firstDependencyIndexWithoutIndent)
-        val indent = content.substring(firstDependencyIndexWithoutIndent, firstDependencyIndexWithIndent)
+        var indent = content.substring(firstDependencyIndexWithoutIndent, firstDependencyIndexWithIndent)
 
-        val newDependency = getClasspathSwazzlerLine(content.replace(" ", "").contains("classpath("))
+        if (indent.isEmpty()) {
+            indent = "    "
+        }
+
+        val newDependency = getClasspathSwazzlerLine()
 
         return content.substring(0, firstDependencyIndexWithIndent) +
                 newDependency +
@@ -143,8 +175,8 @@ internal class BuildGradleFilesModifier(
                 content.substring(firstDependencyIndexWithIndent)
     }
 
-    internal fun getClasspathSwazzlerLine(isKotlin: Boolean): String {
-        val swazzlerClasspath = if (isKotlin) {
+    internal fun getClasspathSwazzlerLine(): String {
+        val swazzlerClasspath = if (isKotlinFile) {
             EMBRACE_SWAZZLER_CLASSPATH_KOTLIN
         } else {
             EMBRACE_SWAZZLER_CLASSPATH
@@ -181,7 +213,7 @@ internal class BuildGradleFilesModifier(
         saveAppPackageName(content)
 
         val androidApplicationIndex = content.indexOf("com.android.application").takeIf { it >= 0 }
-            ?: return GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND
+            ?: return GradleFileStatus.PLUGINS_BLOCK_NOT_FOUND
 
         if (content.contains("embrace-swazzler")) {
             return GradleFileStatus.SWAZZLER_ALREADY_ADDED
@@ -195,6 +227,7 @@ internal class BuildGradleFilesModifier(
 
         return GradleFileStatus.ADDED_SUCCESSFULLY
     }
+
 
     /**
      * Save the app package name to be used later when adding the start method.
