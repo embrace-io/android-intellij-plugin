@@ -25,6 +25,8 @@ import javax.swing.JPanel
 
 internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
+    private val errorIcon = IconLoader.getIcon("/icons/error.svg", FormComponentManager::class.java)
+
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
     internal val configFileStatusPanel = getResultLayout().apply {
@@ -186,6 +188,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
             add(EmbLabel("message", TextStyle.BODY).apply {
                 border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
+                iconTextGap = 5
             })
             add(Box.createVerticalStrut(8))
             add(EmbClickableUnderlinedLabel("skipStep".text()) {
@@ -208,10 +211,9 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
             if (success) {
                 label.foreground = successColor
                 label.icon = successIcon
-                label.iconTextGap = 5
             } else {
                 label.foreground = errorColor
-                label.icon = null
+                label.icon = errorIcon
             }
         }
     }

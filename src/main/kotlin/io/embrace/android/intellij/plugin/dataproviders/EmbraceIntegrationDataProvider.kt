@@ -147,6 +147,8 @@ internal class EmbraceIntegrationDataProvider(
             callback.onGradleFilesModifiedSuccessfully()
         } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
             callback.onGradleFileAlreadyModified()
+        } else if (rootFileStatus == GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND) {
+            callback.onGradleFileError("dependenciesBlockNotFoundError".text())
         } else if (rootFileStatus == GradleFileStatus.FILE_NOT_FOUND
             || appFileStatus == GradleFileStatus.FILE_NOT_FOUND
         ) {

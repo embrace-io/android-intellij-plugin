@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
-import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
@@ -28,7 +27,6 @@ import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 
 
 private const val VERTICAL_SPACE = 20
@@ -59,18 +57,18 @@ internal class EmbraceIntegrationForm(
     private val btnOpenDashboard = EmbButton("btnOpenDashboard".text(), Steps.VERIFY) { dataProvider.openDashboard() }
 
     init {
-        SwingUtilities.invokeLater {
-            initGetStartedLayout()
-            initCreateAppStep()
-            initConfigFileStep()
-            initDependenciesStep()
-            initStartEmbraceStep()
-            initEmbraceVerificationStep()
-            addSupportContact()
+//        SwingUtilities.invokeLater {
+        initGetStartedLayout()
+        initCreateAppStep()
+        initConfigFileStep()
+        initDependenciesStep()
+        initStartEmbraceStep()
+        initEmbraceVerificationStep()
+        addSupportContact()
 
-            componentManager.setCurrentStep(Steps.CREATE_PROJECT)
-            scrollToTop()
-        }
+        componentManager.setCurrentStep(Steps.GRADLE)
+        scrollToTop()
+//        }
     }
 
     private fun scrollToTop() {
@@ -155,13 +153,7 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text(), Steps.GRADLE) {
-            dataProvider.applicationModules?.let {
-                if (it.isNotEmpty()) {
-                    showGradlePopupIfNecessary(it)
-                } else {
-                    Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
-                }
-            } ?: Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
+            showGradlePopup()
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
@@ -285,26 +277,31 @@ internal class EmbraceIntegrationForm(
     }
 
 
-    private fun showGradlePopupIfNecessary(applicationModules: List<AppModule>) {
-        if (gradlePopup == null) {
-            gradlePopup = GradleFilesPopup(
-                dataProvider,
-                applicationModules
-            ) { dataProvider.modifyGradleFile(it, this@EmbraceIntegrationForm) }
-        }
+    private fun showGradlePopup() {
+        if (dataProvider.applicationModules?.isNotEmpty() == true) {
+            if (gradlePopup == null) {
+                gradlePopup = GradleFilesPopup(
+                    dataProvider,
+                    dataProvider.applicationModules!!,
+                ) { dataProvider.modifyGradleFile(it, this@EmbraceIntegrationForm) }
+            }
 
-        if (!gradlePopup!!.isVisible) {
-            val ideWindow = WindowManager.getInstance().getIdeFrame(project)?.component
-            gradlePopup?.showPopup(ideWindow)
+            if (gradlePopup?.isVisible == false) {
+                val ideWindow = WindowManager.getInstance().getIdeFrame(project)?.component
+                gradlePopup?.showPopup(ideWindow)
+            } else {
+                onGradleFileError("noApplicationModule".text())
+            }
         }
     }
 
     override fun onGradleFileError(error: String) {
-        Messages.showInfoMessage(
-            scrollPane,
-            error,
-            "Error"
+        componentManager.changeResultText(
+            componentManager.gradleResultPanel,
+            "buildFilesErrorShort".text(),
+            false
         )
+        Messages.showErrorDialog(scrollPane, error, "GenericErrorTitle".text())
     }
 
     override fun onGradleFileAlreadyModified() {
@@ -379,7 +376,11 @@ internal class EmbraceIntegrationForm(
                     "applicationClassNotOnCreateShort".text(),
                     false
                 )
-                Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
+                Messages.showErrorDialog(
+                    scrollPane,
+                    "applicationClassNotOnCreate".text(),
+                    "GenericErrorTitle".text()
+                )
             }
 
         }
