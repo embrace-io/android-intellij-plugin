@@ -259,6 +259,13 @@ internal class EmbraceIntegrationForm(
 
         if (result == 0) {
             dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this, true)
+        } else {
+            componentManager.changeResultText(
+                componentManager.configFileStatusPanel,
+                "configFileCreated".text()
+            )
+
+            componentManager.setCurrentStep(Steps.GRADLE)
         }
     }
 

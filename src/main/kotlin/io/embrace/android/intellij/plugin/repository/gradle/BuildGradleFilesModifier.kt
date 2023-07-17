@@ -196,13 +196,21 @@ internal class BuildGradleFilesModifier(
         return GradleFileStatus.ADDED_SUCCESSFULLY
     }
 
+    /**
+     * Save the app package name to be used later when adding the start method.
+     * It is contained in the build.gradle file as "applicationId" or "namespace".
+     */
     private fun saveAppPackageName(content: String) {
-        if (content.contains("applicationId")) {
-            val applicationIdIndex = content.indexOf("applicationId")
-            val lineEnd = content.indexOf("\n", applicationIdIndex)
-            val line = content.substring(applicationIdIndex, lineEnd)
+        val packageNamePrefixes = listOf("applicationId", "namespace")
+        val packageNamePrefix = packageNamePrefixes.find { content.contains(it) }
 
-            appPackageName = line.replace("applicationId", "")
+        packageNamePrefix?.let {
+            val startIndex = content.indexOf(it)
+            val lineEndIndex = content.indexOf("\n", startIndex)
+            val line = content.substring(startIndex, lineEndIndex)
+
+            appPackageName = line
+                .replace(it, "")
                 .replace("=", "")
                 .replace("\"", "")
                 .trim()

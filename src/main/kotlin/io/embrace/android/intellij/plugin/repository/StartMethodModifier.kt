@@ -51,11 +51,9 @@ internal class StartMethodModifier(private val project: Project) {
 
                     if (packageName.isNullOrEmpty() && !appPackageName.isNullOrEmpty()) {
                         packageName = appPackageName
-                    } else {
-                        return null
                     }
 
-                    return packageName + applicationNode.nodeValue
+                    return if (packageName.isNullOrEmpty()) null else packageName.plus(applicationNode.nodeValue)
                 }
             } catch (e: Exception) {
                 Sentry.captureException(e)
