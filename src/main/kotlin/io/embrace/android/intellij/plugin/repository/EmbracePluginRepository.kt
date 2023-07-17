@@ -67,8 +67,8 @@ internal class EmbracePluginRepository(
 
     }
 
-    fun addStartToApplicationClass(callback: StartMethodCallback) =
-        startMethodModifier.addStartToApplicationClass(callback)
+    fun addStartToApplicationClass(appPackageName: String?, callback: StartMethodCallback) =
+        startMethodModifier.addStartToApplicationClass(appPackageName, callback)
 
 
     fun getProjectName(): String {

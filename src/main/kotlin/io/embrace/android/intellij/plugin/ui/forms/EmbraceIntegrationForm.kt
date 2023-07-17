@@ -68,7 +68,7 @@ internal class EmbraceIntegrationForm(
             initEmbraceVerificationStep()
             addSupportContact()
 
-            componentManager.setCurrentStep(Steps.CREATE_PROJECT)
+            componentManager.setCurrentStep(Steps.VERIFY)
             scrollToTop()
         }
     }

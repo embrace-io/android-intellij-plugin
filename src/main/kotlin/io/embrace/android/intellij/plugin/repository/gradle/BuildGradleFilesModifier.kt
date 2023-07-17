@@ -9,11 +9,10 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.AppModule
-import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.embrace.android.intellij.plugin.data.BuildType
+import io.embrace.android.intellij.plugin.data.GradleFileStatus
 import io.sentry.Sentry
 import org.gradle.tooling.model.GradleProject
 import java.io.File
@@ -28,6 +27,8 @@ internal class BuildGradleFilesModifier(
 ) {
 
     private val appGradleFile = lazy { getGradleDocument() }
+    internal var appPackageName: String? = null
+
 
     private fun getGradleDocument(): Document? {
         val buildGradleFile = gradleAPI?.getBuildGradleFileForProject() ?: File(project.basePath + "/build.gradle")
@@ -176,6 +177,9 @@ internal class BuildGradleFilesModifier(
             }
 
         val content = document.text
+
+        saveAppPackageName(content)
+
         val androidApplicationIndex = content.indexOf("com.android.application").takeIf { it >= 0 }
             ?: return GradleFileStatus.DEPENDENCIES_BLOCK_NOT_FOUND
 
@@ -190,6 +194,19 @@ internal class BuildGradleFilesModifier(
         }
 
         return GradleFileStatus.ADDED_SUCCESSFULLY
+    }
+
+    private fun saveAppPackageName(content: String) {
+        if (content.contains("applicationId")) {
+            val applicationIdIndex = content.indexOf("applicationId")
+            val lineEnd = content.indexOf("\n", applicationIdIndex)
+            val line = content.substring(applicationIdIndex, lineEnd)
+
+            appPackageName = line.replace("applicationId", "")
+                .replace("=", "")
+                .replace("\"", "")
+                .trim()
+        }
     }
 
     private fun addPlugin(content: String, androidApplicationIndex: Int, type: BuildType): String {

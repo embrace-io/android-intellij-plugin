@@ -2,13 +2,11 @@ package io.embrace.android.intellij.plugin.repository
 
 import com.android.tools.idea.projectsystem.getManifestFiles
 import com.android.utils.XmlUtils
-import com.intellij.ide.diff.VirtualFileDiffElement.refreshFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -24,8 +22,8 @@ import javax.swing.SwingWorker
 
 internal class StartMethodModifier(private val project: Project) {
 
-    fun addStartToApplicationClass(callback: StartMethodCallback) {
-        val applicationClass = getApplicationClass()
+    fun addStartToApplicationClass(appPackageName: String?, callback: StartMethodCallback) {
+        val applicationClass = getApplicationClass(appPackageName)
 
         if (applicationClass != null) {
             ManifestManager(applicationClass, project, callback).execute()
@@ -34,9 +32,10 @@ internal class StartMethodModifier(private val project: Project) {
         }
     }
 
-    private fun getApplicationClass(): String? {
+    private fun getApplicationClass(appPackageName: String?): String? {
+        val mainPath = EmbracePluginRepository.FILE_ROOT + project.basePath + EmbracePluginRepository.MAIN_PATH
         val file = VirtualFileManager.getInstance()
-            .findFileByUrl(EmbracePluginRepository.FILE_ROOT + project.basePath + EmbracePluginRepository.MAIN_PATH)
+            .findFileByUrl(mainPath)
 
         file?.let {
             val module = ModuleUtil.findModuleForFile(it, project) ?: return null
@@ -48,7 +47,10 @@ internal class StartMethodModifier(private val project: Project) {
                 val applicationNode = manifestXml.documentElement.getElementsByTagName("application")
                     .item(0).attributes?.getNamedItem("android:name")
                 if (applicationNode != null) {
-                    val packageName = manifestXml.documentElement.getAttribute("package")
+                    var packageName = manifestXml.documentElement.getAttribute("package")
+                    if (packageName.isNullOrEmpty() && !appPackageName.isNullOrEmpty()) {
+                        packageName = appPackageName
+                    }
                     return packageName + applicationNode.nodeValue
                 }
             } catch (e: Exception) {
@@ -156,7 +158,8 @@ internal class StartMethodModifier(private val project: Project) {
             val result = get() as StartMethodStatus
 
             if (result == StartMethodStatus.START_ADDED_SUCCESSFULLY ||
-                result == StartMethodStatus.START_ALREADY_ADDED) {
+                result == StartMethodStatus.START_ALREADY_ADDED
+            ) {
                 refreshProjectFolder()
             }
             callback.onStartStatusUpdated(result)
