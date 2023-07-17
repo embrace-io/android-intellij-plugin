@@ -27,6 +27,7 @@ import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 
 private const val VERTICAL_SPACE = 20
@@ -57,18 +58,18 @@ internal class EmbraceIntegrationForm(
     private val btnOpenDashboard = EmbButton("btnOpenDashboard".text(), Steps.VERIFY) { dataProvider.openDashboard() }
 
     init {
-//        SwingUtilities.invokeLater {
-        initGetStartedLayout()
-        initCreateAppStep()
-        initConfigFileStep()
-        initDependenciesStep()
-        initStartEmbraceStep()
-        initEmbraceVerificationStep()
-        addSupportContact()
+        SwingUtilities.invokeLater {
+            initGetStartedLayout()
+            initCreateAppStep()
+            initConfigFileStep()
+            initDependenciesStep()
+            initStartEmbraceStep()
+            initEmbraceVerificationStep()
+            addSupportContact()
 
-        componentManager.setCurrentStep(Steps.GRADLE)
-        scrollToTop()
-//        }
+            componentManager.setCurrentStep(Steps.CREATE_PROJECT)
+            scrollToTop()
+        }
     }
 
     private fun scrollToTop() {
