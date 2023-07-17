@@ -78,10 +78,8 @@ internal class EmbraceIntegrationForm(
         scrollPane.addHierarchyListener(object : HierarchyListener {
             override fun hierarchyChanged(e: HierarchyEvent) {
                 if ((e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L && scrollPane.isShowing) {
-                    SwingUtilities.invokeLater {
-                        scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
-                        scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
-                    }
+                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.minimum
+                    scrollPane.horizontalScrollBar.value = scrollPane.horizontalScrollBar.minimum
                     scrollPane.removeHierarchyListener(this)
                 }
             }
@@ -125,7 +123,11 @@ internal class EmbraceIntegrationForm(
 
         panel.add(EmbButton("btnConfigFile".text(), Steps.CONFIG) {
             if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
-                dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this)
+                dataProvider.createConfigurationEmbraceFile(
+                    componentManager.getAppId(),
+                    componentManager.getToken(),
+                    this
+                )
             } else {
                 componentManager.changeResultText(
                     componentManager.configFileStatusPanel,
@@ -258,7 +260,12 @@ internal class EmbraceIntegrationForm(
             )
 
         if (result == 0) {
-            dataProvider.createEmbraceFile(componentManager.getAppId(), componentManager.getToken(), this, true)
+            dataProvider.createConfigurationEmbraceFile(
+                componentManager.getAppId(),
+                componentManager.getToken(),
+                this,
+                true
+            )
         } else {
             componentManager.changeResultText(
                 componentManager.configFileStatusPanel,

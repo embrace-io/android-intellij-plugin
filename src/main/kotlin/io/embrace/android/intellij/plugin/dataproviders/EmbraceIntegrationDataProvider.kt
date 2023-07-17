@@ -85,7 +85,7 @@ internal class EmbraceIntegrationDataProvider(
         println("Server started on port $callbackPort")
     }
 
-    internal fun createEmbraceFile(
+    internal fun createConfigurationEmbraceFile(
         appId: String,
         token: String,
         callback: ConfigFileCreationCallback,
