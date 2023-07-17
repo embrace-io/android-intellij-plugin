@@ -53,7 +53,7 @@ internal class EmbraceIntegrationDataProvider(
         loadApplicationModules()
     }
 
-    private fun loadApplicationModules() {
+    internal fun loadApplicationModules() {
         ApplicationManager.getApplication().executeOnPooledThread {
             val modules = buildGradleFilesModifier.value?.getModules()
             ApplicationManager.getApplication().invokeLater {
@@ -140,20 +140,24 @@ internal class EmbraceIntegrationDataProvider(
         val rootFileStatus = buildGradleFilesModifier.value?.addSwazzlerClasspath()
         val appFileStatus = buildGradleFilesModifier.value?.addSwazzlerPlugin(selectedModule)
 
-        if (rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
-            && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY
-        ) {
-            buildGradleFilesModifier.value?.syncGradle(project)
-            callback.onGradleFilesModifiedSuccessfully()
-        } else if (rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED) {
-            callback.onGradleFileAlreadyModified()
-        } else if (rootFileStatus == GradleFileStatus.FILE_NOT_FOUND
-            || appFileStatus == GradleFileStatus.FILE_NOT_FOUND
-        ) {
-            callback.onGradleFileError("gradleFileNotFound".text())
-        } else
-            callback.onGradleFileError("oneOrMoreFilesError".text())
+        when {
+            rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY -> {
+                buildGradleFilesModifier.value?.syncGradle(project)
+                callback.onGradleFilesModifiedSuccessfully()
+            }
 
+            rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED -> {
+                callback.onGradleFileAlreadyModified()
+            }
+
+            rootFileStatus == GradleFileStatus.FILE_NOT_FOUND && appFileStatus == GradleFileStatus.FILE_NOT_FOUND -> {
+                callback.onGradleFileError("oneOrMoreFilesError".text())
+            }
+
+            else -> {
+                callback.onGradleFileError("gradleFileError".text())
+            }
+        }
     }
 
     fun addEmbraceStartMethod(callback: StartMethodCallback) {
@@ -208,7 +212,7 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun getSwazzlerClasspathLine(): String {
-        return buildGradleFilesModifier.value?.getClasspathSwazzlerLine(false) ?: ""
+        return buildGradleFilesModifier.value?.getClasspathSwazzlerLine() ?: ""
     }
 
     fun getSwazzlerPluginLine(buildType: BuildType): String {
@@ -221,4 +225,5 @@ internal class EmbraceIntegrationDataProvider(
             Desktop.getDesktop().mail(uri)
         }
     }
+
 }

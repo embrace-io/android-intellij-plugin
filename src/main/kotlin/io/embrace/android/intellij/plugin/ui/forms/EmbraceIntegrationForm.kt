@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
-import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.StartMethodStatus
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import io.embrace.android.intellij.plugin.dataproviders.callback.ConfigFileCreationCallback
@@ -147,28 +146,23 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step3Title".text(), TextStyle.HEADLINE_2, step = Steps.GRADLE))
         panel.add(EmbTextArea("addSwazzler".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerExampleCode(), Steps.GRADLE))
+        panel.add(EmbBlockCode(dataProvider.getSwazzlerExampleCode(), Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applySwazzlerPlugin".text(), TextStyle.BODY, step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSwazzlerPluginExampleCode(), step = Steps.GRADLE))
+        panel.add(EmbBlockCode(dataProvider.getSwazzlerPluginExampleCode(), step = Steps.GRADLE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
         panel.add(EmbButton("btnModifyGradleFiles".text(), Steps.GRADLE) {
-            dataProvider.applicationModules?.let {
-                if (it.isNotEmpty()) {
-                    showGradlePopupIfNecessary(it)
-                } else {
-                    Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
-                }
-            } ?: Messages.showErrorDialog(scrollPane, "noApplicationModule".text(), "GenericErrorTitle".text())
+            showGradlePopup()
         })
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.gradleResultPanel)
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applyDependencyDescription".text(), TextStyle.BODY, step = Steps.GRADLE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getSdkExampleCode(), Steps.GRADLE))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(EmbBlockCode(dataProvider.getSdkExampleCode(), Steps.GRADLE))
     }
 
     private fun initStartEmbraceStep() {
@@ -176,7 +170,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("step4Title".text(), TextStyle.HEADLINE_2, step = Steps.ADD_START))
         panel.add(EmbTextArea("step4Description".text(), TextStyle.BODY, step = Steps.ADD_START))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(panel, dataProvider.getStartExampleCode(), Steps.ADD_START))
+        panel.add(EmbBlockCode(dataProvider.getStartExampleCode(), Steps.ADD_START))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbButton("btnAddEmbraceStart".text(), Steps.ADD_START) {
             dataProvider.addEmbraceStartMethod(this)
@@ -285,26 +279,38 @@ internal class EmbraceIntegrationForm(
     }
 
 
-    private fun showGradlePopupIfNecessary(applicationModules: List<AppModule>) {
-        if (gradlePopup == null) {
-            gradlePopup = GradleFilesPopup(
-                dataProvider,
-                applicationModules
-            ) { dataProvider.modifyGradleFile(it, this@EmbraceIntegrationForm) }
-        }
+    private fun showGradlePopup(isRetry: Boolean = false) {
+        if (dataProvider.applicationModules?.isNotEmpty() == true) {
+            if (gradlePopup == null) {
+                gradlePopup = GradleFilesPopup(
+                    dataProvider,
+                    dataProvider.applicationModules!!,
+                ) { dataProvider.modifyGradleFile(it, this@EmbraceIntegrationForm) }
+            }
 
-        if (!gradlePopup!!.isVisible) {
-            val ideWindow = WindowManager.getInstance().getIdeFrame(project)?.component
-            gradlePopup?.showPopup(ideWindow)
+            if (gradlePopup?.isVisible == false) {
+                val ideWindow = WindowManager.getInstance().getIdeFrame(project)?.component
+                gradlePopup?.showPopup(ideWindow)
+            } else {
+                onGradleFileError("noApplicationModule".text())
+            }
+        } else {
+            if (isRetry) {
+                onGradleFileError("noApplicationModule".text())
+            } else {
+                dataProvider.loadApplicationModules()
+                showGradlePopup(true)
+            }
         }
     }
 
     override fun onGradleFileError(error: String) {
-        Messages.showInfoMessage(
-            scrollPane,
-            error,
-            "Error"
+        componentManager.changeResultText(
+            componentManager.gradleResultPanel,
+            "buildFilesErrorShort".text(),
+            false
         )
+        Messages.showErrorDialog(scrollPane, error, "GenericErrorTitle".text())
     }
 
     override fun onGradleFileAlreadyModified() {
@@ -379,7 +385,11 @@ internal class EmbraceIntegrationForm(
                     "applicationClassNotOnCreateShort".text(),
                     false
                 )
-                Messages.showErrorDialog(scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text())
+                Messages.showErrorDialog(
+                    scrollPane,
+                    "applicationClassNotOnCreate".text(),
+                    "GenericErrorTitle".text()
+                )
             }
 
         }
