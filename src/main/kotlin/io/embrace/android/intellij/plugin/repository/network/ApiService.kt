@@ -1,7 +1,7 @@
 package io.embrace.android.intellij.plugin.repository.network
 
 import io.embrace.android.intellij.plugin.data.EmbraceProject
-import io.sentry.Sentry
+import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -12,13 +12,13 @@ internal class ApiService {
         const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
 
         const val EMBRACE_CREATE_PROJECT_URL: String =
-            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/android-plugin/landing"
+            "https://dash.embrace.io/android-plugin/landing"
 
         const val EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL: String =
-            "https://dash-api.android-plugin.joaquin-diaz.dev.emb-eng.com/external/v4/org/app/{appId}/verify_integration"
+            "https://dash-api.embrace.io/external/v4/org/app/{appId}/verify_integration"
 
         const val EMBRACE_DASHBOARD_URL: String =
-            "https://dash.android-plugin.joaquin-diaz.dev.emb-eng.com/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
+            "https://dash.embrace.io/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
     }
 
     fun getLastSDKVersion(): String {
@@ -28,7 +28,7 @@ internal class ApiService {
             jsonObject.getString("value")
         } catch (e: JSONException) {
             println("An error occurred on json parser for getting last version")
-            Sentry.captureException(e)
+            SentryLogger.logException(e)
             ""
         }
     }

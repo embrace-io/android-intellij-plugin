@@ -1,12 +1,5 @@
 {
   "app_id": "MY_APP_ID",
   "api_token": "MY_TOKEN",
-  "ndk_enabled": false,
-  "sdk_config": {
-    "base_urls": {
-      "data": "https://data.emb-eng.com",
-      "data_dev": "https://data-dev.emb-eng.com",
-      "images": "https://images.stg.emb-eng.com"
-    }
-  }
+  "ndk_enabled": false
 }

@@ -1,7 +1,6 @@
 package io.embrace.android.intellij.plugin.repository.network
 
-import io.sentry.Sentry
-import java.io.IOException
+import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -21,12 +20,8 @@ class ApiClient {
         try {
             val httpResponse: HttpResponse<String> = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
             response = httpResponse.body()
-        } catch (e: IOException) {
-            Sentry.captureException(e)
-            println("Error sending GET request")
-        } catch (e: InterruptedException) {
-            Sentry.captureException(e)
-            println("Error sending GET request")
+        } catch (e: Exception) {
+            SentryLogger.logException(e)
         }
 
         return response
