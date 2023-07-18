@@ -5,7 +5,7 @@ import java.awt.Component
 import java.awt.Font
 import javax.swing.JTextArea
 
-internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color? = null, step: Steps? = null) :
+internal class EmbTextArea(text: String, textLevel: TextStyle, textColor: Color? = null, step: IntegrationStep? = null) :
     JTextArea(text) {
 
     init {

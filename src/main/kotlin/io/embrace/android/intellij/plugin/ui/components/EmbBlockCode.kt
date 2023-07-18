@@ -7,7 +7,7 @@ import javax.swing.BorderFactory
 import javax.swing.JTextArea
 
 
-internal class EmbBlockCode(codeExample: String, step: Steps? = null) : JTextArea(codeExample) {
+internal class EmbBlockCode(codeExample: String, step: IntegrationStep? = null) : JTextArea(codeExample) {
 
     init {
         alignmentX = Component.LEFT_ALIGNMENT

@@ -4,7 +4,7 @@ import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
-internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null, step: Steps? = null) : JLabel(text) {
+internal class EmbLabel(text: String, textLevel: TextStyle, textColor: Color? = null, step: IntegrationStep? = null) : JLabel(text) {
 
     init {
         font = when (textLevel) {

@@ -1,8 +1,6 @@
 package io.embrace.android.intellij.plugin.ui.components
 
-import com.intellij.ui.JBColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors
-import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
@@ -14,7 +12,7 @@ import javax.swing.JTextField
 private const val VIEW_WIDTH = 270
 private const val VIEW_HEIGHT = 30
 
-internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12, step: Steps? = null) :
+internal class EmbEditableText(private val hint: String? = null, fontSize: Int = 12, step: IntegrationStep? = null) :
     JTextField(hint),
     FocusListener {
 

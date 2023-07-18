@@ -31,23 +31,23 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
     internal val configFileStatusPanel = getResultLayout().apply {
         isVisible = false
-        putClientProperty("step", Steps.CONFIG)
+        putClientProperty("step", IntegrationStep.CONFIG_FILE_CREATION)
     }
 
     internal val gradleResultPanel = getResultLayout().apply {
         isVisible = false
-        putClientProperty("step", Steps.GRADLE)
+        putClientProperty("step", IntegrationStep.DEPENDENCY_UPDATE)
     }
 
     internal val startResultPanel = getResultLayout().apply {
         isVisible = false
-        putClientProperty("step", Steps.ADD_START)
+        putClientProperty("step", IntegrationStep.START_METHOD_ADDITION)
     }
 
     internal var btnVerifyIntegration: EmbButton? = null
 
     internal val verifyCheckBox = JCheckBox("checkVerify".text()).apply {
-        putClientProperty("step", Steps.VERIFY)
+        putClientProperty("step", IntegrationStep.VERIFY_INTEGRATION)
         addItemListener {
             btnVerifyIntegration?.isEnabled = it.stateChange == java.awt.event.ItemEvent.SELECTED
         }
@@ -55,59 +55,59 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
     internal val verifyResultPanel = getResultLayout().apply {
         isVisible = false
-        putClientProperty("step", Steps.VERIFY)
+        putClientProperty("step", IntegrationStep.VERIFY_INTEGRATION)
     }
 
     internal val labelOpenDashboard =
-        EmbTextArea("seeSessions".text(), TextStyle.BODY, step = Steps.VERIFY).apply { isVisible = false }
+        EmbTextArea("seeSessions".text(), TextStyle.BODY, step = IntegrationStep.VERIFY_INTEGRATION).apply { isVisible = false }
 
-    private val etAppId = EmbEditableText(step = Steps.CONFIG)
-    private val etToken = EmbEditableText(step = Steps.CONFIG)
-    private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
-    private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = Steps.CONFIG)
-    private var currentStep: Steps = Steps.CREATE_PROJECT
+    private val etAppId = EmbEditableText(step = IntegrationStep.CONFIG_FILE_CREATION)
+    private val etToken = EmbEditableText(step = IntegrationStep.CONFIG_FILE_CREATION)
+    private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+    private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+    private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
         add(getConfigGridLayout())
-        putClientProperty("step", Steps.CONFIG)
+        putClientProperty("step", IntegrationStep.CONFIG_FILE_CREATION)
     }
 
-    fun setCurrentStep(currentStep: Steps) {
-        val enableComponents = mutableListOf<Steps>()
+    fun setCurrentStep(currentStep: IntegrationStep) {
+        val enableComponents = mutableListOf<IntegrationStep>()
         this.currentStep = currentStep
         when (currentStep) {
-            Steps.CREATE_PROJECT -> enableComponents.add(Steps.CREATE_PROJECT)
+            IntegrationStep.CREATE_PROJECT -> enableComponents.add(IntegrationStep.CREATE_PROJECT)
 
-            Steps.CONFIG -> {
-                enableComponents.add(Steps.CREATE_PROJECT)
-                enableComponents.add(Steps.CONFIG)
+            IntegrationStep.CONFIG_FILE_CREATION -> {
+                enableComponents.add(IntegrationStep.CREATE_PROJECT)
+                enableComponents.add(IntegrationStep.CONFIG_FILE_CREATION)
             }
 
-            Steps.GRADLE -> {
-                enableComponents.add(Steps.CREATE_PROJECT)
-                enableComponents.add(Steps.CONFIG)
-                enableComponents.add(Steps.GRADLE)
+            IntegrationStep.DEPENDENCY_UPDATE -> {
+                enableComponents.add(IntegrationStep.CREATE_PROJECT)
+                enableComponents.add(IntegrationStep.CONFIG_FILE_CREATION)
+                enableComponents.add(IntegrationStep.DEPENDENCY_UPDATE)
             }
 
-            Steps.ADD_START -> {
-                enableComponents.add(Steps.CREATE_PROJECT)
-                enableComponents.add(Steps.CONFIG)
-                enableComponents.add(Steps.GRADLE)
-                enableComponents.add(Steps.ADD_START)
+            IntegrationStep.START_METHOD_ADDITION -> {
+                enableComponents.add(IntegrationStep.CREATE_PROJECT)
+                enableComponents.add(IntegrationStep.CONFIG_FILE_CREATION)
+                enableComponents.add(IntegrationStep.DEPENDENCY_UPDATE)
+                enableComponents.add(IntegrationStep.START_METHOD_ADDITION)
             }
 
-            Steps.VERIFY -> {
-                enableComponents.add(Steps.CREATE_PROJECT)
-                enableComponents.add(Steps.CONFIG)
-                enableComponents.add(Steps.GRADLE)
-                enableComponents.add(Steps.ADD_START)
-                enableComponents.add(Steps.VERIFY)
+            IntegrationStep.VERIFY_INTEGRATION -> {
+                enableComponents.add(IntegrationStep.CREATE_PROJECT)
+                enableComponents.add(IntegrationStep.CONFIG_FILE_CREATION)
+                enableComponents.add(IntegrationStep.DEPENDENCY_UPDATE)
+                enableComponents.add(IntegrationStep.START_METHOD_ADDITION)
+                enableComponents.add(IntegrationStep.VERIFY_INTEGRATION)
             }
         }
-        enableConfigLayout(currentStep != Steps.CREATE_PROJECT)
+        enableConfigLayout(currentStep != IntegrationStep.CREATE_PROJECT)
         mainPanel.components.forEach { component ->
             if (component is JComponent) {
                 val id = component.getClientProperty("step")
@@ -125,24 +125,24 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
     private fun nextStep() {
         when (currentStep) {
-            Steps.CREATE_PROJECT -> {
-                setCurrentStep(Steps.CONFIG)
+            IntegrationStep.CREATE_PROJECT -> {
+                setCurrentStep(IntegrationStep.CONFIG_FILE_CREATION)
             }
 
-            Steps.CONFIG -> {
-                setCurrentStep(Steps.GRADLE)
+            IntegrationStep.CONFIG_FILE_CREATION -> {
+                setCurrentStep(IntegrationStep.DEPENDENCY_UPDATE)
             }
 
-            Steps.GRADLE -> {
-                setCurrentStep(Steps.ADD_START)
+            IntegrationStep.DEPENDENCY_UPDATE -> {
+                setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
             }
 
-            Steps.ADD_START -> {
-                setCurrentStep(Steps.VERIFY)
+            IntegrationStep.START_METHOD_ADDITION -> {
+                setCurrentStep(IntegrationStep.VERIFY_INTEGRATION)
             }
 
-            Steps.VERIFY -> {
-                setCurrentStep(Steps.VERIFY)
+            IntegrationStep.VERIFY_INTEGRATION -> {
+                setCurrentStep(IntegrationStep.VERIFY_INTEGRATION)
             }
         }
     }
