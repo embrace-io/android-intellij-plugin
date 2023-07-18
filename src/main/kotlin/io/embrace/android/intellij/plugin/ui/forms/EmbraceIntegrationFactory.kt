@@ -1,22 +1,20 @@
 package io.embrace.android.intellij.plugin.ui.forms
+
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import io.embrace.android.intellij.plugin.repository.DefaultSentryLogger
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
 import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import javax.swing.JLabel
 import javax.swing.JTextArea
 
 
 class EmbraceIntegrationFactory : ToolWindowFactory {
-    private val isSentryEnabled = false
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        DefaultSentryLogger(isSentryEnabled)
-
         val dataProvider = EmbraceIntegrationDataProvider(project)
         val integrationView = EmbraceIntegrationForm(project, dataProvider)
         val contentFactory = ContentFactory.getInstance()
@@ -39,8 +37,9 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
                 val scrollView = integrationView.panel.components
 
                 for (component in scrollView) {
-                    if (component is JTextArea) {
+                    if (component is JTextArea || component is JLabel) {
                         component.maximumSize = Dimension(maxWidth, component.preferredSize.height)
+                        component.preferredSize = Dimension(maxWidth, component.preferredSize.height)
                     }
                 }
             }

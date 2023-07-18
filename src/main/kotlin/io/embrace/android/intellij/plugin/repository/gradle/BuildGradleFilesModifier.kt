@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.BuildType
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
+import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.sentry.Sentry
 import org.gradle.tooling.model.GradleProject
 import java.io.File
@@ -23,6 +24,7 @@ internal const val EMBRACE_SWAZZLER_CLASSPATH_KOTLIN = "classpath (\"io.embrace:
 internal class BuildGradleFilesModifier(
     private val project: Project,
     private val lastEmbraceVersion: String,
+    private val logger: SentryLogger,
     private val gradleAPI: GradleToolingApiWrapper? = project.basePath?.let { GradleToolingApiWrapper(it) }
 ) {
     private val appGradleFile = lazy { getGradleDocument() }
@@ -61,6 +63,7 @@ internal class BuildGradleFilesModifier(
 
         if (modules.isNullOrEmpty()) {
             Log.e(TAG, "root build.gradle file not found.")
+            logger.logMessage("root build.gradle file not found.")
             return emptyList()
         }
 
