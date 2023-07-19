@@ -7,6 +7,7 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.ui.JBUI
+import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -59,18 +60,24 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
     }
 
     internal val labelOpenDashboard =
-        EmbTextArea("seeSessions".text(), TextStyle.BODY, step = IntegrationStep.VERIFY_INTEGRATION).apply { isVisible = false }
+        EmbTextArea("seeSessions".text(), TextStyle.BODY, step = IntegrationStep.VERIFY_INTEGRATION).apply {
+            isVisible = false
+        }
 
     private val etAppId = EmbEditableText(step = IntegrationStep.CONFIG_FILE_CREATION)
     private val etToken = EmbEditableText(step = IntegrationStep.CONFIG_FILE_CREATION)
-    private val appIdLabel = EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
-    private val tokenLabel = EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+    private val appIdLabel =
+        EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+    private val tokenLabel =
+        EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+
     private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         alignmentX = Component.LEFT_ALIGNMENT
+        background = Colors.panelBackground
         add(getConfigGridLayout())
         putClientProperty("step", IntegrationStep.CONFIG_FILE_CREATION)
     }
@@ -154,6 +161,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
         val panel = JPanel(GridBagLayout()).apply {
             alignmentX = Component.LEFT_ALIGNMENT
+            background = Colors.panelBackground
 
             // First row
             constraints.gridy = 0
@@ -182,6 +190,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
     private fun getResultLayout(): JPanel {
         return JPanel().apply {
+            background = Colors.panelBackground
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             alignmentY = Component.CENTER_ALIGNMENT
             alignmentX = Component.LEFT_ALIGNMENT

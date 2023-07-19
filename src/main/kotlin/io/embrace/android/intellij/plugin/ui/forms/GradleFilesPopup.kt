@@ -34,10 +34,10 @@ internal class GradleFilesPopup(
     private val popupPanel = JPanel().apply {
         border = BorderFactory.createEmptyBorder(15, 10, 10, 10)
     }
-    private var backgroundColor = Colors.grayBackground
 
     init {
         popupPanel.layout = GridBagLayout()
+        popupPanel.background = Colors.panelBackground
         val constraints = GridBagConstraints()
 
         constraints.gridx = 0
@@ -71,11 +71,10 @@ internal class GradleFilesPopup(
         constraints.insets = JBUI.insetsTop(smallMargin)
         val swazzlerLine = JLabel(dataProvider.getSwazzlerClasspathLine())
             .apply {
-                background = backgroundColor
+                background = Colors.grayBackground
                 alignmentX = Component.LEFT_ALIGNMENT
                 font = Font("Monospaced", Font.BOLD, 12)
                 isOpaque = true
-                background = backgroundColor
                 border = BorderFactory.createCompoundBorder(
                     border,
                     BorderFactory.createEmptyBorder(5, 15, 5, 15)
@@ -91,33 +90,34 @@ internal class GradleFilesPopup(
         constraints.gridy++
         constraints.insets = JBUI.insetsTop(smallMargin)
 
-
-
-        val pluginText = JLabel(dataProvider.getSwazzlerPluginLine(applicationModules[dropdown.selectedIndex].type)).apply {
-            background = backgroundColor
-            alignmentX = Component.LEFT_ALIGNMENT
-            font = Font("Monospaced", Font.BOLD, 12)
-            isOpaque = true
-            background = backgroundColor
-            border = BorderFactory.createCompoundBorder(
-                border,
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)
-            )
-        }
+        val pluginText =
+            JLabel(dataProvider.getSwazzlerPluginLine(applicationModules[dropdown.selectedIndex].type)).apply {
+                background = Colors.grayBackground
+                alignmentX = Component.LEFT_ALIGNMENT
+                font = Font("Monospaced", Font.BOLD, 12)
+                isOpaque = true
+                border = BorderFactory.createCompoundBorder(
+                    border,
+                    BorderFactory.createEmptyBorder(5, 15, 5, 15)
+                )
+            }
 
         popupPanel.add(pluginText, constraints)
 
         // Add buttons
         val okButton = JButton("Add")
+        okButton.background = Colors.panelBackground
         okButton.addActionListener {
             dispose()
             yesButtonAction.invoke(applicationModules[dropdown.selectedIndex])
         }
 
         val cancelButton = JButton("Cancel")
+        cancelButton.background = Colors.panelBackground
         cancelButton.addActionListener { dispose() }
 
         val buttonPanel = JPanel()
+        buttonPanel.background = Colors.panelBackground
         buttonPanel.add(cancelButton)
         buttonPanel.add(okButton)
 

@@ -16,7 +16,7 @@ import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
-import io.embrace.android.intellij.plugin.repository.sentry.DefaultSentryLogger
+
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -29,8 +29,7 @@ private const val RETRY_TIME = 2000L
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
-    private val repo: EmbracePluginRepository = EmbracePluginRepository(project),
-    private val logger: SentryLogger = DefaultSentryLogger(project, false)
+    private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
     internal val CONTACT_EMAIL: String = "support@embrace.io"
     private var embraceProject: EmbraceProject? = null
@@ -41,7 +40,7 @@ internal class EmbraceIntegrationDataProvider(
 
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
-            BuildGradleFilesModifier(project, lastEmbraceVersion, logger)
+            BuildGradleFilesModifier(project, lastEmbraceVersion)
         }
     }
 
@@ -74,10 +73,10 @@ internal class EmbraceIntegrationDataProvider(
         val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
         val handler = OnboardConnectionCallbackHandler({
             embraceProject = it
-            logger.addAppIdTag(it.appId)
+            SentryLogger.addAppIdTag(it.appId)
             callback.onOnboardConnected(it.appId, it.token)
         }, {
-            logger.logMessage("Error connecting dashboard $it")
+            SentryLogger.logMessage("Error connecting dashboard $it")
             callback.onOnboardConnectedError(it)
         })
 
@@ -107,14 +106,14 @@ internal class EmbraceIntegrationDataProvider(
             configFile = configFile.replace("MY_TOKEN", token)
 
             if (repo.createEmbraceConfigFile(configFile, path)) {
-                logger.logStepCompleted(IntegrationStep.CONFIG_FILE_CREATION)
+                SentryLogger.logStepCompleted(IntegrationStep.CONFIG_FILE_CREATION)
                 callback.onConfigSuccess()
             } else {
                 callback.onConfigError("configFileCreationError".text())
             }
 
         } ?: {
-            logger.logMessage("cannot create configuration, project path not found")
+            SentryLogger.logMessage("cannot create configuration, project path not found")
             callback.onConfigError("configFilePathNotFoundError".text())
         }
     }
@@ -150,7 +149,7 @@ internal class EmbraceIntegrationDataProvider(
         when {
             rootFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY && appFileStatus == GradleFileStatus.ADDED_SUCCESSFULLY -> {
                 buildGradleFilesModifier.value?.syncGradle(project)
-                logger.logStepCompleted(IntegrationStep.DEPENDENCY_UPDATE)
+                SentryLogger.logStepCompleted(IntegrationStep.DEPENDENCY_UPDATE)
                 callback.onGradleFilesModifiedSuccessfully()
             }
 
@@ -180,13 +179,14 @@ internal class EmbraceIntegrationDataProvider(
             if (it.sessionId != null) {
                 repo.verifyIntegration(it, {
                     verificationCounter = 0
-                    logger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
+                    SentryLogger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
+                    SentryLogger.endSession()
                     callback.onEmbraceIntegrationSuccess()
                 }, {
                     if (verificationCounter >= VERIFICATION_COUNT_MAX) {
                         verificationCounter = 0
                         callback.onEmbraceIntegrationError()
-                        logger.logMessage("cannot verify integration, max retries reached")
+                        SentryLogger.logMessage("cannot verify integration, max retries reached")
                     } else {
                         Thread.sleep(RETRY_TIME)
                         verifyIntegration(callback)
@@ -197,7 +197,7 @@ internal class EmbraceIntegrationDataProvider(
                 callback.onEmbraceIntegrationError()
             }
         } ?: {
-            logger.logMessage("cannot verify integration, embraceProject is null")
+            SentryLogger.logMessage("cannot verify integration, embraceProject is null")
             callback.onEmbraceIntegrationError()
         }
     }
@@ -216,9 +216,9 @@ internal class EmbraceIntegrationDataProvider(
                 val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
                 Desktop.getDesktop().browse(URI(url))
             } catch (e: Exception) {
-                logger.logException(e)
+                SentryLogger.logException(e)
             }
-        } ?: logger.logMessage("cannot open dashboard, embraceProject is null")
+        } ?: SentryLogger.logMessage("cannot open dashboard, embraceProject is null")
     }
 
     fun getSwazzlerClasspathLine(): String {
@@ -231,7 +231,7 @@ internal class EmbraceIntegrationDataProvider(
 
     fun sendSupportEmail() {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.MAIL)) {
-            logger.logMessage("Tried to contact support")
+            SentryLogger.logMessage("Tried to contact support")
             val uri = URI("mailto:$CONTACT_EMAIL")
             Desktop.getDesktop().mail(uri)
         }
