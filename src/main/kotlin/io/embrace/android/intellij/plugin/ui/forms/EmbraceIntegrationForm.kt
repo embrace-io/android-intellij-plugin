@@ -23,6 +23,7 @@ import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Component
 import java.awt.Dimension
+
 import java.awt.Point
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -34,6 +35,7 @@ import javax.swing.SwingUtilities
 
 private const val VERTICAL_SPACE = 20
 private const val VERTICAL_SPACE_SMALL = 10
+private const val VERTICAL_SPACE_SMALLER = 5
 private const val HORIZONTAL_SPACE = 20
 
 
@@ -51,7 +53,6 @@ internal class EmbraceIntegrationForm(
         alignmentX = Component.LEFT_ALIGNMENT
         border =
             BorderFactory.createEmptyBorder(VERTICAL_SPACE_SMALL, HORIZONTAL_SPACE, VERTICAL_SPACE, HORIZONTAL_SPACE)
-
         background = Colors.panelBackground
     }
 
@@ -217,7 +218,6 @@ internal class EmbraceIntegrationForm(
     private fun addSupportContact() {
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         val supportText = "contactInfo".text().replace("{email}", dataProvider.CONTACT_EMAIL)
-
         panel.add(EmbClickableUnderlinedLabel(supportText) {
             dataProvider.sendSupportEmail()
         }.apply {

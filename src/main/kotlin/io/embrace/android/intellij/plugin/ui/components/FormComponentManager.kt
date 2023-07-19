@@ -70,6 +70,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
         EmbLabel("appIdLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
     private val tokenLabel =
         EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
+
     private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null

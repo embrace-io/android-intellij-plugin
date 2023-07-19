@@ -16,6 +16,7 @@ import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
+
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.embrace.android.intellij.plugin.utils.extensions.text
@@ -28,7 +29,7 @@ private const val RETRY_TIME = 2000L
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
-    private val repo: EmbracePluginRepository = EmbracePluginRepository(project),
+    private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
     internal val CONTACT_EMAIL: String = "support@embrace.io"
     private var embraceProject: EmbraceProject? = null

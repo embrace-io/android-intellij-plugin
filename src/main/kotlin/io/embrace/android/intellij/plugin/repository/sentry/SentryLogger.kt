@@ -1,5 +1,6 @@
 package io.embrace.android.intellij.plugin.repository.sentry
 
+
 import com.intellij.application.options.colors.pluginExport.ColorSchemePluginTemplate
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.sentry.Sentry
