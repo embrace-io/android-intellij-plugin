@@ -153,13 +153,11 @@ internal class BuildGradleFilesModifier(
                     "    }\n" +
                     content.substring(endIndexOfBuildscript)
         } else {
-            return content.plus(
-                "\n" +
-                        "buildscript {\n" +
-                        "    dependencies {\n" +
-                        "    }\n" +
-                        "}"
-            )
+            return "\n" +
+                    "buildscript {\n" +
+                    "    dependencies {\n" +
+                    "    }\n" +
+                    "}".plus(content)
         }
     }
 

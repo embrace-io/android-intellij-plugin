@@ -35,7 +35,7 @@ internal class EmbracePluginRepository(
 
 
     fun createEmbraceConfigFile(configFile: String, basePath: String): Boolean {
-        try {
+        return try {
             val path = basePath + MAIN_PATH + EMBRACE_CONFIG_FILE
             val file = File(path)
 
@@ -44,10 +44,10 @@ internal class EmbracePluginRepository(
             writer.close()
 
             refreshProjectFolder(path)
-            return true
+            true
         } catch (e: Exception) {
             SentryLogger.logException(e)
-            return false
+            false
         }
     }
 
