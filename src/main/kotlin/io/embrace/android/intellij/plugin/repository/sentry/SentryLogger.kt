@@ -15,7 +15,7 @@ private const val SENTRY_STEP_COMPLETE = "step-complete"
 
 
 internal object SentryLogger {
-    private const val isEnabled = true
+    private const val isEnabled = false
 
     init {
         Sentry.init { options ->

@@ -89,12 +89,19 @@ internal class BuildGradleFilesModifier(
 
             if (document.text.contains("com.android.application")) {
                 if (document.text.contains("apply plugin")) {
-                    applicationModules.add(AppModule(module.name, BuildType.V1))
+                    applicationModules.add(AppModule(module.name, BuildType.APPLY_PLUGIN))
                 } else if (document.text.contains("id")) {
-                    applicationModules.add(AppModule(module.name, BuildType.V3))
+                    if (isKotlinFile) {
+                        applicationModules.add(AppModule(module.name, BuildType.PLUGIN_ID_KOTLIN))
+                    } else {
+                        applicationModules.add(AppModule(module.name, BuildType.PLUGIN_ID_GROOVY))
+                    }
                 } else {
-                    applicationModules.add(AppModule(module.name, BuildType.V2))
+                    SentryLogger.logMessage("build type not identified")
+                    applicationModules.add(AppModule(module.name, BuildType.NOT_IDENTIFY))
                 }
+            } else {
+                SentryLogger.logMessage("Android Plugin not found")
             }
 
         }
@@ -266,9 +273,10 @@ internal class BuildGradleFilesModifier(
 
     internal fun getPluginSwazzlerLine(type: BuildType): String {
         return when (type) {
-            BuildType.V1 -> "apply plugin: 'embrace-swazzler'"
-            BuildType.V2 -> "id 'embrace-swazzler'"
-            else -> "id(\"embrace-swazzler\")"
+            BuildType.APPLY_PLUGIN -> "apply plugin: 'embrace-swazzler'"
+            BuildType.PLUGIN_ID_KOTLIN -> "id (\"embrace-swazzler\")"
+            BuildType.PLUGIN_ID_GROOVY -> "id 'embrace-swazzler'"
+            else -> "id (\"embrace-swazzler\")"
         }
     }
 

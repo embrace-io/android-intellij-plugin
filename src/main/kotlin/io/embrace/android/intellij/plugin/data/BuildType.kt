@@ -2,9 +2,10 @@ package io.embrace.android.intellij.plugin.data
 
 
 internal enum class BuildType {
-    V1,
-    V2,
-    V3
+    APPLY_PLUGIN, // apply plugin
+    PLUGIN_ID_GROOVY,  //  plugins { id 'my id' }
+    PLUGIN_ID_KOTLIN,// "id(\"embrace-swazzler\")"
+    NOT_IDENTIFY // not identify
 }
 
 
