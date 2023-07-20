@@ -12,6 +12,7 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.OnboardConnecti
 import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFileModificationCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
+import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbClickableUnderlinedLabel
@@ -73,7 +74,7 @@ internal class EmbraceIntegrationForm(
             initEmbraceVerificationStep()
             addSupportContact()
 
-            componentManager.setCurrentStep(IntegrationStep.CREATE_PROJECT)
+            componentManager.setCurrentStep(IntegrationStep.DEPENDENCY_UPDATE)
 
             // This will make sure the scrollPane view is at the top when it is first shown
             SwingUtilities.invokeLater {
@@ -90,6 +91,8 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("getStartedTitle".text(), TextStyle.HEADLINE_1, step = IntegrationStep.CREATE_PROJECT))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("getStartedDescription".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(EmbTextArea("keepProjectSync".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT))
 
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         val separator = JSeparator().apply {
@@ -202,8 +205,9 @@ internal class EmbraceIntegrationForm(
         componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text()) {
             componentManager.verifyResultPanel.isVisible = false
             componentManager.btnVerifyIntegration?.isEnabled = false
-            componentManager.showLoadingPopup(it)
-            dataProvider.verifyIntegration(this)
+            if (dataProvider.verifyIntegration(this)) {
+                componentManager.showLoadingPopup(it)
+            }
         }.apply { isEnabled = false }
         panel.add(componentManager.btnVerifyIntegration)
         panel.add(Box.createVerticalStrut(5))
@@ -227,6 +231,8 @@ internal class EmbraceIntegrationForm(
 
     override fun onOnboardConnected(appId: String, token: String) {
         componentManager.setAppIdAndToken(appId, token)
+        SentryLogger.addAppIdTag(appId)
+        SentryLogger.logStepCompleted(IntegrationStep.CREATE_PROJECT)
 
         componentManager.changeResultText(
             componentManager.connectEmbraceResultPanel,

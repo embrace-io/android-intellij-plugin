@@ -143,24 +143,24 @@ internal class BuildGradleFilesModifier(
     }
 
     private fun addDependenciesBlock(content: String): String {
-        if (content.contains("buildscript")) {
-            val buildScriptIndex = content.indexOf("buildscript") + 11
-            val endIndexOfBuildscript = content.indexOf('\n', startIndex = buildScriptIndex)
+        val buildScriptTag = "buildscript"
 
-            return content.substring(0, endIndexOfBuildscript) +
-                    "\n" +
-                    "    dependencies {\n" +
-                    "    }\n" +
-                    content.substring(endIndexOfBuildscript)
+        return if (content.contains(buildScriptTag)) {
+            val buildScriptIndex = content.indexOf(buildScriptTag)
+            val braceIndex = content.indexOf('{', startIndex = buildScriptIndex)
+
+            if (braceIndex != -1) {
+                val part1 = content.substring(0, braceIndex + 1)
+                val part2 = content.substring(braceIndex + 1)
+
+                "$part1\n    dependencies {\n    }\n$part2"
+            } else {
+                content
+            }
         } else {
-            return "\n" +
-                    "buildscript {\n" +
-                    "    dependencies {\n" +
-                    "    }\n" +
-                    "}".plus(content)
+            "$buildScriptTag {\n    dependencies {\n    }\n}\n$content"
         }
     }
-
 
     private fun addClasspath(dependenciesIndex: Int, content: String): String {
         val firstDependencyIndexWithoutIndent = content.indexOf("\n", dependenciesIndex) + 1

@@ -10,6 +10,7 @@ import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
+import io.embrace.android.intellij.plugin.ui.icons.EmbraceIcons
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Component
 import java.awt.FlowLayout
@@ -27,7 +28,6 @@ import javax.swing.JPanel
 internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
     private val errorIcon = IconLoader.getIcon("/icons/error.svg", FormComponentManager::class.java)
-
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
     internal val configFileStatusPanel = getResultLayout().apply {
@@ -72,7 +72,16 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
         EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
 
     private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
-    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
+
+
+    private val loadingPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.X_AXIS)
+        background = Colors.panelBackground
+        add(JLabel(EmbraceIcons.loadingIcon))
+        add(JLabel("Verifying..."))
+    }
+
+    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(loadingPanel)
     private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
@@ -196,6 +205,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
             alignmentX = Component.LEFT_ALIGNMENT
 
             add(EmbLabel("message", TextStyle.BODY).apply {
+
                 border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
                 iconTextGap = 5
             })

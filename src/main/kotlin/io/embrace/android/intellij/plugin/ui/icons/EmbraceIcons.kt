@@ -8,4 +8,7 @@ object EmbraceIcons {
 
     @JvmField
     val toolwindowIcon = IconLoader.getIcon("/icons/toolwindowIcon.svg", EmbraceIcons::class.java)
+
+    @JvmField
+    val loadingIcon = IconLoader.getIcon("/icons/loading.gif", EmbraceIcons::class.java)
 }
