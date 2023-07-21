@@ -40,7 +40,8 @@ import javax.swing.SwingUtilities
 private const val VERTICAL_SPACE = 20
 internal const val VERTICAL_SPACE_SMALL = 10
 private const val VERTICAL_SPACE_SMALLER = 5
-private const val HORIZONTAL_SPACE = 20
+internal const val HORIZONTAL_SPACE = 20
+internal const val RIGHT_MARGIN = 50
 
 
 internal class EmbraceIntegrationForm(
@@ -49,13 +50,18 @@ internal class EmbraceIntegrationForm(
 ) : ConfigFileCreationCallback, ProjectGradleFileModificationCallback, StartMethodCallback, OnboardConnectionCallback,
     VerifyIntegrationCallback {
 
-    internal val panel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        alignmentX = Component.LEFT_ALIGNMENT
-        border =
-            BorderFactory.createEmptyBorder(VERTICAL_SPACE_SMALL, HORIZONTAL_SPACE, VERTICAL_SPACE, HORIZONTAL_SPACE)
+    internal val panel = object: JPanel() {
+        init {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createEmptyBorder(VERTICAL_SPACE_SMALL, HORIZONTAL_SPACE, VERTICAL_SPACE, 0)
+            background = Colors.panelBackground
+        }
 
-        background = Colors.panelBackground
+        // override the maximum size to prevent stretching
+        override fun getMaximumSize(): Dimension {
+            return Dimension(preferredSize.width, super.getMaximumSize().height)
+        }
     }
 
     private val scrollPane = JBScrollPane(panel)

@@ -10,6 +10,7 @@ import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.JLabel
+import javax.swing.JSeparator
 import javax.swing.JTextArea
 
 
@@ -21,8 +22,8 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
         val integrationView = EmbraceIntegrationForm(project, dataProvider)
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(integrationView.getContent(), "", false)
-        toolWindow.contentManager.addContent(content)
 
+        toolWindow.contentManager.addContent(content)
         addResizeEventsListener(toolWindow, integrationView)
     }
 
@@ -35,11 +36,12 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
     private fun addResizeEventsListener(toolWindow: ToolWindow, integrationView: EmbraceIntegrationForm) {
         toolWindow.component.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
-                val maxWidth = toolWindow.component.width // get the available width
+                val marginWidth = RIGHT_MARGIN
+                val maxWidth = toolWindow.component.width - marginWidth
                 val scrollView = integrationView.panel.components
 
                 for (component in scrollView) {
-                    if (component is JTextArea || component is JLabel) {
+                    if (component is JTextArea || component is JLabel ) {
                         component.maximumSize = Dimension(maxWidth, component.preferredSize.height)
                         component.preferredSize = Dimension(maxWidth, component.preferredSize.height)
                     }
