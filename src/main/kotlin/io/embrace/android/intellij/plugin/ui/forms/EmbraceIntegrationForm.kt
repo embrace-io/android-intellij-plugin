@@ -16,6 +16,7 @@ import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbClickableUnderlinedLabel
+import io.embrace.android.intellij.plugin.ui.components.EmbLabel
 import io.embrace.android.intellij.plugin.ui.components.EmbTextArea
 import io.embrace.android.intellij.plugin.ui.components.FormComponentManager
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
@@ -23,9 +24,11 @@ import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Component
+import java.awt.Cursor
 import java.awt.Dimension
-
 import java.awt.Point
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -43,10 +46,7 @@ private const val HORIZONTAL_SPACE = 20
 internal class EmbraceIntegrationForm(
     private val project: Project,
     private val dataProvider: EmbraceIntegrationDataProvider,
-) : ConfigFileCreationCallback,
-    ProjectGradleFileModificationCallback,
-    StartMethodCallback,
-    OnboardConnectionCallback,
+) : ConfigFileCreationCallback, ProjectGradleFileModificationCallback, StartMethodCallback, OnboardConnectionCallback,
     VerifyIntegrationCallback {
 
     internal val panel = JPanel().apply {
@@ -91,9 +91,9 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbTextArea("getStartedTitle".text(), TextStyle.HEADLINE_1, step = IntegrationStep.CREATE_PROJECT))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("getStartedDescription".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
-        panel.add(EmbTextArea("keepProjectSync".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT))
-
+        panel.add(EmbLabel("syncProject".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT).apply {
+            preferredSize = Dimension(panel.preferredSize.width, panel.preferredSize.height)
+        })
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         val separator = JSeparator().apply {
             maximumSize = Dimension(Int.MAX_VALUE, 1)
@@ -130,9 +130,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbButton("btnConfigFile".text(), IntegrationStep.CONFIG_FILE_CREATION) {
             if (dataProvider.validateConfigFields(componentManager.getAppId(), componentManager.getToken())) {
                 dataProvider.createConfigurationEmbraceFile(
-                    componentManager.getAppId(),
-                    componentManager.getToken(),
-                    this
+                    componentManager.getAppId(), componentManager.getToken(), this
                 )
             } else {
                 componentManager.changeResultText(
@@ -170,9 +168,7 @@ internal class EmbraceIntegrationForm(
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(
             EmbTextArea(
-                "applyDependencyDescription".text(),
-                TextStyle.BODY,
-                step = IntegrationStep.DEPENDENCY_UPDATE
+                "applyDependencyDescription".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE
             )
         )
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
@@ -227,6 +223,16 @@ internal class EmbraceIntegrationForm(
         }.apply {
             putClientProperty("step", IntegrationStep.CREATE_PROJECT)  // first step so it is always enabled.
         })
+        panel.add(Box.createVerticalStrut(5))
+        panel.add(EmbLabel("resourcesLink".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT).apply {
+            cursor = Cursor(Cursor.HAND_CURSOR)
+
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent?) {
+                    dataProvider.openBrowser()
+                }
+            })
+        })
     }
 
     override fun onOnboardConnected(appId: String, token: String) {
@@ -235,8 +241,7 @@ internal class EmbraceIntegrationForm(
         SentryLogger.logStepCompleted(IntegrationStep.CREATE_PROJECT)
 
         componentManager.changeResultText(
-            componentManager.connectEmbraceResultPanel,
-            "connectedToEmbraceSuccessfully".text()
+            componentManager.connectEmbraceResultPanel, "connectedToEmbraceSuccessfully".text()
         )
 
         componentManager.setCurrentStep(IntegrationStep.CONFIG_FILE_CREATION)
@@ -244,16 +249,13 @@ internal class EmbraceIntegrationForm(
 
     override fun onOnboardConnectedError(error: String) {
         componentManager.changeResultText(
-            componentManager.connectEmbraceResultPanel,
-            "connectedToEmbraceError".text(),
-            false
+            componentManager.connectEmbraceResultPanel, "connectedToEmbraceError".text(), false
         )
     }
 
     override fun onConfigSuccess() {
         componentManager.changeResultText(
-            componentManager.configFileStatusPanel,
-            "configFileCreated".text()
+            componentManager.configFileStatusPanel, "configFileCreated".text()
         )
 
         componentManager.setCurrentStep(IntegrationStep.DEPENDENCY_UPDATE)
@@ -261,27 +263,17 @@ internal class EmbraceIntegrationForm(
 
     override fun onConfigAlreadyExists() {
         val options = arrayOf("Replace", "Cancel")
-        val result =
-            Messages.showDialog(
-                scrollPane,
-                "replaceConfig".text(),
-                "Replace Configuration",
-                options,
-                0,
-                Messages.getQuestionIcon()
-            )
+        val result = Messages.showDialog(
+            scrollPane, "replaceConfig".text(), "Replace Configuration", options, 0, Messages.getQuestionIcon()
+        )
 
         if (result == 0) {
             dataProvider.createConfigurationEmbraceFile(
-                componentManager.getAppId(),
-                componentManager.getToken(),
-                this,
-                true
+                componentManager.getAppId(), componentManager.getToken(), this, true
             )
         } else {
             componentManager.changeResultText(
-                componentManager.configFileStatusPanel,
-                "configFileCreated".text()
+                componentManager.configFileStatusPanel, "configFileCreated".text()
             )
 
             componentManager.setCurrentStep(IntegrationStep.DEPENDENCY_UPDATE)
@@ -290,9 +282,7 @@ internal class EmbraceIntegrationForm(
 
     override fun onConfigError(error: String) {
         componentManager.changeResultText(
-            componentManager.configFileStatusPanel,
-            error,
-            false
+            componentManager.configFileStatusPanel, error, false
         )
     }
 
@@ -324,22 +314,17 @@ internal class EmbraceIntegrationForm(
 
     override fun onGradleFileError(error: String) {
         componentManager.changeResultText(
-            componentManager.gradleResultPanel,
-            "buildFilesErrorShort".text(),
-            false
+            componentManager.gradleResultPanel, "buildFilesErrorShort".text(), false
         )
         Messages.showErrorDialog(scrollPane, error, "GenericErrorTitle".text())
     }
 
     override fun onGradleFileAlreadyModified() {
         componentManager.changeResultText(
-            componentManager.gradleResultPanel,
-            "swazzlerPluginAddedResult".text()
+            componentManager.gradleResultPanel, "swazzlerPluginAddedResult".text()
         )
         Messages.showInfoMessage(
-            scrollPane,
-            "gradleFilesAlreadyAdded".text(),
-            "Info"
+            scrollPane, "gradleFilesAlreadyAdded".text(), "Info"
         )
 
         componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
@@ -347,13 +332,10 @@ internal class EmbraceIntegrationForm(
 
     override fun onGradleFilesModifiedSuccessfully() {
         componentManager.changeResultText(
-            componentManager.gradleResultPanel,
-            "swazzlerPluginAddedResult".text()
+            componentManager.gradleResultPanel, "swazzlerPluginAddedResult".text()
         )
         Messages.showInfoMessage(
-            scrollPane,
-            "swazzlerPluginAdded".text(),
-            "Info"
+            scrollPane, "swazzlerPluginAdded".text(), "Info"
         )
 
         componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
@@ -363,9 +345,7 @@ internal class EmbraceIntegrationForm(
         when (status) {
             StartMethodStatus.ERROR -> {
                 componentManager.changeResultText(
-                    componentManager.startResultPanel,
-                    "startMethodErrorShort".text(),
-                    false
+                    componentManager.startResultPanel, "startMethodErrorShort".text(), false
                 )
                 Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
             }
@@ -374,8 +354,7 @@ internal class EmbraceIntegrationForm(
                 componentManager.setCurrentStep(IntegrationStep.VERIFY_INTEGRATION)
 
                 componentManager.changeResultText(
-                    componentManager.startResultPanel,
-                    "startAddedSuccessfully".text()
+                    componentManager.startResultPanel, "startAddedSuccessfully".text()
                 )
             }
 
@@ -383,30 +362,23 @@ internal class EmbraceIntegrationForm(
                 componentManager.setCurrentStep(IntegrationStep.VERIFY_INTEGRATION)
 
                 componentManager.changeResultText(
-                    componentManager.startResultPanel,
-                    "startAlreadyAdded".text()
+                    componentManager.startResultPanel, "startAlreadyAdded".text()
                 )
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
                 componentManager.changeResultText(
-                    componentManager.startResultPanel,
-                    "applicationClassNotFoundShort".text(),
-                    false
+                    componentManager.startResultPanel, "applicationClassNotFoundShort".text(), false
                 )
                 Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
                 componentManager.changeResultText(
-                    componentManager.startResultPanel,
-                    "applicationClassNotOnCreateShort".text(),
-                    false
+                    componentManager.startResultPanel, "applicationClassNotOnCreateShort".text(), false
                 )
                 Messages.showErrorDialog(
-                    scrollPane,
-                    "applicationClassNotOnCreate".text(),
-                    "GenericErrorTitle".text()
+                    scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text()
                 )
             }
 
@@ -421,14 +393,12 @@ internal class EmbraceIntegrationForm(
         componentManager.labelOpenDashboard.isVisible = true
 
         componentManager.changeResultText(
-            componentManager.verifyResultPanel,
-            "embraceVerificationSuccess".text()
+            componentManager.verifyResultPanel, "embraceVerificationSuccess".text()
         )
 
         ApplicationManager.getApplication().invokeLater {
             Messages.showInfoMessage(
-                "Embrace is all set! You can now access and review all your sessions in our dashboard.",
-                "Success!"
+                "Embrace is all set! You can now access and review all your sessions in our dashboard.", "Success!"
             )
         }
     }
@@ -437,10 +407,7 @@ internal class EmbraceIntegrationForm(
         componentManager.btnVerifyIntegration?.isEnabled = true
         componentManager.hideLoadingPopup()
         componentManager.changeResultText(
-            componentManager.verifyResultPanel,
-            "embraceVerificationError".text(),
-            success = false,
-            displaySkip = false
+            componentManager.verifyResultPanel, "embraceVerificationError".text(), success = false, displaySkip = false
         )
     }
 

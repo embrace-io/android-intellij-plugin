@@ -14,7 +14,6 @@ internal class EmbClickableUnderlinedLabel(
 ) : JLabel(text) {
 
     init {
-//        foreground = if (isColorHyperlink) JBColor.blue else Colors.grayText
         font = Font(Font.SANS_SERIF, Font.PLAIN, 12)
         alignmentX = Component.LEFT_ALIGNMENT
         cursor = Cursor(Cursor.HAND_CURSOR)

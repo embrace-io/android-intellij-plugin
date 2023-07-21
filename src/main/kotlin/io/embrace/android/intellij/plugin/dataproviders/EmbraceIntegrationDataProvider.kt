@@ -32,6 +32,7 @@ internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
     internal val CONTACT_EMAIL: String = "support@embrace.io"
+    internal val RESOURCES_LINK: String = "https://embrace.io/resources/"
     private var embraceProject: EmbraceProject? = null
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
@@ -173,7 +174,7 @@ internal class EmbraceIntegrationDataProvider(
         repo.addStartToApplicationClass(buildGradleFilesModifier.value?.appPackageName, callback)
     }
 
-    fun verifyIntegration(callback: VerifyIntegrationCallback) : Boolean {
+    fun verifyIntegration(callback: VerifyIntegrationCallback): Boolean {
         if (embraceProject == null || embraceProject!!.sessionId == null) {
             SentryLogger.logMessage("cannot verify integration, embraceProject or session is null")
             callback.onEmbraceIntegrationError()
@@ -183,7 +184,7 @@ internal class EmbraceIntegrationDataProvider(
         return true
     }
 
-    private fun verifyEndpoint(callback: VerifyIntegrationCallback){
+    private fun verifyEndpoint(callback: VerifyIntegrationCallback) {
         repo.verifyIntegration(embraceProject!!, {
             verificationCounter = 0
             SentryLogger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
@@ -234,6 +235,12 @@ internal class EmbraceIntegrationDataProvider(
             SentryLogger.logMessage("Tried to contact support")
             val uri = URI("mailto:$CONTACT_EMAIL")
             Desktop.getDesktop().mail(uri)
+        }
+    }
+
+    fun openBrowser() {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(URI(RESOURCES_LINK))
         }
     }
 
