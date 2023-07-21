@@ -5,8 +5,6 @@
 ### Changed
 
 ## [1.0.0]
-
-### Added
 - Initial release
 
 [Unreleased]: https://github.com/embrace-io/android-intellij-plugin/compare/v1.0.0...HEAD

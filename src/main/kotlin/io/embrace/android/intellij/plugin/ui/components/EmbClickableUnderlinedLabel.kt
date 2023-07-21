@@ -10,6 +10,7 @@ import javax.swing.JLabel
 
 internal class EmbClickableUnderlinedLabel(
     text: String,
+    step: IntegrationStep? = null,
     private val action: () -> Unit
 ) : JLabel(text) {
 
@@ -17,6 +18,7 @@ internal class EmbClickableUnderlinedLabel(
         font = Font(Font.SANS_SERIF, Font.PLAIN, 12)
         alignmentX = Component.LEFT_ALIGNMENT
         cursor = Cursor(Cursor.HAND_CURSOR)
+        step?.let { putClientProperty("step", it) }
 
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {

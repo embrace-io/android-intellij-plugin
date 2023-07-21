@@ -15,9 +15,9 @@ private const val SENTRY_STEP_COMPLETE = "step-complete"
 
 
 internal object SentryLogger {
-    private const val isEnabled = false
+    private const val isEnabled = true
 
-    init {
+    fun init(){
         Sentry.init { options ->
             options.dsn = SENTRY_DNS
             options.flushTimeoutMillis = FLUSH_TIMEOUT_MS

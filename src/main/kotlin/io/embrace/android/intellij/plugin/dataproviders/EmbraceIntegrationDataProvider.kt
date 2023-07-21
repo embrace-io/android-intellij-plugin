@@ -32,7 +32,7 @@ internal class EmbraceIntegrationDataProvider(
     private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
     internal val CONTACT_EMAIL: String = "support@embrace.io"
-    internal val RESOURCES_LINK: String = "https://embrace.io/resources/"
+    internal val RESOURCES_LINK: String = "https://embrace.io/docs/android/"
     private var embraceProject: EmbraceProject? = null
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()

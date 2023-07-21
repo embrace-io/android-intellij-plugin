@@ -38,7 +38,7 @@ import javax.swing.SwingUtilities
 
 
 private const val VERTICAL_SPACE = 20
-private const val VERTICAL_SPACE_SMALL = 10
+internal const val VERTICAL_SPACE_SMALL = 10
 private const val VERTICAL_SPACE_SMALLER = 5
 private const val HORIZONTAL_SPACE = 20
 
@@ -54,6 +54,7 @@ internal class EmbraceIntegrationForm(
         alignmentX = Component.LEFT_ALIGNMENT
         border =
             BorderFactory.createEmptyBorder(VERTICAL_SPACE_SMALL, HORIZONTAL_SPACE, VERTICAL_SPACE, HORIZONTAL_SPACE)
+
         background = Colors.panelBackground
     }
 
@@ -74,7 +75,7 @@ internal class EmbraceIntegrationForm(
             initEmbraceVerificationStep()
             addSupportContact()
 
-            componentManager.setCurrentStep(IntegrationStep.DEPENDENCY_UPDATE)
+            componentManager.setCurrentStep(IntegrationStep.CREATE_PROJECT)
 
             // This will make sure the scrollPane view is at the top when it is first shown
             SwingUtilities.invokeLater {
@@ -94,7 +95,7 @@ internal class EmbraceIntegrationForm(
         panel.add(EmbLabel("syncProject".text(), TextStyle.BODY, step = IntegrationStep.CREATE_PROJECT).apply {
             preferredSize = Dimension(panel.preferredSize.width, panel.preferredSize.height)
         })
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+//        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         val separator = JSeparator().apply {
             maximumSize = Dimension(Int.MAX_VALUE, 1)
             background = Colors.grayBackground
@@ -118,7 +119,7 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initConfigFileStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step2Title".text(), TextStyle.HEADLINE_2, step = IntegrationStep.CONFIG_FILE_CREATION))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("createConfigFile".text(), TextStyle.BODY, step = IntegrationStep.CONFIG_FILE_CREATION))
@@ -147,36 +148,24 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initDependenciesStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step3Title".text(), TextStyle.HEADLINE_2, step = IntegrationStep.DEPENDENCY_UPDATE))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
-        panel.add(EmbTextArea("addSwazzler".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(dataProvider.getSwazzlerExampleCode(), IntegrationStep.DEPENDENCY_UPDATE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("applySwazzlerPlugin".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
-        panel.add(EmbBlockCode(dataProvider.getSwazzlerPluginExampleCode(), step = IntegrationStep.DEPENDENCY_UPDATE))
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
 
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbButton("btnModifyGradleFiles".text(), IntegrationStep.DEPENDENCY_UPDATE) {
             showGradlePopup()
         })
-
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(componentManager.gradleResultPanel)
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
-        panel.add(
-            EmbTextArea(
-                "applyDependencyDescription".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE
-            )
-        )
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
-        panel.add(EmbBlockCode(dataProvider.getSdkExampleCode(), IntegrationStep.DEPENDENCY_UPDATE))
+
+        componentManager.addDependenciesExplanation(dataProvider.getSwazzlerExampleCode(), dataProvider.getSwazzlerPluginExampleCode())
+        componentManager.addExtraModulesExplanation(dataProvider.getSdkExampleCode())
     }
 
     private fun initStartEmbraceStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step4Title".text(), TextStyle.HEADLINE_2, step = IntegrationStep.START_METHOD_ADDITION))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step4Description".text(), TextStyle.BODY, step = IntegrationStep.START_METHOD_ADDITION))
@@ -191,7 +180,7 @@ internal class EmbraceIntegrationForm(
     }
 
     private fun initEmbraceVerificationStep() {
-        panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
+        panel.add(Box.createVerticalStrut(VERTICAL_SPACE))
         panel.add(EmbTextArea("step5Title".text(), TextStyle.HEADLINE_2, step = IntegrationStep.VERIFY_INTEGRATION))
         panel.add(Box.createVerticalStrut(VERTICAL_SPACE_SMALL))
         panel.add(EmbTextArea("step5Description".text(), TextStyle.BODY, step = IntegrationStep.VERIFY_INTEGRATION))
@@ -323,22 +312,28 @@ internal class EmbraceIntegrationForm(
         componentManager.changeResultText(
             componentManager.gradleResultPanel, "swazzlerPluginAddedResult".text()
         )
+
+        componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
+        componentManager.showDependenciesExplanation(false)
+        componentManager.showExtraModulesExplanation()
+
         Messages.showInfoMessage(
             scrollPane, "gradleFilesAlreadyAdded".text(), "Info"
         )
-
-        componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
     }
 
     override fun onGradleFilesModifiedSuccessfully() {
         componentManager.changeResultText(
             componentManager.gradleResultPanel, "swazzlerPluginAddedResult".text()
         )
+
+        componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
+        componentManager.showDependenciesExplanation(false)
+        componentManager.showExtraModulesExplanation()
+
         Messages.showInfoMessage(
             scrollPane, "swazzlerPluginAdded".text(), "Info"
         )
-
-        componentManager.setCurrentStep(IntegrationStep.START_METHOD_ADDITION)
     }
 
     override fun onStartStatusUpdated(status: StartMethodStatus) {

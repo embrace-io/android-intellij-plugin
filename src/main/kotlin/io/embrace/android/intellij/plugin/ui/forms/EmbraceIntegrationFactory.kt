@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import io.embrace.android.intellij.plugin.dataproviders.EmbraceIntegrationDataProvider
+import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -15,6 +16,7 @@ import javax.swing.JTextArea
 class EmbraceIntegrationFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        SentryLogger.init()
         val dataProvider = EmbraceIntegrationDataProvider(project)
         val integrationView = EmbraceIntegrationForm(project, dataProvider)
         val contentFactory = ContentFactory.SERVICE.getInstance()
