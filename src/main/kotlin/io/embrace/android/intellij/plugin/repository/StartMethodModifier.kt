@@ -106,7 +106,7 @@ internal class StartMethodModifier(private val project: Project) {
                 var isEmbraceImportAdded = false
                 var isEmbraceStartAdded = false
                 var embraceImportLineIndex = -1
-                var embraceStartLineIndex = -1
+                var embraceOnCreateIndex = -1
                 lines.forEachIndexed { index, line ->
                     if (line.contains(embraceImportLine)) {
                         isEmbraceImportAdded = true
@@ -127,19 +127,19 @@ internal class StartMethodModifier(private val project: Project) {
                     }
 
                     if (line.contains("super.onCreate")) {
-                        embraceStartLineIndex = index + 1
+                        embraceOnCreateIndex = index + 1
                         return@forEachIndexed
                     }
                 }
 
                 if (!isEmbraceStartAdded) {
-                    if (embraceStartLineIndex > 0) {
+                    if (embraceOnCreateIndex > 0) {
                         if (!isEmbraceImportAdded && embraceImportLineIndex > 0) {
                             lines.add(embraceImportLineIndex, embraceImportLine)
-                            embraceStartLineIndex++
+                            embraceOnCreateIndex++
                         }
-                        val blankSpaces = lines[embraceStartLineIndex - 1].substringBefore("super.")
-                        lines.add(embraceStartLineIndex, "$blankSpaces$embraceStartLine")
+                        val blankSpaces = lines[embraceOnCreateIndex - 1].substringBefore("super.")
+                        lines.add(embraceOnCreateIndex, "$blankSpaces$embraceStartLine")
                         Files.write(kotlinClassFile, lines)
                         psiClass?.containingFile?.virtualFile?.refresh(true, true)
                         return StartMethodStatus.START_ADDED_SUCCESSFULLY
@@ -154,7 +154,6 @@ internal class StartMethodModifier(private val project: Project) {
                 return StartMethodStatus.ERROR
             }
         }
-
 
         override fun done() {
             val result = get() as StartMethodStatus

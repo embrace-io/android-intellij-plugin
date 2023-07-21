@@ -25,13 +25,14 @@ import java.net.InetSocketAddress
 import java.net.URI
 
 private const val VERIFICATION_COUNT_MAX = 5
-private const val RETRY_TIME = 2000L
+private const val RETRY_TIME = 2500L
 
 internal class EmbraceIntegrationDataProvider(
     private val project: Project,
     private val repo: EmbracePluginRepository = EmbracePluginRepository(project)
 ) {
     internal val CONTACT_EMAIL: String = "support@embrace.io"
+    internal val RESOURCES_LINK: String = "https://embrace.io/docs/android/"
     private var embraceProject: EmbraceProject? = null
     private var callbackPort: Int = 0
     private val lastEmbraceVersion = repo.getLastSDKVersion()
@@ -73,7 +74,6 @@ internal class EmbraceIntegrationDataProvider(
         val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
         val handler = OnboardConnectionCallbackHandler({
             embraceProject = it
-            SentryLogger.addAppIdTag(it.appId)
             callback.onOnboardConnected(it.appId, it.token)
         }, {
             SentryLogger.logMessage("Error connecting dashboard $it")
@@ -174,32 +174,33 @@ internal class EmbraceIntegrationDataProvider(
         repo.addStartToApplicationClass(buildGradleFilesModifier.value?.appPackageName, callback)
     }
 
-    fun verifyIntegration(callback: VerifyIntegrationCallback) {
-        embraceProject?.also {
-            if (it.sessionId != null) {
-                repo.verifyIntegration(it, {
-                    verificationCounter = 0
-                    SentryLogger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
-                    SentryLogger.endSession()
-                    callback.onEmbraceIntegrationSuccess()
-                }, {
-                    if (verificationCounter >= VERIFICATION_COUNT_MAX) {
-                        verificationCounter = 0
-                        callback.onEmbraceIntegrationError()
-                        SentryLogger.logMessage("cannot verify integration, max retries reached")
-                    } else {
-                        Thread.sleep(RETRY_TIME)
-                        verifyIntegration(callback)
-                    }
-                })
-                verificationCounter++
-            } else {
-                callback.onEmbraceIntegrationError()
-            }
-        } ?: {
-            SentryLogger.logMessage("cannot verify integration, embraceProject is null")
+    fun verifyIntegration(callback: VerifyIntegrationCallback): Boolean {
+        if (embraceProject == null || embraceProject!!.sessionId == null) {
+            SentryLogger.logMessage("cannot verify integration, embraceProject or session is null")
             callback.onEmbraceIntegrationError()
+            return false
         }
+        verifyEndpoint(callback)
+        return true
+    }
+
+    private fun verifyEndpoint(callback: VerifyIntegrationCallback) {
+        repo.verifyIntegration(embraceProject!!, {
+            verificationCounter = 0
+            SentryLogger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
+            SentryLogger.endSession()
+            callback.onEmbraceIntegrationSuccess()
+        }, {
+            if (verificationCounter >= VERIFICATION_COUNT_MAX) {
+                verificationCounter = 0
+                callback.onEmbraceIntegrationError()
+                SentryLogger.logMessage("cannot verify integration, max retries reached")
+            } else {
+                Thread.sleep(RETRY_TIME)
+                verifyEndpoint(callback)
+            }
+        })
+        verificationCounter++
     }
 
     private fun getResourceAsText(path: String): String? =
@@ -234,6 +235,12 @@ internal class EmbraceIntegrationDataProvider(
             SentryLogger.logMessage("Tried to contact support")
             val uri = URI("mailto:$CONTACT_EMAIL")
             Desktop.getDesktop().mail(uri)
+        }
+    }
+
+    fun openBrowser() {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(URI(RESOURCES_LINK))
         }
     }
 

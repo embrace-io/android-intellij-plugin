@@ -10,8 +10,10 @@ import com.intellij.util.ui.JBUI
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
+import io.embrace.android.intellij.plugin.ui.forms.VERTICAL_SPACE_SMALL
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Component
+import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -22,12 +24,12 @@ import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JSeparator
 
 
 internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
     private val errorIcon = IconLoader.getIcon("/icons/error.svg", FormComponentManager::class.java)
-
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
 
     internal val configFileStatusPanel = getResultLayout().apply {
@@ -48,6 +50,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
     internal var btnVerifyIntegration: EmbButton? = null
 
     internal val verifyCheckBox = JCheckBox("checkVerify".text()).apply {
+        background = Colors.panelBackground
         putClientProperty("step", IntegrationStep.VERIFY_INTEGRATION)
         addItemListener {
             btnVerifyIntegration?.isEnabled = it.stateChange == java.awt.event.ItemEvent.SELECTED
@@ -72,6 +75,8 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
         EmbLabel("tokenLabel".text(), TextStyle.HEADLINE_3, step = IntegrationStep.CONFIG_FILE_CREATION)
 
     private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
+
+
     private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null
 
@@ -196,6 +201,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
             alignmentX = Component.LEFT_ALIGNMENT
 
             add(EmbLabel("message", TextStyle.BODY).apply {
+
                 border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
                 iconTextGap = 5
             })
@@ -243,5 +249,115 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
 
     fun hideLoadingPopup() {
         balloon?.dispose()
+    }
+
+
+    private val projectLevelText =
+        EmbTextArea("projectLevelChanges".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE)
+    private val projectLevelCodeText = EmbBlockCode("", IntegrationStep.DEPENDENCY_UPDATE)
+
+    private val appLevelText =
+        EmbTextArea("appLevelChanges".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE)
+    private val dependenciesChangeText =
+        EmbTextArea("dependenciesChange".text(), TextStyle.BODY, step = IntegrationStep.DEPENDENCY_UPDATE)
+    private val appLevelCodeText = EmbBlockCode("", IntegrationStep.DEPENDENCY_UPDATE)
+
+    private val space = Box.createVerticalStrut(VERTICAL_SPACE_SMALL)
+    private val space1 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL)
+    private val space2 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL)
+    private val space3 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL)
+    private val space4 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL)
+
+    private var isShowingDependenciesExplanation = true
+    fun addDependenciesExplanation(projectLevelCode: String, appLevelCode: String) {
+        mainPanel.add(space)
+        mainPanel.add(dependenciesChangeText)
+
+        mainPanel.add(space1)
+        mainPanel.add(projectLevelText)
+        mainPanel.add(space2)
+        mainPanel.add(projectLevelCodeText.apply { text = projectLevelCode })
+
+        mainPanel.add(space3)
+        mainPanel.add(appLevelText)
+        mainPanel.add(space4)
+        mainPanel.add(appLevelCodeText.apply { text = appLevelCode })
+    }
+
+    fun showDependenciesExplanation(shouldShow: Boolean) {
+        isShowingDependenciesExplanation = shouldShow
+        projectLevelText.isVisible = shouldShow
+        projectLevelCodeText.isVisible = shouldShow
+        appLevelText.isVisible = shouldShow
+        appLevelCodeText.isVisible = shouldShow
+        dependenciesChangeText.isVisible = shouldShow
+        space.isVisible = shouldShow
+        space1.isVisible = shouldShow
+        space2.isVisible = shouldShow
+        space3.isVisible = shouldShow
+        space4.isVisible = shouldShow
+
+        btnSeeChanges.text = if (shouldShow)
+            "hideChanges".text()
+        else
+            "showChanges".text()
+    }
+
+    private val space5 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL).apply { isVisible = false }
+    private val space6 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL).apply { isVisible = false }
+    private val space7 = Box.createVerticalStrut(VERTICAL_SPACE_SMALL).apply { isVisible = false }
+    private val extraModuleText =
+        EmbLabel(
+            "applyDependencyDescription".text(),
+            TextStyle.BODY,
+            step = IntegrationStep.DEPENDENCY_UPDATE
+        ).apply {
+            preferredSize = Dimension(mainPanel.preferredSize.width, mainPanel.preferredSize.height)
+            isVisible = false
+        }
+
+    private val extraModuleCode = EmbBlockCode("", IntegrationStep.DEPENDENCY_UPDATE)
+    private val btnSeeChanges =
+        EmbClickableUnderlinedLabel("showChanges".text(), IntegrationStep.DEPENDENCY_UPDATE) {
+            showDependenciesExplanation(!isShowingDependenciesExplanation)
+        }.apply {
+            border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
+            isVisible = false
+        }
+
+    private val separator1 = JSeparator().apply {
+        maximumSize = Dimension(Int.MAX_VALUE, 1)
+        background = Colors.grayBackground
+        isVisible = false
+    }
+    private val separator2 = JSeparator().apply {
+        maximumSize = Dimension(Int.MAX_VALUE, 1)
+        background = Colors.grayBackground
+        isVisible = false
+    }
+
+    fun addExtraModulesExplanation(sdkDependencyCode: String) {
+        mainPanel.add(btnSeeChanges)
+        mainPanel.add(separator1)
+        mainPanel.add(space5)
+        mainPanel.add(extraModuleText)
+        mainPanel.add(space6)
+        mainPanel.add(extraModuleCode.apply {
+            text = sdkDependencyCode
+            isVisible = false
+        })
+        mainPanel.add(space7)
+        mainPanel.add(separator2)
+    }
+
+    fun showExtraModulesExplanation() {
+        space5.isVisible = true
+        space6.isVisible = true
+        space7.isVisible = true
+        separator1.isVisible = true
+        separator2.isVisible = true
+        btnSeeChanges.isVisible = true
+        extraModuleText.isVisible = true
+        extraModuleCode.isVisible = true
     }
 }

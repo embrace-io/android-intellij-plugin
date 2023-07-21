@@ -2,14 +2,16 @@ package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
 import com.android.tools.idea.gradle.project.build.output.indexOfFirstNonWhitespace
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import io.embrace.android.intellij.plugin.data.AppModule
 import io.embrace.android.intellij.plugin.data.BuildType
 import io.embrace.android.intellij.plugin.data.GradleFileStatus
@@ -25,33 +27,8 @@ internal class BuildGradleFilesModifier(
     private val lastEmbraceVersion: String,
     private val gradleAPI: GradleToolingApiWrapper? = project.basePath?.let { GradleToolingApiWrapper(it) }
 ) {
-    private val appGradleFile = lazy { getGradleDocument() }
     private var isKotlinFile = false
     internal var appPackageName: String? = null
-
-    private fun getGradleDocument(): Document? {
-        val buildGradleFile = gradleAPI?.getBuildGradleFileForProject() ?: File(project.basePath + "/build.gradle")
-
-        if (!buildGradleFile.exists()) {
-            Log.e(TAG, "root build.gradle file not found.")
-            return null
-        }
-
-        val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(buildGradleFile)
-        if (virtualBuildGradleFile == null) {
-            Log.e(TAG, "root build.gradle virtual file not found.")
-            return null
-        }
-
-        val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
-        if (document == null) {
-            Log.e(TAG, "root build.gradle document not found.")
-            return null
-        }
-
-        isKotlinFile = buildGradleFile.name.endsWith(".kts")
-        return document
-    }
 
     internal fun getModules(): Collection<GradleProject>? {
         return gradleAPI?.getModules()
@@ -87,6 +64,7 @@ internal class BuildGradleFilesModifier(
                 return@forEach
             }
 
+            isKotlinFile = file.name.endsWith(".kts")
             if (document.text.contains("com.android.application")) {
                 if (document.text.contains("apply plugin")) {
                     applicationModules.add(AppModule(module.name, BuildType.APPLY_PLUGIN))
@@ -114,8 +92,18 @@ internal class BuildGradleFilesModifier(
 
     internal fun addSwazzlerClasspath(): GradleFileStatus {
         return try {
-            val content = appGradleFile.value?.text
+            val buildGradleFile = gradleAPI?.getBuildGradleFileForProject() ?: File(project.basePath + "/build.gradle")
+
+            if (!buildGradleFile.exists()) {
+                Log.e(TAG, "root build.gradle file not found.")
+                return GradleFileStatus.FILE_NOT_FOUND
+            }
+
+            val virtualBuildGradleFile = LocalFileSystem.getInstance().findFileByIoFile(buildGradleFile)
                 ?: return GradleFileStatus.FILE_NOT_FOUND
+            val document = FileDocumentManager.getInstance().getDocument(virtualBuildGradleFile)
+                ?: return GradleFileStatus.FILE_NOT_FOUND
+            val content = document.text
 
             if (content.contains("embrace-swazzler")) {
                 return GradleFileStatus.SWAZZLER_ALREADY_ADDED
@@ -132,10 +120,11 @@ internal class BuildGradleFilesModifier(
             newContent = addClasspath(dependenciesIndex, newContent)
 
             WriteCommandAction.runWriteCommandAction(project) {
-                appGradleFile.value?.setText(newContent)
+                document.setText(newContent)
             }
-            GradleFileStatus.ADDED_SUCCESSFULLY
 
+            openAndRefreshFile(virtualBuildGradleFile)
+            GradleFileStatus.ADDED_SUCCESSFULLY
         } catch (e: Exception) {
             SentryLogger.logException(e)
             GradleFileStatus.ERROR
@@ -143,24 +132,24 @@ internal class BuildGradleFilesModifier(
     }
 
     private fun addDependenciesBlock(content: String): String {
-        if (content.contains("buildscript")) {
-            val buildScriptIndex = content.indexOf("buildscript") + 11
-            val endIndexOfBuildscript = content.indexOf('\n', startIndex = buildScriptIndex)
+        val buildScriptTag = "buildscript"
 
-            return content.substring(0, endIndexOfBuildscript) +
-                    "\n" +
-                    "    dependencies {\n" +
-                    "    }\n" +
-                    content.substring(endIndexOfBuildscript)
+        return if (content.contains(buildScriptTag)) {
+            val buildScriptIndex = content.indexOf(buildScriptTag)
+            val braceIndex = content.indexOf('{', startIndex = buildScriptIndex)
+
+            if (braceIndex != -1) {
+                val part1 = content.substring(0, braceIndex + 1)
+                val part2 = content.substring(braceIndex + 1)
+
+                "$part1\n    dependencies {\n    }\n$part2"
+            } else {
+                content
+            }
         } else {
-            return "\n" +
-                    "buildscript {\n" +
-                    "    dependencies {\n" +
-                    "    }\n" +
-                    "}".plus(content)
+            "$buildScriptTag {\n    dependencies {\n    }\n}\n$content"
         }
     }
-
 
     private fun addClasspath(dependenciesIndex: Int, content: String): String {
         val firstDependencyIndexWithoutIndent = content.indexOf("\n", dependenciesIndex) + 1
@@ -231,6 +220,7 @@ internal class BuildGradleFilesModifier(
             document.setText(newContent)
         }
 
+        openAndRefreshFile(virtualBuildGradleFile)
         return GradleFileStatus.ADDED_SUCCESSFULLY
     }
 
@@ -285,6 +275,20 @@ internal class BuildGradleFilesModifier(
         } catch (e: Exception) {
             SentryLogger.logException(e)
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * It refreshes the directory and then displays the file in the IDE.
+     */
+    private fun openAndRefreshFile(virtualFile: VirtualFile) {
+        try {
+            ApplicationManager.getApplication().invokeLater {
+                FileEditorManager.getInstance(project).closeFile(virtualFile)
+                FileEditorManager.getInstance(project).openFile(virtualFile, true)
+            }
+        } catch (ex: Exception) {
+            // ignore
         }
     }
 
