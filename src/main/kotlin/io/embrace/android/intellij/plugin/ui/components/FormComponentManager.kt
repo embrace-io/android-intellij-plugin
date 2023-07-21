@@ -48,6 +48,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
     internal var btnVerifyIntegration: EmbButton? = null
 
     internal val verifyCheckBox = JCheckBox("checkVerify".text()).apply {
+        background = Colors.panelBackground
         putClientProperty("step", IntegrationStep.VERIFY_INTEGRATION)
         addItemListener {
             btnVerifyIntegration?.isEnabled = it.stateChange == java.awt.event.ItemEvent.SELECTED
