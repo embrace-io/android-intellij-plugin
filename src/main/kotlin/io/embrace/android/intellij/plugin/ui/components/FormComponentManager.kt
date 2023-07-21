@@ -11,7 +11,6 @@ import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
 import io.embrace.android.intellij.plugin.ui.forms.VERTICAL_SPACE_SMALL
-import io.embrace.android.intellij.plugin.ui.icons.EmbraceIcons
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import java.awt.Component
 import java.awt.Dimension
@@ -78,14 +77,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
     private var currentStep: IntegrationStep = IntegrationStep.CREATE_PROJECT
 
 
-    private val loadingPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.X_AXIS)
-        background = Colors.panelBackground
-        add(JLabel(EmbraceIcons.loadingIcon))
-        add(JLabel("Verifying..."))
-    }
-
-    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(loadingPanel)
+    private val balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(JLabel("Verifying..."))
     private var balloon: Balloon? = null
 
     internal val configFieldsLayout = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
