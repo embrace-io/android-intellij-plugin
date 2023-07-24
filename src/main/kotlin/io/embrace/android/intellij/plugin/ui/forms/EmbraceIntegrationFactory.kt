@@ -25,6 +25,7 @@ class EmbraceIntegrationFactory : ToolWindowFactory {
         addResizeEventsListener(toolWindow, integrationView)
     }
 
+
     /**
      * This method adds a component listener to adjust the width of the JTextArea components
      * inside a tool window based on the width of the tool window itself.
