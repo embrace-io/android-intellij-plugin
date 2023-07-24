@@ -52,7 +52,15 @@ tasks {
     wrapper {
         gradleVersion = properties("gradleVersion")
     }
-
+// For Kotlin DSL (build.gradle.kts)
+    withType<org.jetbrains.intellij.tasks.RunPluginVerifierTask> {
+        failureLevel.set(listOf(org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.DEPRECATED_API_USAGES,
+            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.INTERNAL_API_USAGES,
+            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.NON_EXTENDABLE_API_USAGES
+        ))
+    }
     register<Jar>("generateJar") {
         from(sourceSets.main.get().output)
         archiveBaseName.set("embraceAssistant")
