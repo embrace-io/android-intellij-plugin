@@ -25,7 +25,7 @@ repositories {
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -45,21 +45,11 @@ changelog {
 
 dependencies {
     implementation("org.json:json:20230227")
-    implementation("io.sentry:sentry:6.25.0")
 }
 
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion")
-    }
-// For Kotlin DSL (build.gradle.kts)
-    withType<org.jetbrains.intellij.tasks.RunPluginVerifierTask> {
-        failureLevel.set(listOf(org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.DEPRECATED_API_USAGES,
-            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.INTERNAL_API_USAGES,
-            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-            org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel.NON_EXTENDABLE_API_USAGES
-        ))
     }
     register<Jar>("generateJar") {
         from(sourceSets.main.get().output)
