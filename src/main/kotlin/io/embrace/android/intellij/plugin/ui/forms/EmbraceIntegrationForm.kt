@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.ui.forms
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
@@ -13,6 +14,8 @@ import io.embrace.android.intellij.plugin.dataproviders.callback.ProjectGradleFi
 import io.embrace.android.intellij.plugin.dataproviders.callback.StartMethodCallback
 import io.embrace.android.intellij.plugin.dataproviders.callback.VerifyIntegrationCallback
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
+import io.embrace.android.intellij.plugin.services.TrackingEvent
+import io.embrace.android.intellij.plugin.services.TrackingService
 import io.embrace.android.intellij.plugin.ui.components.EmbBlockCode
 import io.embrace.android.intellij.plugin.ui.components.EmbButton
 import io.embrace.android.intellij.plugin.ui.components.EmbClickableUnderlinedLabel
@@ -23,6 +26,8 @@ import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.embrace.android.intellij.plugin.ui.components.TextStyle
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.awt.Component
 import java.awt.Cursor
 import java.awt.Dimension
@@ -39,7 +44,6 @@ import javax.swing.SwingUtilities
 
 private const val VERTICAL_SPACE = 20
 internal const val VERTICAL_SPACE_SMALL = 10
-private const val VERTICAL_SPACE_SMALLER = 5
 internal const val HORIZONTAL_SPACE = 20
 internal const val RIGHT_MARGIN = 50
 
@@ -66,6 +70,7 @@ internal class EmbraceIntegrationForm(
 
     private val scrollPane = JBScrollPane(panel)
     private val componentManager = FormComponentManager(panel)
+    private val trackingService = service<TrackingService>()
 
     private var gradlePopup: GradleFilesPopup? = null
     private val btnOpenDashboard =
@@ -349,6 +354,10 @@ internal class EmbraceIntegrationForm(
                     componentManager.startResultPanel, "startMethodErrorShort".text(), false
                 )
                 Messages.showErrorDialog(scrollPane, "startMethodError".text(), "GenericErrorTitle".text())
+
+                trackingService.trackEvent(TrackingEvent.START_SDK_ADDITION_FAILED, buildJsonObject {
+                    put("error", "startMethodError".text())
+                })
             }
 
             StartMethodStatus.START_ADDED_SUCCESSFULLY -> {
@@ -357,6 +366,8 @@ internal class EmbraceIntegrationForm(
                 componentManager.changeResultText(
                     componentManager.startResultPanel, "startAddedSuccessfully".text()
                 )
+
+                trackingService.trackEvent(TrackingEvent.START_SDK_ADDED)
             }
 
             StartMethodStatus.START_ALREADY_ADDED -> {
@@ -365,6 +376,8 @@ internal class EmbraceIntegrationForm(
                 componentManager.changeResultText(
                     componentManager.startResultPanel, "startAlreadyAdded".text()
                 )
+
+                trackingService.trackEvent(TrackingEvent.START_SDK_ALREADY_ADDED)
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_FOUND -> {
@@ -372,6 +385,10 @@ internal class EmbraceIntegrationForm(
                     componentManager.startResultPanel, "applicationClassNotFoundShort".text(), false
                 )
                 Messages.showErrorDialog(scrollPane, "applicationClassNotFound".text(), "GenericErrorTitle".text())
+
+                trackingService.trackEvent(TrackingEvent.START_SDK_ADDITION_FAILED, buildJsonObject {
+                    put("error", "applicationClassNotFound".text())
+                })
             }
 
             StartMethodStatus.APPLICATION_CLASS_NOT_ON_CREATE -> {
@@ -381,6 +398,10 @@ internal class EmbraceIntegrationForm(
                 Messages.showErrorDialog(
                     scrollPane, "applicationClassNotOnCreate".text(), "GenericErrorTitle".text()
                 )
+
+                trackingService.trackEvent(TrackingEvent.START_SDK_ADDITION_FAILED, buildJsonObject {
+                    put("error", "applicationClassNotOnCreate".text())
+                })
             }
 
         }

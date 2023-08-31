@@ -1,6 +1,7 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.data.AppModule
@@ -18,8 +19,12 @@ import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
 
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
+import io.embrace.android.intellij.plugin.services.TrackingEvent
+import io.embrace.android.intellij.plugin.services.TrackingService
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.awt.Desktop
 import java.net.InetSocketAddress
 import java.net.URI
@@ -38,6 +43,7 @@ internal class EmbraceIntegrationDataProvider(
     private val lastEmbraceVersion = repo.getLastSDKVersion()
     internal var applicationModules: List<AppModule>? = null
     private var verificationCounter = 0
+    private val trackingService = service<TrackingService>()
 
     private val buildGradleFilesModifier = lazy {
         project.basePath?.let {
@@ -72,10 +78,16 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun startServer(callback: OnboardConnectionCallback) {
         val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
+
         val handler = OnboardConnectionCallbackHandler({
             embraceProject = it
+            trackingService.identify(it.externalUserId, it.appId)
+            trackingService.trackEvent(TrackingEvent.DASHBOARD_CONNECTED)
             callback.onOnboardConnected(it.appId, it.token)
         }, {
+            trackingService.trackEvent(TrackingEvent.DASHBOARD_CONNECTION_FAILED, buildJsonObject {
+                put("error", it)
+            })
             SentryLogger.logMessage("Error connecting dashboard $it")
             callback.onOnboardConnectedError(it)
         })
@@ -108,13 +120,20 @@ internal class EmbraceIntegrationDataProvider(
             if (repo.createEmbraceConfigFile(configFile, path)) {
                 SentryLogger.logStepCompleted(IntegrationStep.CONFIG_FILE_CREATION)
                 callback.onConfigSuccess()
+                trackingService.trackEvent(TrackingEvent.CONFIGURATION_FILE_CREATED)
             } else {
                 callback.onConfigError("configFileCreationError".text())
+                trackingService.trackEvent(TrackingEvent.CONFIGURATION_FILE_CREATION_FAILED, buildJsonObject {
+                    put("error", "configFileCreationError".text())
+                })
             }
 
         } ?: {
             SentryLogger.logMessage("cannot create configuration, project path not found")
             callback.onConfigError("configFilePathNotFoundError".text())
+            trackingService.trackEvent(TrackingEvent.CONFIGURATION_FILE_CREATION_FAILED, buildJsonObject {
+                put("error", "configFilePathNotFoundError".text())
+            })
         }
     }
 
@@ -151,18 +170,30 @@ internal class EmbraceIntegrationDataProvider(
                 buildGradleFilesModifier.value?.syncGradle(project)
                 SentryLogger.logStepCompleted(IntegrationStep.DEPENDENCY_UPDATE)
                 callback.onGradleFilesModifiedSuccessfully()
+
+                trackingService.trackEvent(TrackingEvent.GRADLE_FILE_MODIFIED)
             }
 
             rootFileStatus == GradleFileStatus.SWAZZLER_ALREADY_ADDED -> {
                 callback.onGradleFileAlreadyModified()
+
+                trackingService.trackEvent(TrackingEvent.GRADLE_FILE_ALREADY_MODIFIED)
             }
 
             rootFileStatus == GradleFileStatus.FILE_NOT_FOUND && appFileStatus == GradleFileStatus.FILE_NOT_FOUND -> {
                 callback.onGradleFileError("oneOrMoreFilesError".text())
+
+                trackingService.trackEvent(TrackingEvent.GRADLE_FILE_MODIFICATION_FAILED, buildJsonObject {
+                    put("error", "oneOrMoreFilesError".text())
+                })
             }
 
             else -> {
                 callback.onGradleFileError("gradleFileError".text())
+
+                trackingService.trackEvent(TrackingEvent.GRADLE_FILE_MODIFICATION_FAILED, buildJsonObject {
+                    put("error", "gradleFileError".text())
+                })
             }
         }
     }
@@ -190,11 +221,15 @@ internal class EmbraceIntegrationDataProvider(
             SentryLogger.logStepCompleted(IntegrationStep.VERIFY_INTEGRATION)
             SentryLogger.endSession()
             callback.onEmbraceIntegrationSuccess()
+
+            trackingService.trackEvent(TrackingEvent.INTEGRATION_SUCCEEDED)
         }, {
             if (verificationCounter >= VERIFICATION_COUNT_MAX) {
                 verificationCounter = 0
                 callback.onEmbraceIntegrationError()
                 SentryLogger.logMessage("cannot verify integration, max retries reached")
+
+                trackingService.trackEvent(TrackingEvent.INTEGRATION_FAILED)
             } else {
                 Thread.sleep(RETRY_TIME)
                 verifyEndpoint(callback)
@@ -216,8 +251,14 @@ internal class EmbraceIntegrationDataProvider(
             try {
                 val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
                 Desktop.getDesktop().browse(URI(url))
+
+                trackingService.trackEvent(TrackingEvent.OPEN_DASHBOARD_FROM_PLUGIN)
             } catch (e: Exception) {
                 SentryLogger.logException(e)
+
+                trackingService.trackEvent(TrackingEvent.OPEN_DASHBOARD_FROM_PLUGIN_FAILED, buildJsonObject {
+                    put("error", e.message ?: "unknown error")
+                })
             }
         } ?: SentryLogger.logMessage("cannot open dashboard, embraceProject is null")
     }

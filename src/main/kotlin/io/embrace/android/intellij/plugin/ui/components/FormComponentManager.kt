@@ -1,17 +1,22 @@
 package io.embrace.android.intellij.plugin.ui.components
 
 import com.android.tools.idea.wizard.template.Template
+import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.ui.JBUI
+import io.embrace.android.intellij.plugin.services.TrackingEvent
+import io.embrace.android.intellij.plugin.services.TrackingService
 import io.embrace.android.intellij.plugin.ui.constants.Colors
 import io.embrace.android.intellij.plugin.ui.constants.Colors.errorColor
 import io.embrace.android.intellij.plugin.ui.constants.Colors.successColor
 import io.embrace.android.intellij.plugin.ui.forms.VERTICAL_SPACE_SMALL
 import io.embrace.android.intellij.plugin.utils.extensions.text
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -31,6 +36,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
     private val errorIcon = IconLoader.getIcon("/icons/error.svg", FormComponentManager::class.java)
     internal val connectEmbraceResultPanel = getResultLayout().apply { isVisible = false }
+    private val trackingService = service<TrackingService>()
 
     internal val configFileStatusPanel = getResultLayout().apply {
         isVisible = false
@@ -135,7 +141,11 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
         etToken.isEnabled = enable
     }
 
-    private fun nextStep() {
+    private fun skipStep() {
+        trackingService.trackEvent(TrackingEvent.STEP_SKIPPED, buildJsonObject {
+            put("step", currentStep.toString())
+        })
+
         when (currentStep) {
             IntegrationStep.CREATE_PROJECT -> {
                 setCurrentStep(IntegrationStep.CONFIG_FILE_CREATION)
@@ -207,7 +217,7 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
             })
             add(Box.createVerticalStrut(8))
             add(EmbClickableUnderlinedLabel("skipStep".text()) {
-                nextStep()
+                skipStep()
             }.apply {
                 border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
                 foreground = JBColor.GRAY
