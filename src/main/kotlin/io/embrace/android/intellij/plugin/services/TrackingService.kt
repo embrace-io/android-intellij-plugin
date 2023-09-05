@@ -31,15 +31,16 @@ const val pluginPackage = "io.embrace.android.intellij.plugin"
 
 @Service
 class TrackingService {
-    private val segmentWriteKey = System.getenv("SEGMENT_WRITE_KEY")
-    private val enabled = segmentWriteKey != null
+    // TODO: figure out a way of disabling segment on local
+    private val segmentWriteKey = System.getenv("SEGMENT_WRITE_KEY") ?: "7kDcjON7hJhoLrThnta9I54VFL07vIvm"
+    private val enabled = true
     private lateinit var analytics: Analytics
     private val pluginVersion = PluginManagerCore.getPlugin(PluginId.getId(pluginPackage))?.version
     private var appId: String = ""
 
     init {
         if (enabled) {
-            analytics = Analytics(System.getenv("SEGMENT_WRITE_KEY")) {
+            analytics = Analytics(segmentWriteKey) {
                 application = "EmbraceAndroidPlugin"
                 flushAt = 3
                 flushInterval = 10
