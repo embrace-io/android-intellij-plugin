@@ -9,16 +9,17 @@ internal class ApiService {
     private val apiClient = ApiClient()
 
     companion object {
-        const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
+        private val DASHBOARD_URL = System.getenv("DASHBOARD_URL") ?: "https://dash.embrace.io"
 
-        const val EMBRACE_CREATE_PROJECT_URL: String =
-            "https://dash.embrace.io/android-plugin/landing"
+        val EMBRACE_CREATE_PROJECT_URL: String = "${DASHBOARD_URL}/android-plugin/landing"
+
+        val EMBRACE_DASHBOARD_URL: String =
+                "${DASHBOARD_URL}/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
+
+        const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
 
         const val EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL: String =
             "https://dash-api.embrace.io/external/v4/org/app/{appId}/verify_integration"
-
-        const val EMBRACE_DASHBOARD_URL: String =
-            "https://dash.embrace.io/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
     }
 
     fun getLastSDKVersion(): String {

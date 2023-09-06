@@ -59,7 +59,7 @@ internal class OnboardConnectionCallbackHandler(
         if (requestBody.appId == null || requestBody.token == null) {
             onError.invoke("AppId or Token not found")
         } else {
-            onSuccess.invoke(EmbraceProject(requestBody.appId, requestBody.token, requestBody.sessionId))
+            onSuccess.invoke(EmbraceProject(requestBody.appId, requestBody.token, requestBody.sessionId, requestBody.externalUserId))
         }
     }
 
@@ -80,7 +80,10 @@ private data class EmbraceCallbackRequestBody(
     val token: String?,
 
     @SerializedName("session_id")
-    val sessionId: String?
+    val sessionId: String?,
+
+    @SerializedName("external_user_id")
+    val externalUserId: String
 )
 
 private const val CALLBACK_RESPONSE_HTML_PATH = "/html/callback_response.html"

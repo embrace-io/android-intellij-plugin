@@ -45,6 +45,7 @@ changelog {
 
 dependencies {
     implementation("org.json:json:20230227")
+    implementation("com.segment.analytics.kotlin:core:1.13.1")
 }
 
 tasks {
