@@ -109,14 +109,15 @@ internal class BuildGradleFilesModifier(
                 return GradleFileStatus.SWAZZLER_ALREADY_ADDED
             }
 
-            var dependenciesIndex = content.indexOf("dependencies")
+            val dependenciesStartRegEx = "dependencies\\s*\\n*\\{".toRegex()
+            var dependenciesIndex = dependenciesStartRegEx.find(content)?.range?.first ?: -1
             var newContent = content
 
             if (dependenciesIndex <= 0) {
                 newContent = addDependenciesBlock(content)
+                dependenciesIndex = dependenciesStartRegEx.find(newContent)?.range?.first ?: -1
             }
 
-            dependenciesIndex = newContent.indexOf("dependencies")
             newContent = addClasspath(dependenciesIndex, newContent)
 
             WriteCommandAction.runWriteCommandAction(project) {
@@ -133,21 +134,24 @@ internal class BuildGradleFilesModifier(
 
     private fun addDependenciesBlock(content: String): String {
         val buildScriptTag = "buildscript"
+        val dependenciesTag = "dependencies"
 
-        return if (content.contains(buildScriptTag)) {
-            val buildScriptIndex = content.indexOf(buildScriptTag)
+        val buildScriptBlockRegEx = "$buildScriptTag\\s*\\n*\\{".toRegex()
+        val buildScriptIndex = buildScriptBlockRegEx.find(content)?.range?.first ?: -1
+
+        return if (buildScriptIndex > 0) {
             val braceIndex = content.indexOf('{', startIndex = buildScriptIndex)
 
             if (braceIndex != -1) {
                 val part1 = content.substring(0, braceIndex + 1)
                 val part2 = content.substring(braceIndex + 1)
 
-                "$part1\n    dependencies {\n    }\n$part2"
+                "$part1\n    $dependenciesTag {\n    }\n$part2"
             } else {
                 content
             }
         } else {
-            "$buildScriptTag {\n    dependencies {\n    }\n}\n$content"
+            "$buildScriptTag {\n    $dependenciesTag {\n    }\n}\n$content"
         }
     }
 

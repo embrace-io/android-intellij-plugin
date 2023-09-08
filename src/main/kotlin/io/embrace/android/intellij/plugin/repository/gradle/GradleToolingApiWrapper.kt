@@ -2,6 +2,7 @@ package io.embrace.android.intellij.plugin.repository.gradle
 
 import com.android.tools.build.jetifier.core.utils.Log
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
+import org.gradle.tooling.BuildException
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.model.GradleProject
 import java.io.File
@@ -21,6 +22,9 @@ internal class GradleToolingApiWrapper(basePath: String) {
                 val buildScript = model.buildScript
                 return buildScript.sourceFile
             }
+        } catch (e: BuildException) {
+            SentryLogger.logException(e)
+            Log.e(TAG, "BuildException: Gradle sync failed. ${e.message}")
         } catch (e: Exception) {
             SentryLogger.logException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
@@ -38,6 +42,9 @@ internal class GradleToolingApiWrapper(basePath: String) {
                 else
                     return modules.first().buildScript.sourceFile
             }
+        } catch (e: BuildException) {
+            SentryLogger.logException(e)
+            Log.e(TAG, "BuildException: Gradle sync failed. ${e.message}")
         } catch (e: Exception) {
             SentryLogger.logException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")
@@ -51,6 +58,9 @@ internal class GradleToolingApiWrapper(basePath: String) {
                 val model = connection.getModel(GradleProject::class.java)
                 return model.children
             }
+        } catch (e: BuildException) {
+            SentryLogger.logException(e)
+            Log.e(TAG, "BuildException: Gradle sync failed. ${e.message}")
         } catch (e: Exception) {
             SentryLogger.logException(e)
             Log.e(TAG, "Error while trying to get build.gradle file: ${e.message}")

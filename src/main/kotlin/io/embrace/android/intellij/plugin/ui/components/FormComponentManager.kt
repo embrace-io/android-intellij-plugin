@@ -32,6 +32,13 @@ import javax.swing.JPanel
 import javax.swing.JSeparator
 
 
+/**
+ * This class is responsible for managing the components of the form.
+ * It contains the logic for:
+ * - enabling/disabling the components based on the current step.
+ * - updating the result panels.
+ * - showing/hiding UI components based on the user's actions.
+ */
 internal class FormComponentManager(private val mainPanel: JPanel) {
     private val successIcon = IconLoader.getIcon("/icons/check.svg", FormComponentManager::class.java)
     private val errorIcon = IconLoader.getIcon("/icons/error.svg", FormComponentManager::class.java)
