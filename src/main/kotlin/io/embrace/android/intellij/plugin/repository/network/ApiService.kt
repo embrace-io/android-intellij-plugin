@@ -16,10 +16,14 @@ internal class ApiService {
         val EMBRACE_DASHBOARD_URL: String =
                 "${DASHBOARD_URL}/app/{appId}/grouped_sessions/hour?android_plugin_integration=success"
 
-        const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
+        private const val EMBRACE_SDK_VERSION_URL: String = "https://dash-api.embrace.io/external/sdk/android/version"
 
-        const val EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL: String =
+        private const val EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL: String =
             "https://dash-api.embrace.io/external/v4/org/app/{appId}/verify_integration"
+
+        private const val INTEGRATION_VERIFY_ATTEMPTS = 5
+
+        private const val MILLIS_BETWEEN_INTEGRATION_VERIFY_ATTEMPTS = 1000L
     }
 
     fun getLastSDKVersion(): String {
@@ -34,14 +38,24 @@ internal class ApiService {
         }
     }
 
-    fun verifyIntegration(embraceProject: EmbraceProject, onSuccess: () -> Unit, onError: () -> Unit) {
+    fun verifyIntegration(
+        embraceProject: EmbraceProject,
+        onSuccess: () -> Unit,
+        onError: () -> Unit,
+        attempt: Int = 0
+    ) {
         val url = EMBRACE_DASHBOARD_VERIFY_INTEGRATION_URL.replace("{appId}", embraceProject.appId)
 
         apiClient.executeGetRequestAsync(url, embraceProject.sessionId) { response ->
             if (response.contains("\"integration_verified\":true")) {
                 onSuccess.invoke()
             } else {
-                onError.invoke()
+                if (attempt < INTEGRATION_VERIFY_ATTEMPTS) {
+                    Thread.sleep(MILLIS_BETWEEN_INTEGRATION_VERIFY_ATTEMPTS)
+                    verifyIntegration(embraceProject, onSuccess, onError, attempt + 1)
+                } else {
+                    onError.invoke()
+                }
             }
         }
     }
