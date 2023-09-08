@@ -189,10 +189,10 @@ internal class EmbraceIntegrationDataProvider(
             }
 
             else -> {
-                callback.onGradleFileError("gradleFileError".text())
+                callback.onGradleFileError("noApplicationModule".text())
 
                 trackingService.trackEvent(TrackingEvent.GRADLE_FILE_MODIFICATION_FAILED, buildJsonObject {
-                    put("error", "gradleFileError".text())
+                    put("error", "noApplicationModule".text())
                 })
             }
         }
