@@ -1,6 +1,5 @@
 package io.embrace.android.intellij.plugin.ui.components
 
-import com.android.tools.idea.wizard.template.Template
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -211,17 +210,13 @@ internal class FormComponentManager(private val mainPanel: JPanel) {
             alignmentX = Component.LEFT_ALIGNMENT
 
             add(EmbLabel("message", TextStyle.BODY).apply {
-
                 border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
                 iconTextGap = 5
             })
             add(Box.createVerticalStrut(8))
-            add(EmbClickableUnderlinedLabel("skipStep".text()) {
+            add(EmbButton("skipStep".text()) {
                 skipStep()
-            }.apply {
-                border = BorderFactory.createEmptyBorder(0, 5, 0, 0)
-                foreground = JBColor.GRAY
-            }, Template.constraints)
+            })
         }
     }
 
