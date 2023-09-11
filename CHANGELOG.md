@@ -3,6 +3,9 @@
 ## [Unreleased]
 ### Changed
 
+## [1.2.0]
+- UI improvements
+
 ## [1.1.0]
 - Added debugging information
 

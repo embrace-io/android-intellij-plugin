@@ -4,7 +4,7 @@ package io.embrace.android.intellij.plugin.repository.sentry
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 
 private const val SENTRY_DNS = "https://816ef499adf04f0c8ce55ff0a879974a@s.embrace.io/96"
-private const val PLUGIN_VERSION = "1.1.0"
+private const val PLUGIN_VERSION = "1.2.0"
 private const val FLUSH_TIMEOUT_MS = 5000L
 
 
