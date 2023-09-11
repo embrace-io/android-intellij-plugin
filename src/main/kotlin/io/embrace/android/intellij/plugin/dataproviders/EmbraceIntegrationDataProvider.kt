@@ -73,6 +73,9 @@ internal class EmbraceIntegrationDataProvider(
         try {
             startServer(callback)
         } catch (e: Exception) {
+            trackingService.trackEvent(TrackingEvent.DASHBOARD_CONNECTION_FAILED, buildJsonObject {
+                put("error", e.toString())
+            })
             callback.onOnboardConnectedError("Server could not be started")
             return
         }
