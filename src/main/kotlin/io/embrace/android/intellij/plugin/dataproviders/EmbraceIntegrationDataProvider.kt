@@ -1,7 +1,9 @@
 package io.embrace.android.intellij.plugin.dataproviders
 
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.sun.net.httpserver.HttpServer
 import io.embrace.android.intellij.plugin.data.AppModule
@@ -17,10 +19,12 @@ import io.embrace.android.intellij.plugin.repository.EmbracePluginRepository
 import io.embrace.android.intellij.plugin.repository.gradle.BuildGradleFilesModifier
 import io.embrace.android.intellij.plugin.repository.network.ApiService
 import io.embrace.android.intellij.plugin.repository.network.OnboardConnectionCallbackHandler
+import io.embrace.android.intellij.plugin.repository.network.OnboardFormConnectionCallbackHandler
 
 import io.embrace.android.intellij.plugin.repository.sentry.SentryLogger
 import io.embrace.android.intellij.plugin.services.TrackingEvent
 import io.embrace.android.intellij.plugin.services.TrackingService
+import io.embrace.android.intellij.plugin.services.pluginPackage
 import io.embrace.android.intellij.plugin.ui.components.IntegrationStep
 import io.embrace.android.intellij.plugin.utils.extensions.text
 import kotlinx.serialization.json.buildJsonObject
@@ -78,21 +82,25 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun startServer(callback: OnboardConnectionCallback) {
         val server: HttpServer = HttpServer.create(InetSocketAddress(0), 0)
-
-        val handler = OnboardConnectionCallbackHandler({
+        val onConnectionSuccess: (EmbraceProject) -> Unit = {
             embraceProject = it
             trackingService.identify(it.externalUserId, it.appId)
             trackingService.trackEvent(TrackingEvent.DASHBOARD_CONNECTED)
             callback.onOnboardConnected(it.appId, it.token)
-        }, {
+        }
+        val onConnectionError: (String) -> Unit = {
             trackingService.trackEvent(TrackingEvent.DASHBOARD_CONNECTION_FAILED, buildJsonObject {
                 put("error", it)
             })
             SentryLogger.logMessage("Error connecting dashboard $it")
             callback.onOnboardConnectedError(it)
-        })
+        }
+
+        val handler = OnboardConnectionCallbackHandler(onConnectionSuccess, onConnectionError)
+        val formHandler = OnboardFormConnectionCallbackHandler(onConnectionSuccess, onConnectionError)
 
         server.createContext("/", handler)
+        server.createContext("/form", formHandler)
         server.executor = null
         server.start()
         callbackPort = server.address.port
@@ -243,7 +251,9 @@ internal class EmbraceIntegrationDataProvider(
 
     private fun buildOnboardDashURL(): String {
         val projectName = repo.getProjectName().replace(" ", "")
-        return ApiService.EMBRACE_CREATE_PROJECT_URL + "?project_name=$projectName&localhost_port=$callbackPort"
+        val pluginVersion = PluginManagerCore.getPlugin(PluginId.getId(pluginPackage))?.version
+
+        return ApiService.EMBRACE_CREATE_PROJECT_URL + "?project_name=$projectName&localhost_port=$callbackPort&plugin_version=$pluginVersion"
     }
 
     fun openDashboard() {
