@@ -201,7 +201,7 @@ internal class EmbraceIntegrationForm(
         componentManager.btnVerifyIntegration = EmbButton("btnVerifyIntegration".text()) {
             componentManager.verifyResultPanel.isVisible = false
             componentManager.btnVerifyIntegration?.isEnabled = false
-            if (dataProvider.verifyIntegration(this)) {
+            if (dataProvider.verifyIntegration(this, componentManager.getAppId())) {
                 componentManager.showLoadingPopup(it)
             }
         }.apply { isEnabled = false }
@@ -249,7 +249,10 @@ internal class EmbraceIntegrationForm(
 
     override fun onOnboardConnectedError(error: String) {
         componentManager.changeResultText(
-            componentManager.connectEmbraceResultPanel, "connectedToEmbraceError".text(), false
+            componentManager.connectEmbraceResultPanel,
+            "connectedToEmbraceError".text(),
+            success = false,
+            displaySkip = true
         )
     }
 
