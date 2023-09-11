@@ -9,7 +9,7 @@ internal class ApiService {
     private val apiClient = ApiClient()
 
     companion object {
-        private val DASHBOARD_URL = System.getenv("DASHBOARD_URL") ?: "https://dash.embrace.io"
+        val DASHBOARD_URL = System.getenv("DASHBOARD_URL") ?: "https://dash.embrace.io"
 
         val EMBRACE_CREATE_PROJECT_URL: String = "${DASHBOARD_URL}/android-plugin/landing"
 

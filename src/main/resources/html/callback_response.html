@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <link href='https://fonts.googleapis.com/css?family=Google+Sans' rel='stylesheet'>
 <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
 <style>
@@ -12,9 +12,10 @@
     .dot{background-color:#78909c; border-radius:50%; height:8px; margin-left:12px; width:8px}
     .content{justify-content:center; text-align:center}
     .icon{width: 128px; height: 128px;}
-
-
 </style>
+<script lang="javascript">
+    window.location = "{{dashboardURL}}/android-plugin/connected?project_name={{projectName}}"
+</script>
 <main>
     <div class="progress_bar">
         <img class="icon" alt="Android Studio"
@@ -30,7 +31,7 @@
     </div>
     <div class="content">
         <h1>Your Android Studio project is connected to your Embrace Android app</h1>
-        <p>You can now go back to Android Studio and continue with the integration steps.</p>
+        <p>Redirecting back to your dashboard...</p>
     </div>
 </main>
 </html>
