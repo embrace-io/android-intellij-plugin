@@ -1,7 +1,5 @@
 package io.embrace.android.intellij.plugin.repository.network
 
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import io.embrace.android.intellij.plugin.data.EmbraceProject
@@ -18,9 +16,6 @@ internal class OnboardConnectionCallbackHandler(
     private val onSuccess: (EmbraceProject) -> Unit,
     private val onError: (String) -> Unit
 ) : HttpHandler {
-
-    private val gson by lazy { Gson() }
-
     @Throws(IOException::class)
     override fun handle(httpExchange: HttpExchange) {
         httpExchange.responseHeaders.add("Access-Control-Allow-Origin", "*")
@@ -30,11 +25,16 @@ internal class OnboardConnectionCallbackHandler(
             return
         }
 
-        val requestBody = readRequestBody(httpExchange.requestBody)
-        updateUIElements(requestBody)
-        writeResponseBody(httpExchange)
-
-        httpExchange.close()
+        try {
+            val requestBody = readRequestBody(httpExchange.requestBody)
+            updateUIElements(requestBody)
+            writeResponseBody(httpExchange, requestBody)
+        } catch (e: InvalidRequestBodyException) {
+            onError.invoke(e.message ?: "Invalid request body")
+            writeErrorResponseBody(httpExchange)
+        } finally {
+            httpExchange.close()
+        }
     }
 
     /**
@@ -50,9 +50,29 @@ internal class OnboardConnectionCallbackHandler(
     }
 
     private fun readRequestBody(requestBody: InputStream): EmbraceCallbackRequestBody {
-        val requestBodyString = requestBody.bufferedReader().use { it.readText() }
+        val requestBodyString = requestBody.bufferedReader().readText()
         requestBody.close()
-        return gson.fromJson(requestBodyString, EmbraceCallbackRequestBody::class.java)
+
+        val pairs = requestBodyString.split("&")
+        val paramMap = mutableMapOf<String, String>()
+
+        pairs.forEach {
+            val pair = it.split("=")
+            paramMap[pair[0]] = pair[1]
+        }
+
+        val missingParams = REQUIRED_POST_KEYS.filter { !paramMap.containsKey(it) }
+        if (missingParams.isNotEmpty()) {
+            throw InvalidRequestBodyException("Missing required params: $missingParams")
+        }
+
+        return EmbraceCallbackRequestBody(
+            paramMap["app_id"]!!,
+            paramMap["token"]!!,
+            paramMap["session_id"]!!,
+            paramMap["external_user_id"]!!,
+            paramMap["project_name"]!!
+        )
     }
 
     private fun updateUIElements(requestBody: EmbraceCallbackRequestBody) {
@@ -63,28 +83,40 @@ internal class OnboardConnectionCallbackHandler(
         }
     }
 
-    private fun writeResponseBody(exchange: HttpExchange) {
-        val htmlBytes = this.javaClass.getResource(CALLBACK_RESPONSE_HTML_PATH)?.readBytes() ?: ByteArray(0)
-        exchange.sendResponseHeaders(HttpStatus.SC_OK, htmlBytes.size.toLong())
+    private fun writeResponseBody(exchange: HttpExchange, requestBody: EmbraceCallbackRequestBody) {
+        var template = String(this.javaClass.getResource(CALLBACK_RESPONSE_HTML_PATH)?.readBytes() ?: ByteArray(0))
+        template = template.replace("{{dashboardURL}}", System.getenv("DASHBOARD_URL") ?: "https://dash.embrace.io")
+        template = template.replace("{{projectName}}", requestBody.projectName)
+
+        val response = template.toByteArray()
+
+        exchange.sendResponseHeaders(HttpStatus.SC_OK, response.size.toLong())
         val os: OutputStream = exchange.responseBody
-        os.write(htmlBytes)
+        os.write(response)
+        os.close()
+    }
+
+    private fun writeErrorResponseBody(exchange: HttpExchange) {
+        val response = this.javaClass.getResource(ERROR_RESPONSE_HTML_PATH)?.readBytes() ?: ByteArray(0)
+
+        exchange.sendResponseHeaders(HttpStatus.SC_OK, response.size.toLong())
+        val os: OutputStream = exchange.responseBody
+        os.write(response)
         os.close()
     }
 }
 
 private data class EmbraceCallbackRequestBody(
-    @SerializedName("app_id")
     val appId: String?,
-
-    @SerializedName("token")
     val token: String?,
-
-    @SerializedName("session_id")
     val sessionId: String?,
-
-    @SerializedName("external_user_id")
-    val externalUserId: String
+    val externalUserId: String,
+    val projectName: String,
 )
 
+private class InvalidRequestBodyException(message: String) : Exception(message)
+
 private const val CALLBACK_RESPONSE_HTML_PATH = "/html/callback_response.html"
+private const val ERROR_RESPONSE_HTML_PATH = "/html/error_response.html"
 private const val RESPONSE_SUCCESS = 204
+private val REQUIRED_POST_KEYS = listOf("app_id", "token", "session_id", "external_user_id", "project_name")
