@@ -3,6 +3,9 @@
 ## [Unreleased]
 ### Changed
 
+## [1.2.1]
+- Fix for connecting to Embrace using the Safari browser
+
 ## [1.2.0]
 - UI improvements
 
