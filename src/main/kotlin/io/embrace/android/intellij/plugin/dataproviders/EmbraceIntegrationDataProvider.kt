@@ -74,6 +74,7 @@ internal class EmbraceIntegrationDataProvider(
             startServer(callback)
         } catch (e: Exception) {
             callback.onOnboardConnectedError("Server could not be started")
+            return
         }
 
         val url = buildOnboardDashURL()
