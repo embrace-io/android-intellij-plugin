@@ -70,7 +70,11 @@ internal class EmbraceIntegrationDataProvider(
     }
 
     fun connectToEmbrace(callback: OnboardConnectionCallback) {
-        startServer(callback)
+        try {
+            startServer(callback)
+        } catch (e: Exception) {
+            callback.onOnboardConnectedError("Server could not be started")
+        }
 
         val url = buildOnboardDashURL()
         Desktop.getDesktop().browse(URI(url))
@@ -205,10 +209,14 @@ internal class EmbraceIntegrationDataProvider(
         repo.addStartToApplicationClass(buildGradleFilesModifier.value?.appPackageName, callback)
     }
 
-    fun verifyIntegration(callback: VerifyIntegrationCallback): Boolean {
-        if (embraceProject == null || embraceProject!!.sessionId == null) {
-            SentryLogger.logMessage("cannot verify integration, embraceProject or session is null")
-            callback.onEmbraceIntegrationError()
+    fun verifyIntegration(callback: VerifyIntegrationCallback, appId: String?): Boolean {
+        if (embraceProject == null) {
+            if (appId != null) {
+                openDashboard(appId)
+            } else {
+                SentryLogger.logMessage("cannot verify integration, embraceProject or session is null")
+                callback.onEmbraceIntegrationError()
+            }
             return false
         }
         verifyEndpoint(callback)
@@ -246,10 +254,11 @@ internal class EmbraceIntegrationDataProvider(
         return ApiService.EMBRACE_CREATE_PROJECT_URL + "?project_name=$projectName&localhost_port=$callbackPort"
     }
 
-    fun openDashboard() {
-        embraceProject?.let {
+    fun openDashboard(appId: String? = null) {
+        val dashboardAppId = embraceProject?.appId ?: appId
+        dashboardAppId?.let {
             try {
-                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it.appId)
+                val url = ApiService.EMBRACE_DASHBOARD_URL.replace("{appId}", it)
                 Desktop.getDesktop().browse(URI(url))
 
                 trackingService.trackEvent(TrackingEvent.OPEN_DASHBOARD_FROM_PLUGIN)
@@ -260,7 +269,7 @@ internal class EmbraceIntegrationDataProvider(
                     put("error", e.message ?: "unknown error")
                 })
             }
-        } ?: SentryLogger.logMessage("cannot open dashboard, embraceProject is null")
+        } ?: SentryLogger.logMessage("cannot open dashboard, no appId provided")
     }
 
     fun getSwazzlerClasspathLine(): String {
