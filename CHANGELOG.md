@@ -3,6 +3,9 @@
 ## [Unreleased]
 ### Changed
 
+## [1.2.2]
+- Updated supported IntelliJ Platform versions
+
 ## [1.2.1]
 - Fix for connecting to Embrace using the Safari browser
 

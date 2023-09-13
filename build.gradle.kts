@@ -55,7 +55,7 @@ tasks {
     register<Jar>("generateJar") {
         from(sourceSets.main.get().output)
         archiveBaseName.set("embraceAssistant")
-        archiveVersion.set("1.2.1")
+        archiveVersion.set("1.2.2")
 
         dependsOn(configurations.runtimeClasspath)
         from({
